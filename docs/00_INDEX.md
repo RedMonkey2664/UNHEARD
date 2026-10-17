@@ -117,6 +117,11 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Prose numbers moved to balance.js: player.doorFadeSec, torch.blackoutSec/blackoutEvery, noise.catchDist, vikram.keyWarningSec/huntReenterSec/investigateRefreshSec, nani.warnLeadSecAssist/ng2Sec/ng3WindowSec/ng4Dist/ng4FadeSec, hints.hint1Sec/hint2Sec, final.sirenAtEta.
   2026-10-17  Fonts: system fallback stack; Phaser waits on document.fonts.ready for at most 1.5 s (boot.fontsTimeoutMs in constants.js).
   2026-10-17  Project root is the folder containing CLAUDE.md; git initialised there.
+  2026-10-17  Player start x is 560 (docs/04 wins over the 480 in the docs/02 shape; docs/02 fixed).
+  2026-10-17  Phaser pinned to 3.90.0 (latest 3.x; npm "latest" is 4.x, which CLAUDE.md rules out).
+  2026-10-17  Fonts load via the FontFace API, not @font-face in index.html, and only if the woff2 exists (no 404 console errors).
+  2026-10-17  vite.config.js plugin exposes virtual:asset-files (files present in public/assets); BootScene requests only those. Restart dev server after adding assets.
+  2026-10-17  Extra small modules: utils/storage.js, utils/fonts.js, utils/orientation.js, ui/text.js. DEFAULT_SETTINGS lives in config/constants.js.
   2026-10-17  Stage 0: rotate overlay is a DOM element over the canvas (shown via CSS orientation media query + JS); Phaser game loop pauses while it shows.
 
 ## Changelog

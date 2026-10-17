@@ -118,7 +118,7 @@ Scenes and entities:
   torchOn: false,
 
   player: {
-    room: 'HALL', x: 480,
+    room: 'HALL', x: 560,                   // ROOMS.HALL.start.x (docs/04)
     moving: false, sneaking: false,
     hidden: false, hideSpotId: null,
     locked: false,                          // true during playback/memory/final cinematics

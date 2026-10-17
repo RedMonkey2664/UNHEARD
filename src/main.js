@@ -1,0 +1,50 @@
+// Phaser game config and scene list.
+
+import Phaser from 'phaser';
+import assetFiles from 'virtual:asset-files';
+import { BALANCE } from './config/balance.js';
+import { BOOT, COLORS } from './config/constants.js';
+import { FONT_FILES } from './data/assets.js';
+import { BootScene } from './scenes/BootScene.js';
+import { HeadphoneGateScene } from './scenes/HeadphoneGateScene.js';
+import { RoomScene } from './scenes/RoomScene.js';
+import { TitleScene } from './scenes/TitleScene.js';
+import { loadFonts } from './utils/fonts.js';
+import { watchOrientation } from './utils/orientation.js';
+import { loadSettings } from './utils/storage.js';
+
+async function start() {
+  await loadFonts(FONT_FILES, assetFiles, BOOT.fontsTimeoutMs);
+
+  const settings = loadSettings();
+
+  const game = new Phaser.Game({
+    type: Phaser.AUTO,
+    parent: 'game',
+    width: BALANCE.world.width,
+    height: BALANCE.world.height,
+    backgroundColor: COLORS.void,
+    banner: false,
+    disableContextMenu: true,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+    input: { activePointers: 2 },
+    callbacks: {
+      // Runs before any scene, so BootScene can read these.
+      preBoot: (g) => {
+        g.registry.set('assetFiles', assetFiles);
+        g.registry.set('settings', settings);
+      }
+    },
+    scene: [BootScene, TitleScene, HeadphoneGateScene, RoomScene]
+  });
+
+  game.events.once('ready', () => {
+    game.sound.volume = settings.volMaster;
+    watchOrientation(game, document.getElementById('rotate'));
+  });
+}
+
+start();
