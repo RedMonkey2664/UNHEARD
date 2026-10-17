@@ -10,6 +10,8 @@ import { HeadphoneGateScene } from './scenes/HeadphoneGateScene.js';
 import { RoomScene } from './scenes/RoomScene.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { UIScene } from './scenes/UIScene.js';
+import { MemoryScene } from './scenes/MemoryScene.js';
+import { PrologueScene } from './scenes/PrologueScene.js';
 import { loadFonts } from './utils/fonts.js';
 import { watchOrientation } from './utils/orientation.js';
 import { loadSettings } from './utils/storage.js';
@@ -19,7 +21,8 @@ async function start() {
 
   const settings = loadSettings();
 
-  const scenes = [BootScene, TitleScene, HeadphoneGateScene, RoomScene, UIScene];
+  const scenes = [BootScene, TitleScene, HeadphoneGateScene, RoomScene, UIScene,
+    MemoryScene, PrologueScene];
   // Dynamic import keeps the debug panel out of production bundles.
   if (import.meta.env.DEV) {
     const { DebugScene } = await import('./scenes/DebugScene.js');

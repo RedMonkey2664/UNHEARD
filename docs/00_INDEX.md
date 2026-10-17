@@ -133,6 +133,17 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Stage 1: debug "VMs done 0-7" sets statuses only (no memory consequences) until Stage 2 adds "Complete voicemail N".
   2026-10-17  Stage 1: battery:changed fires when the shown whole percent changes (and on spend/set), not every frame.
   2026-10-17  index.html gets an empty inline favicon so the browser logs no 404.
+  2026-10-17  Stage 2: puzzle answers, beat timings and prologue timings added to balance.js (puzzles, beats, prologue, memory.fadeMs/endPauseMs).
+  2026-10-17  Stage 2: texts.js gains note (VM5 note text), captions (SFX captions for beats) and ui (short interface lines). docs/05 updated first.
+  2026-10-17  Stage 2: PAUSE unlocks the player so they can walk to a hide spot; RESUME locks them again.
+  2026-10-17  Stage 2: battery dying mid-playback interrupts it; the VM stays 'fixed' and a "Battery too low." toast shows.
+  2026-10-17  Stage 2: PrologueScene added for the scripted opening; debug "Skip prologue" still sends Mom's first text.
+  2026-10-17  Stage 2: systems/messages.js added; the phone clock starts at 9:40 PM and follows real time.
+  2026-10-17  Stage 2: finalAct.js holds the locker now (tryCode); Stage 5 adds the tape moment, call and ETA.
+  2026-10-17  Stage 2: the phone reopens on the last tab used; opening a puzzle modal closes the phone.
+  2026-10-17  Stage 2: card tray order is shuffled but never already solved.
+  2026-10-17  Stage 2: debug "Complete voicemail 1..N" runs the real memory-end consequences (auto evidence, Mom text 2, windows).
+  2026-10-17  Stage 2: HUD round buttons use a circular hit area (bug: the default rectangle hit area broke taps).
 
 ## Changelog
 

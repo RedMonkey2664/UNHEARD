@@ -89,5 +89,37 @@ export const TEXTS = {
   nani: {
     chai:  'Chai pee lo.',          // NG1
     touch: 'Dheere. Dheere, beta.'  // NG4
+  },
+
+  // The VM5 note, shown in the note reader (docs/04 section 5).
+  note: [
+    "Beta, if something happens to me, don't trust V.",
+    'The tape is in the almari. Code is where I keep my dal.',
+    '- Nani'
+  ],
+
+  // SFX captions for the small horror beats (subtitles are always on).
+  captions: {
+    RADIO_TURNS_ON:   '[the radio plays a faint tune. Then it clicks off by itself.]',
+    HANDWRITING_LATER: "On the back, in your handwriting: 'later'.",   // toast
+    WINDOW_REOPENS:   '[somewhere, a window creaks open]',
+    PHANTOM_WHISTLES: '[four pressure-cooker whistles from the kitchen]',
+    REFLECTION_SCARE: '[a sharp sting of sound]',
+    WARM_WIRE:        'The earphone wire is warm. As if someone just held it.', // toast
+    TV_STATIC_SCARE:  '[the living room TV turns on by itself. Static.]',
+    FORESHADOW:       '[far away: footsteps on the stairs. They stop. They go away.]',
+    KEY_IN_LOCK:      '[a key in the lock]',
+    PREVIEW_CLEAN:    '[the first seconds, clear]'
+  },
+
+  // Short interface lines.
+  ui: {
+    pickedUp: 'Picked up: ',
+    evidence: 'Evidence: ',
+    pauseHint: 'Pause and hide.',
+    skipWarning: 'Skipping lets it in.',
+    temptationSub: 'Saves battery.',
+    callTip: 'Hold still while it connects.',
+    emptyNotes: 'Nothing yet.'
   }
 };

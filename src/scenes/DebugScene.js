@@ -6,8 +6,7 @@ import Phaser from 'phaser';
 import { ROOM_IDS } from '../config/constants.js';
 import { EVIDENCE, TOOLS } from '../data/items.js';
 import { bus } from '../systems/eventBus.js';
-import { completedCount, createState, deriveAct, setCompleted, VM_COUNT }
-  from '../systems/gameState.js';
+import { completedCount, createState, deriveAct, VM_COUNT } from '../systems/gameState.js';
 
 const REFRESH_MS = 100;
 const TRIPLE_TAP_MS = 600;
@@ -133,19 +132,25 @@ export class DebugScene extends Phaser.Scene {
       s.stats.evidenceCount = s.inventory.evidence.length;
     });
     const done = document.createElement('div');
-    done.textContent = 'VMs done (statuses only): ';
+    done.textContent = 'Complete voicemail 1..N: ';
     give.appendChild(done);
-    for (let n = 0; n <= VM_COUNT; n++) button(done, String(n), () => setCompleted(this.state(), n));
+    for (let n = 1; n <= VM_COUNT; n++) {
+      button(done, String(n), () => this.registry.get('systems').flow.debugComplete(this.state(), n));
+    }
 
     const misc = section('Run');
     this.assistButton = button(misc, 'Assist', () => {
       const s = this.state();
       s.settings.assist = !s.settings.assist;
     });
+    this.prologueButton = button(misc, 'Skip prologue', () => {
+      this.registry.set('skipPrologue', !this.registry.get('skipPrologue'));
+    });
     button(misc, 'Reset run', () => this.resetRun());
   }
 
   resetRun() {
+    for (const key of ['Memory', 'Prologue']) if (this.scene.isActive(key)) this.scene.stop(key);
     this.registry.set('state', createState(this.registry.get('settings')));
     this.scene.get('Room').scene.restart();
   }
@@ -190,5 +195,6 @@ export class DebugScene extends Phaser.Scene {
     this.scaleButtons.forEach((b, i) => b.classList.toggle('on', [1, 3][i] === scale));
     this.hitboxButton.classList.toggle('on', Boolean(this.registry.get('debugHitboxes')));
     this.assistButton.classList.toggle('on', s.settings.assist);
+    this.prologueButton.classList.toggle('on', Boolean(this.registry.get('skipPrologue')));
   }
 }

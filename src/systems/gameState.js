@@ -48,7 +48,8 @@ export function createState(settings = {}) {
     phone: {
       open: false, tab: 'VOICEMAIL',
       playing: false, paused: false,
-      playingId: null, playPos: 0
+      playingId: null, playPos: 0,
+      replay: false
     },
 
     voicemails: createVoicemails(),

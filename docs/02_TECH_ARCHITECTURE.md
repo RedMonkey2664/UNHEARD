@@ -137,7 +137,8 @@ Scenes and entities:
   phone: {
     open: false, tab: 'VOICEMAIL',
     playing: false, paused: false,
-    playingId: null, playPos: 0
+    playingId: null, playPos: 0,
+    replay: false                            // current playback is a replay
   },
 
   voicemails: {                              // keyed 1..7
@@ -235,6 +236,15 @@ emit(name, payload). Event names (colon style):
   ui:subtitle {who, text, sec}               show a subtitle line
   ui:toast {text}                            show a toast
   debug:teleport {room}                      debug panel (dev only)
+  ui:phone:show {tab, sec}                   open the phone on a tab for sec
+  ui:objective {}                            show the objective line
+
+  Gameplay events added in Stage 2:
+  puzzle:open {type}          RADIO | CARD | COOKER | NOTE | EARPHONES | KEYPAD
+  windows:open {}             VM3 windows swing open (or reopen after a wrong order)
+  window:closed {id}          a window was closed during the VM3 puzzle
+  beat:fire {id}              a small horror beat (docs/05 section 3)
+  locker:wrong {}             wrong locker code (noise spike in Stage 3)
 
 ## 8. Darkness and torch rendering
 
@@ -328,3 +338,12 @@ All take the GameState as the first argument; bus is injected at creation.
   interaction  checkWhen(when, s), pickVariant(hotspot, s), currentVmId(s),
                createInteraction(bus) -> {interact(s, hotspotId) -> {text, action},
                useDoor(s, doorId) -> {passed, text}, teleport(s, room, x)}
+  fixPuzzles   createFixPuzzles() -> {validate(type, input, s), checkLocker(code),
+               closeWindow(s, id) -> null | {order}}
+  messages     createMessages(bus) -> {send(s, 'mom1'|'mom2')}; clockLabel(sec)
+  voicemailFlow createVoicemailFlow(bus, {battery, puzzles, messages}) ->
+               {preview, fixButton, attemptFix, closeWindow, play, togglePause,
+               endMemory(s, id, skipped), tick(s, dt), hintsFor(s), debugComplete(s, n)}
+               Results are {ok} or {ok: false, reason} where reason is a
+               texts.toasts key (notYet, nothingToFix, lowBattery, wrongFix).
+  finalAct     createFinalAct(bus, {puzzles}) -> {lockerUsable(s), tryCode(s, code)}

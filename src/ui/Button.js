@@ -11,6 +11,7 @@ export class Button {
     this.h = opts.height || UI.minTapPx;
     this.onTap = onTap;
     this.selected = false;
+    this.enabled = true;
 
     this.bg = scene.add.rectangle(x, y, this.w, this.h, COLORS.panel, 0.9)
       .setStrokeStyle(1, COLORS.line);
@@ -29,6 +30,7 @@ export class Button {
     this.fitHitArea = this.fitHitArea.bind(this);
     scene.scale.on('resize', this.fitHitArea);
     scene.events.once('shutdown', () => scene.scale.off('resize', this.fitHitArea));
+    this.bg.once('destroy', () => scene.scale.off('resize', this.fitHitArea));
     this.fitHitArea();
     this.refresh(false);
   }
@@ -46,6 +48,14 @@ export class Button {
 
   setText(text) {
     this.label.setText(text);
+    return this;
+  }
+
+  // Disabled buttons still take taps (callers may explain why), but look dim.
+  setEnabled(on) {
+    this.enabled = on;
+    this.label.setAlpha(on ? 1 : 0.4);
+    this.bg.setAlpha(on ? 1 : 0.6);
     return this;
   }
 

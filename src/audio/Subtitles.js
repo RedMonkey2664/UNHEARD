@@ -25,10 +25,13 @@ export class Subtitles {
     this.text.setMaxLines(2).setText(line).setVisible(true);
     this.strip.setSize(this.text.width + PAD * 2, this.text.height + PAD).setVisible(true);
     if (this.timer) this.timer.remove();
-    this.timer = this.scene.time.delayedCall(sec * 1000, () => this.hide());
+    this.timer = null;
+    // sec null: stays until replaced or hidden (voicemail lines).
+    if (sec != null) this.timer = this.scene.time.delayedCall(sec * 1000, () => this.hide());
   }
 
   hide() {
+    if (this.timer) this.timer.remove();
     this.text.setVisible(false);
     this.strip.setVisible(false);
     this.timer = null;

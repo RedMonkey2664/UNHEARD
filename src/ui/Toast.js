@@ -11,11 +11,11 @@ export class Toast {
     this.tween = null;
   }
 
-  show(message) {
+  show(message, sec = UI.toastSec) {
     if (this.tween) this.tween.stop();
     this.text.setText(message).setAlpha(1);
     this.tween = this.scene.tweens.add({
-      targets: this.text, alpha: 0, delay: UI.toastSec * 1000 - 300, duration: 300
+      targets: this.text, alpha: 0, delay: sec * 1000 - 300, duration: 300
     });
   }
 }

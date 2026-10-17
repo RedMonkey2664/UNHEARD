@@ -1,6 +1,7 @@
 // HUD: battery (top left), noise bar (top right), torch / sneak / phone
 // buttons (docs/07 section 1). Presence is never shown.
 
+import Phaser from 'phaser';
 import { BALANCE } from '../config/balance.js';
 import { COLORS, CSS, UI } from '../config/constants.js';
 import { textStyle } from './text.js';
@@ -18,7 +19,8 @@ class RoundButton {
     this.r = r;
     this.circle = scene.add.circle(x, y, r, COLORS.panel, 0.85).setStrokeStyle(1.5, COLORS.line);
     this.label = scene.add.text(x, y, label, textStyle({ size: 16 })).setOrigin(0.5);
-    this.circle.setInteractive({ useHandCursor: true });
+    this.circle.setInteractive({ hitArea: new Phaser.Geom.Circle(r, r, r),
+      hitAreaCallback: Phaser.Geom.Circle.Contains, useHandCursor: true });
     this.circle.on('pointerdown', () => {
       scene.tweens.add({ targets: [this.circle, this.label], scale: 0.92, duration: 60, yoyo: true });
       onTap();
@@ -33,7 +35,7 @@ class RoundButton {
   fit() {
     const minR = (UI.minTapPx * (this.scene.scale.displayScale.x || 1)) / 2;
     // Hit area is in local space, centred on (r, r) of the drawn circle.
-    if (this.circle.input) this.circle.input.hitArea.setTo(this.r, this.r, Math.max(this.r, minR));
+    if (this.circle.input) this.circle.input.hitArea.radius = Math.max(this.r, minR);
   }
 
   setActive(on) {
@@ -67,9 +69,24 @@ export class Hud {
     this.sneak = new RoundButton(scene, 24 + UI.roundButton * 1.5 + 14, y, 'Sneak', handlers.sneak);
     this.phone = new RoundButton(scene, 960 - 24 - UI.roundButton / 2, y, 'Phone', handlers.phone);
 
+    this.objective = scene.add.text(480, 28, '', textStyle({ size: 18, color: CSS.cream }))
+      .setOrigin(0.5).setAlpha(0);
+    this.dot = scene.add.circle(this.phone.circle.x + 20, this.phone.circle.y - 20, 6, COLORS.lamp)
+      .setVisible(false);
+
     this.blink = true;
     scene.time.addEvent({ delay: BLINK_MS, loop: true, callback: () => { this.blink = !this.blink; } });
     this.lastBattery = null;
+  }
+
+  showObjective(text, sec) {
+    this.scene.tweens.killTweensOf(this.objective);
+    this.objective.setText(text).setAlpha(1);
+    this.scene.tweens.add({ targets: this.objective, alpha: 0, delay: sec * 1000 - 400, duration: 400 });
+  }
+
+  setPhoneDot(on) {
+    this.dot.setVisible(on);
   }
 
   setBattery(value) {

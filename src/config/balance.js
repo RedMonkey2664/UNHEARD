@@ -125,7 +125,28 @@ export const BALANCE = {
 
   assist: { noiseMult: 0.6, vikramSpeedMult: 0.85, costMult: 0.8 },
 
-  memory: { beatHoldMs: 5000, skipAppearsAfterMs: 4000 },
+  memory: { beatHoldMs: 5000, skipAppearsAfterMs: 4000,
+            fadeMs: 600,           // fade between beats (docs/07 s11)
+            endPauseMs: 1000 },    // breath of silence before the room returns
 
-  vm: { previewSec: 3 }
+  vm: { previewSec: 3 },
+
+  puzzles: {                       // answers and ranges (section 10)
+    radio: { min: 88.0, max: 108.0, step: 0.1, solution: 94.3, tolerance: 0.1,
+             nearMhz: 1.0 },       // static quietens within this of the answer
+    cooker: { min: 0, max: 9, solution: 4 },
+    cardOrder: ['CARD_A', 'CARD_B', 'CARD_C'],
+    windowOrder: ['KITCHEN', 'BEDROOM', 'LIVING'],
+    lockerCode: '0614'
+  },
+
+  beats: { radioTuneSec: 3, windowReopenSec: 4 },   // docs/05 section 3
+
+  prologue: {                      // docs/05 section 7
+    lineSec: 3,                    // each prologue line
+    momTextAtSec: 3,               // after the fade into the Hall
+    momTextHoldSec: 6,             // auto-open time (fair-play rule: >= 6)
+    hintSec: 4,
+    objectiveSec: 5
+  }
 };

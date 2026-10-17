@@ -6,10 +6,15 @@ import { BALANCE } from '../config/balance.js';
 import { COLORS, CSS, LAYOUT, ROOM_COLORS, UI } from '../config/constants.js';
 import { ROOMS } from '../data/rooms.js';
 import { EVIDENCE, TOOLS, CARD_PIECES } from '../data/items.js';
+import { TEXTS } from '../data/texts.js';
 import { bus } from '../systems/eventBus.js';
 import { createBattery } from '../systems/battery.js';
+import { createFinalAct } from '../systems/finalAct.js';
+import { createFixPuzzles } from '../systems/fixPuzzles.js';
 import { createMovement } from '../systems/movement.js';
-import { createInteraction } from '../systems/interaction.js';
+import { checkWhen, createInteraction } from '../systems/interaction.js';
+import { createMessages } from '../systems/messages.js';
+import { createVoicemailFlow } from '../systems/voicemailFlow.js';
 import { DarknessLayer } from '../render/DarknessLayer.js';
 import { textStyle } from '../ui/text.js';
 
@@ -31,12 +36,21 @@ export class RoomScene extends Phaser.Scene {
     this.subs = [];
     this.events.once('shutdown', () => this.subs.forEach((off) => off()));
 
+    const battery = createBattery(bus);
+    const puzzles = createFixPuzzles();
+    const messages = createMessages(bus);
     this.systems = {
-      battery: createBattery(bus),
+      battery,
+      puzzles,
+      messages,
       movement: createMovement(),
-      interaction: createInteraction(bus)
+      interaction: createInteraction(bus),
+      flow: createVoicemailFlow(bus, { battery, puzzles, messages }),
+      finalAct: createFinalAct(bus, { puzzles })
     };
     this.registry.set('systems', this.systems);
+    this.memoryOpen = false;
+    this.torchHintShown = false;
 
     this.pending = null;        // { type: 'walk' | 'hotspot' | 'door', id, x }
     this.sneakToggle = false;
@@ -57,6 +71,18 @@ export class RoomScene extends Phaser.Scene {
     if (this.scene.manager.keys.Debug && !this.scene.isActive('Debug')) {
       this.scene.launch('Debug');
     }
+    this.startPrologue();
+  }
+
+  // Debug can skip the scripted opening; Mom's text still arrives.
+  startPrologue() {
+    if (this.state.flags.arrivalShown) return;
+    if (this.registry.get('skipPrologue')) {
+      this.state.flags.arrivalShown = true;
+      this.systems.messages.send(this.state, 'mom1');
+      return;
+    }
+    this.scene.launch('Prologue');
   }
 
   // --- building -----------------------------------------------------------
@@ -143,11 +169,18 @@ export class RoomScene extends Phaser.Scene {
     on('ui:sneak', () => { this.sneakToggle = !this.sneakToggle; });
     on('item:added', ({ id, kind }) => {
       const def = kind === 'tool' ? TOOLS[id] : CARD_PIECES[id];
-      if (def) bus.emit('ui:toast', { text: 'Picked up: ' + def.name });
+      if (def) bus.emit('ui:toast', { text: TEXTS.ui.pickedUp + def.name });
     });
     on('evidence:added', ({ id }) => {
-      bus.emit('ui:toast', { text: 'Evidence: ' + EVIDENCE[id].name });
+      bus.emit('ui:toast', { text: TEXTS.ui.evidence + EVIDENCE[id].name });
     });
+    // Memory freezes the room's simulation (docs/02 section 6, step 2).
+    on('memory:start', ({ vmId }) => {
+      this.memoryOpen = true;
+      this.pending = null;
+      this.scene.launch('Memory', { vmId });
+    });
+    on('memory:end', () => { this.memoryOpen = false; });
     on('debug:teleport', ({ room }) => {
       this.pending = null;
       this.systems.interaction.teleport(this.state, room, ROOMS[room].start?.x ?? W / 2);
@@ -160,7 +193,11 @@ export class RoomScene extends Phaser.Scene {
   }
 
   toggleTorch() {
-    this.systems.battery.setTorch(this.state, !this.state.torchOn);
+    const on = this.systems.battery.setTorch(this.state, !this.state.torchOn);
+    if (on && !this.torchHintShown) {
+      this.torchHintShown = true;
+      bus.emit('ui:toast', { text: TEXTS.hints.torch });
+    }
   }
 
   // E key: the nearest hotspot or door within interact range.
@@ -187,8 +224,11 @@ export class RoomScene extends Phaser.Scene {
     const dt = Math.min(deltaMs / 1000, MAX_DT) * (this.registry.get('timeScale') || 1);
     state.clock.runSeconds += dt;
 
-    if (!this.transitioning) this.stepPlayer(dt);
-    this.systems.battery.tick(state, dt);
+    if (!this.memoryOpen) {
+      if (!this.transitioning) this.stepPlayer(dt);
+      this.systems.flow.tick(state, dt);
+      this.systems.battery.tick(state, dt);
+    }
 
     this.render();
   }
@@ -223,6 +263,15 @@ export class RoomScene extends Phaser.Scene {
     const rect = this.hotspotRects.get(id);
     if (rect) this.tweens.add({ targets: rect, scaleX: 1.08, scaleY: 1.04, duration: 60, yoyo: true });
     if (result?.text) bus.emit('ui:subtitle', { who: 'YOU', text: result.text, sec: UI.examineSec });
+    this.runAction(result?.action);
+  }
+
+  // Hotspot actions that open UI or touch puzzles (docs/04 section 2).
+  runAction(action) {
+    if (!action) return;
+    if (action.openFix) bus.emit('puzzle:open', { type: action.openFix });
+    if (action.openKeypad) bus.emit('puzzle:open', { type: 'KEYPAD' });
+    if (action.closeWindow) this.systems.flow.closeWindow(this.state, action.closeWindow);
   }
 
   doDoor(id) {
@@ -259,8 +308,27 @@ export class RoomScene extends Phaser.Scene {
 
     const lightY = FLOOR - LAYOUT.lightY;
     this.darkness.draw(p.x, lightY, state.torchOn);
+    this.drawWindows();
     this.drawOutlines();
     this.drawHitboxes();
+  }
+
+  // Open windows (VM3) and the TV after VM7 get a cold tint.
+  drawWindows() {
+    const s = this.state;
+    for (const [id, rect] of this.hotspotRects) {
+      let cold = false;
+      if (id.startsWith('H_WINDOW_')) {
+        const room = id.slice('H_WINDOW_'.length);
+        cold = (checkWhen({ vmCurrent: 3 }, s) && !s.windowsClosed.includes(room)) ||
+          (room === 'LIVING' && s.flags.livingWindowReopened);
+      } else if (id === 'H_TV') {
+        cold = checkWhen({ vmDone: 7 }, s);
+      } else {
+        continue;
+      }
+      rect.setFillStyle(cold ? COLORS.cold : COLORS.lamp, cold ? 0.3 : 0.12);
+    }
   }
 
   // Torch off: outlines within outlineDistOff always (so the dark is
