@@ -74,6 +74,11 @@ export class Hud {
     this.dot = scene.add.circle(this.phone.circle.x + 20, this.phone.circle.y - 20, 6, COLORS.lamp)
       .setVisible(false);
 
+    // Faint red edge that pulses when noise >= 40 (docs/07 section 1).
+    this.vignette = scene.add.rectangle(480, 270, 960 - 12, 540 - 12)
+      .setStrokeStyle(12, COLORS.danger, 1).setAlpha(0);
+    this.pulse = 0;
+
     this.blink = true;
     scene.time.addEvent({ delay: BLINK_MS, loop: true, callback: () => { this.blink = !this.blink; } });
     this.lastBattery = null;
@@ -96,6 +101,8 @@ export class Hud {
   update(state) {
     this.drawBattery(this.lastBattery ?? Math.ceil(state.battery));
     this.drawNoise(state.noise);
+    this.pulse += 0.06;
+    this.vignette.setAlpha(state.noise >= NOISE_AMBER ? 0.12 + 0.08 * Math.sin(this.pulse) : 0);
     this.torch.setActive(state.torchOn);
     this.torch.setDisabled(state.battery <= 0);
     this.sneak.setActive(state.player.sneaking);

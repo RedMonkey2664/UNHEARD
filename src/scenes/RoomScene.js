@@ -14,7 +14,11 @@ import { createFixPuzzles } from '../systems/fixPuzzles.js';
 import { createMovement } from '../systems/movement.js';
 import { checkWhen, createInteraction } from '../systems/interaction.js';
 import { createMessages } from '../systems/messages.js';
+import { createNoise } from '../systems/noise.js';
+import { connectRules } from '../systems/rules.js';
+import { createVikramAI } from '../systems/vikramAI.js';
 import { createVoicemailFlow } from '../systems/voicemailFlow.js';
+import { createRng } from '../utils/rng.js';
 import { DarknessLayer } from '../render/DarknessLayer.js';
 import { textStyle } from '../ui/text.js';
 
@@ -24,7 +28,10 @@ const FLOOR = BALANCE.world.floorY;
 const P = BALANCE.player;
 const MAX_DT = 0.05;  // docs/02 section 6: clamp to avoid tunnelling
 
-const DEPTH = { room: 0, player: 5, dark: 10, outline: 11, debug: 12, label: 13 };
+const DEPTH = { room: 0, player: 5, dark: 10, outline: 11, vikram: 11, debug: 12, label: 13 };
+const VIKRAM_COLOR = 0xE58C79;
+const VIKRAM_W = 40;
+const VIKRAM_H = 130;
 
 export class RoomScene extends Phaser.Scene {
   constructor() {
@@ -39,7 +46,10 @@ export class RoomScene extends Phaser.Scene {
     const battery = createBattery(bus);
     const puzzles = createFixPuzzles();
     const messages = createMessages(bus);
+    const noise = createNoise(bus);
     this.systems = {
+      noise,
+      vikram: createVikramAI(bus, { noise, rng: createRng(Date.now() >>> 0) }),
       battery,
       puzzles,
       messages,
@@ -49,6 +59,8 @@ export class RoomScene extends Phaser.Scene {
       finalAct: createFinalAct(bus, { puzzles })
     };
     this.registry.set('systems', this.systems);
+    const offRules = connectRules(bus, this.systems, () => this.state);
+    this.events.once('shutdown', offRules);
     this.memoryOpen = false;
     this.torchHintShown = false;
 
@@ -58,6 +70,7 @@ export class RoomScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor(COLORS.void);
     this.buildPlayer();
+    this.buildVikram();
     this.darkness = new DarknessLayer(this, DEPTH.dark);
     this.outlines = this.add.graphics().setDepth(DEPTH.outline);
     this.debugGfx = this.add.graphics().setDepth(DEPTH.debug);
@@ -92,6 +105,14 @@ export class RoomScene extends Phaser.Scene {
       .setOrigin(0.5, 1).setDepth(DEPTH.player);
     this.playerLetter = this.add.text(0, 0, 'P', textStyle({ size: 20, color: CSS.void }))
       .setOrigin(0.5).setDepth(DEPTH.player);
+  }
+
+  // Drawn above the darkness, but only shown when the player could see him.
+  buildVikram() {
+    this.vikramRect = this.add.rectangle(0, FLOOR, VIKRAM_W, VIKRAM_H, VIKRAM_COLOR, 0.9)
+      .setOrigin(0.5, 1).setDepth(DEPTH.vikram).setVisible(false);
+    this.vikramLetter = this.add.text(0, 0, 'V', textStyle({ size: 20, color: CSS.void }))
+      .setOrigin(0.5).setDepth(DEPTH.vikram).setVisible(false);
   }
 
   buildRoom() {
@@ -226,7 +247,10 @@ export class RoomScene extends Phaser.Scene {
 
     if (!this.memoryOpen) {
       if (!this.transitioning) this.stepPlayer(dt);
+      // docs/02 section 6 order: flow, Vikram, noise, (presence), battery.
       this.systems.flow.tick(state, dt);
+      this.systems.vikram.tick(state, dt);
+      this.systems.noise.tick(state, dt);
       this.systems.battery.tick(state, dt);
     }
 
@@ -309,8 +333,22 @@ export class RoomScene extends Phaser.Scene {
     const lightY = FLOOR - LAYOUT.lightY;
     this.darkness.draw(p.x, lightY, state.torchOn);
     this.drawWindows();
+    this.drawVikram();
     this.drawOutlines();
     this.drawHitboxes();
+  }
+
+  // Visible inside the torch circle, or within sightTorchOff even in the dark.
+  drawVikram() {
+    const s = this.state;
+    const v = s.vikram;
+    const d = Math.abs(v.x - s.player.x);
+    const sameRoom = v.room === s.player.room && v.state !== 'AWAY';
+    const seen = sameRoom && !s.player.hidden &&
+      ((s.torchOn && d <= BALANCE.torch.radius) || d <= BALANCE.vikram.sightTorchOff);
+    const show = sameRoom && (seen || this.registry.get('debugShowVikram'));
+    this.vikramRect.setVisible(show).setPosition(v.x, FLOOR).setAlpha(seen ? 0.9 : 0.4);
+    this.vikramLetter.setVisible(show).setPosition(v.x, FLOOR - VIKRAM_H / 2);
   }
 
   // Open windows (VM3) and the TV after VM7 get a cold tint.

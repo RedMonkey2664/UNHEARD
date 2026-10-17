@@ -147,6 +147,17 @@ export const BALANCE = {
 
   beats: { radioTuneSec: 3, windowReopenSec: 4 },   // docs/05 section 3
 
+  footsteps: {                     // Vikram's spatial footsteps (docs/07 s8.5)
+    sameFalloff: 700,              // px over which same-room volume falls
+    sameMin: 0.45,                 // same-room volume at the far end
+    panSpan: 480,                  // px of offset for full pan
+    panMax: 0.9,
+    adjacentVolume: 0.35,
+    adjacentVolumeNoFilter: 0.25,
+    adjacentPan: 0.7,              // per room step (LIVING -1, KITCHEN 0, BEDROOM +1)
+    stepIntervalAt110: 0.55        // seconds between steps at speed 110
+  },
+
   prologue: {                      // docs/05 section 7
     lineSec: 3,                    // each prologue line
     momTextAtSec: 3,               // after the fade into the Hall

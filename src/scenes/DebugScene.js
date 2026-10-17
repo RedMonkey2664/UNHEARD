@@ -120,6 +120,23 @@ export class DebugScene extends Phaser.Scene {
     this.hitboxButton = button(view, 'Show hitboxes', () => {
       this.registry.set('debugHitboxes', !this.registry.get('debugHitboxes'));
     });
+    this.vikramButton = button(view, 'Show Vikram always', () => {
+      this.registry.set('debugShowVikram', !this.registry.get('debugShowVikram'));
+    });
+
+    const noise = section('Noise');
+    const nslider = document.createElement('input');
+    Object.assign(nslider, { type: 'range', min: '0', max: '100', step: '1' });
+    nslider.addEventListener('input', () => {
+      this.registry.get('systems').noise.set(this.state(), Number(nslider.value));
+    });
+    noise.appendChild(nslider);
+    this.noiseSlider = nslider;
+
+    const force = section('Force Vikram state');
+    for (const name of ['AWAY', 'ENTERING', 'PATROL', 'INVESTIGATE', 'SEARCH']) {
+      button(force, name, () => this.registry.get('systems').vikram.force(this.state(), name));
+    }
 
     const give = section('Give / progress');
     button(give, 'All tools', () => {
@@ -179,7 +196,9 @@ export class DebugScene extends Phaser.Scene {
       `player ${p.room} x=${p.x.toFixed(0)} hidden=${p.hidden} locked=${p.locked}`,
       `  torch=${s.torchOn} sneak=${p.sneaking} moving=${p.moving}`,
       `vikram ${v.state} ${v.room ?? '-'} x=${v.x.toFixed(0)} st=${v.stateTimer.toFixed(1)} away=${v.awayTimer.toFixed(1)}`,
-      `  route=${v.routeId} target=${v.target ?? '-'} seenHiding=${v.seenHiding}`,
+      `  route=${v.routeId}#${v.routeIndex} phase=${v.phase ?? '-'} door=${v.doorTimer.toFixed(1)}`,
+      `  target=${v.target ? v.target.room + ':' + Math.round(v.target.x) : '-'} seenHiding=${v.seenHiding}`,
+      `  path=${v.path.map((o) => (o.walk !== undefined ? 'w' + Math.round(o.walk) : '>' + o.door)).join(' ') || '-'}`,
       `flags temptation=${f.temptationShown} locker=${f.lockerOpened} tape=${f.tapeTaken}`,
       `  call=${f.callConnected} eta=${f.policeEta ?? '-'} deadAir=${f.deadAirTimer ?? '-'}`,
       `stats ${JSON.stringify(s.stats)}`,
@@ -188,12 +207,14 @@ export class DebugScene extends Phaser.Scene {
       `vm ${vms.join(' ')}`
     ].join('\n');
 
+    if (document.activeElement !== this.noiseSlider) this.noiseSlider.value = String(Math.round(s.noise));
     if (document.activeElement !== this.batterySlider) {
       this.batterySlider.value = String(Math.round(s.battery));
     }
     const scale = this.registry.get('timeScale') || 1;
     this.scaleButtons.forEach((b, i) => b.classList.toggle('on', [1, 3][i] === scale));
     this.hitboxButton.classList.toggle('on', Boolean(this.registry.get('debugHitboxes')));
+    this.vikramButton.classList.toggle('on', Boolean(this.registry.get('debugShowVikram')));
     this.assistButton.classList.toggle('on', s.settings.assist);
     this.prologueButton.classList.toggle('on', Boolean(this.registry.get('skipPrologue')));
   }

@@ -42,7 +42,9 @@ export function createState(settings = {}) {
       stateTimer: 0, awayTimer: 0,
       routeIndex: 0, routeId: 'A', cycle: 0,
       target: null, lastSeen: null,
-      seenHiding: false, doorTimer: 0
+      seenHiding: false, doorTimer: 0,
+      path: [], phase: null, searchSpots: [], refreshTimer: 0,
+      moving: false, facing: -1
     },
 
     phone: {

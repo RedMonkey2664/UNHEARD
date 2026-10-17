@@ -108,7 +108,7 @@ export function createInteraction(bus) {
       const from = state.player.room;
       state.player.room = room;
       state.player.x = x;
-      bus.emit('room:enter', { room, from });
+      bus.emit('room:enter', { room, from, teleport: true });
     }
   };
 }

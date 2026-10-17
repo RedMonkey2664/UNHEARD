@@ -131,7 +131,12 @@ Scenes and entities:
     stateTimer: 0, awayTimer: 0,
     routeIndex: 0, routeId: 'A', cycle: 0,
     target: null, lastSeen: null,
-    seenHiding: false, doorTimer: 0
+    seenHiding: false, doorTimer: 0,
+    path: [],                               // ops: {walk: x} | {door: room, toX}
+    phase: null,                            // PATROL walk|dwell, SEARCH look|goto|check
+    searchSpots: [],                        // hide spot ids left to check
+    refreshTimer: 0,                        // INVESTIGATE target refresh
+    moving: false, facing: -1
   },
 
   phone: {
@@ -245,6 +250,10 @@ emit(name, payload). Event names (colon style):
   window:closed {id}          a window was closed during the VM3 puzzle
   beat:fire {id}              a small horror beat (docs/05 section 3)
   locker:wrong {}             wrong locker code (noise spike in Stage 3)
+  vikram:keyInLock {}         key warning starts (ENTERING)
+  vikram:door {room, from}    he passed a door (from/room null = outside)
+  vikram:dwell {room}         he stopped at a route stop
+  vikram:check {spotId}       he is checking a hide spot
 
 ## 8. Darkness and torch rendering
 
@@ -347,3 +356,9 @@ All take the GameState as the first argument; bus is injected at creation.
                Results are {ok} or {ok: false, reason} where reason is a
                texts.toasts key (notYet, nothingToFix, lowBattery, wrongFix).
   finalAct     createFinalAct(bus, {puzzles}) -> {lockerUsable(s), tryCode(s, code)}
+  noise        proximity(s), isAdjacent(a, b), createNoise(bus) -> {tick(s, dt),
+               spike(s, kind), set(s, v)}
+  vikramAI     planPath(from, to, x), actParams(s), createVikramAI(bus, {noise, rng}) ->
+               {enter(s), tick(s, dt), force(s, state)}
+  rules        connectRules(bus, systems, getState) -> unsubscribe
+  footsteps    footstepMix(s, hasFilter) -> {volume, pan, muffled} | null

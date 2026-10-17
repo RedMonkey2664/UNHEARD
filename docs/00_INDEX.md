@@ -144,6 +144,13 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Stage 2: card tray order is shuffled but never already solved.
   2026-10-17  Stage 2: debug "Complete voicemail 1..N" runs the real memory-end consequences (auto evidence, Mom text 2, windows).
   2026-10-17  Stage 2: HUD round buttons use a circular hit area (bug: the default rectangle hit area broke taps).
+  2026-10-17  Stage 3a: systems/rules.js holds event-to-rule wiring (noise spikes, completed-count events) so scenes hold no rules.
+  2026-10-17  Stage 3a: Vikram's movement is a queue of {walk: x} / {door: room, toX} ops; GameState.vikram gains path, phase, searchSpots, refreshTimer, moving, facing.
+  2026-10-17  Stage 3a: hearing only starts an INVESTIGATE from PATROL; the target refreshes every 1 s while noise stays above the threshold (never mid-doorway).
+  2026-10-17  Stage 3a: after a search, noise is SET to 30 (docs/03 literal); PATROL resumes by walking back to the current route stop.
+  2026-10-17  Stage 3a: footstep numbers from docs/07 s8.5 moved into balance.footsteps; systems/footsteps.js computes volume/pan; a "[footsteps]" HUD marker shows them until Stage 6 audio.
+  2026-10-17  Stage 3a: debug teleport emits room:enter with teleport: true so it does not spike noise.
+  2026-10-17  Stage 3a: ENTERING plays the key warning every time he comes back from AWAY, not only the first time.
 
 ## Changelog
 

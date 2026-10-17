@@ -16,7 +16,10 @@ import { NoteReader } from '../ui/NoteReader.js';
 import { PhoneUI } from '../ui/PhoneUI.js';
 import { RadioDial } from '../ui/RadioDial.js';
 import { Toast } from '../ui/Toast.js';
+import { footstepMix } from '../systems/footsteps.js';
 import { createRng } from '../utils/rng.js';
+import { textStyle } from '../ui/text.js';
+import { SPEAKER_CSS } from '../config/constants.js';
 
 // Beats shown as a toast; the rest are SFX captions.
 const TOAST_BEATS = ['HANDWRITING_LATER', 'WARM_WIRE'];
@@ -51,6 +54,10 @@ export class UIScene extends Phaser.Scene {
       hints: () => this.sys_.flow.hintsFor(this.state())
     });
     this.subtitles = new Subtitles(this, 40);
+    // Visual stand-in for spatial footsteps until audio (Stage 6): position
+    // follows the real pan, opacity the real volume (docs/07 section 8.5).
+    this.steps = this.add.text(480, 96, '[footsteps]', textStyle({ size: 16, style: 'italic',
+      color: SPEAKER_CSS.SFX })).setOrigin(0.5).setAlpha(0);
     this.toast = new Toast(this, 40);
 
     const K = Phaser.Input.Keyboard.KeyCodes;
@@ -86,6 +93,7 @@ export class UIScene extends Phaser.Scene {
       if (interrupted) this.toast.show(TEXTS.toasts.lowBattery);
     });
     on('beat:fire', ({ id }) => this.beat(id));
+    on('vikram:keyInLock', () => this.subtitle('SFX', TEXTS.captions.KEY_IN_LOCK, BALANCE.vikram.keyWarningSec));
 
     this.hud.setBattery(this.state().battery);
   }
@@ -218,6 +226,9 @@ export class UIScene extends Phaser.Scene {
     const s = this.state();
     this.hud.update(s);
     this.phone.update(s);
+    const mix = footstepMix(s);
+    this.steps.setAlpha(mix ? mix.volume * (mix.muffled ? 0.7 : 1) : 0)
+      .setX(480 + (mix ? mix.pan : 0) * 400);
     this.updateVoicemailLines(s);
   }
 
