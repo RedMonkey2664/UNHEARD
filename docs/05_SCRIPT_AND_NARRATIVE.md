@@ -342,6 +342,7 @@ export const TEXTS = {
     TV_STATIC_SCARE:  '[the living room TV turns on by itself. Static.]',
     FORESHADOW:       '[far away: footsteps on the stairs. They stop. They go away.]',
     KEY_IN_LOCK:      '[a key in the lock]',
+    LAMP_TICK:        '[the lamp flickers. A soft tick.]',   // Nani's warning
     PREVIEW_CLEAN:    '[the first seconds, clear]'
   },
 
@@ -353,7 +354,9 @@ export const TEXTS = {
     skipWarning: 'Skipping lets it in.',
     temptationSub: 'Saves battery.',
     callTip: 'Hold still while it connects.',
-    emptyNotes: 'Nothing yet.'
+    emptyNotes: 'Nothing yet.',
+    hide: 'HIDE',
+    comeOut: 'COME OUT'
   }
 };
 ```

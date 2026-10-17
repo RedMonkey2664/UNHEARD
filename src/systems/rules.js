@@ -22,5 +22,14 @@ export function connectRules(bus, systems, getState) {
     if (completed === 2 && !s.flags.vikramEntered) vikram.enter(s);
   });
 
+  // Placeholder ending trigger until the resolver arrives in Stage 5.
+  on('player:caught', (s, { cause }) => {
+    if (s.flags.endingId) return;
+    s.flags.caught = true;
+    s.flags.endingId = 'CAUGHT';
+    s.flags.endingCause = cause;
+    bus.emit('ending:trigger', { id: 'CAUGHT', cause });
+  });
+
   return () => offs.forEach((off) => off());
 }

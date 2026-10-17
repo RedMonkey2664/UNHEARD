@@ -17,6 +17,8 @@ import { PhoneUI } from '../ui/PhoneUI.js';
 import { RadioDial } from '../ui/RadioDial.js';
 import { Toast } from '../ui/Toast.js';
 import { footstepMix } from '../systems/footsteps.js';
+import { nearestHideSpot } from '../systems/hideSystem.js';
+import { Button } from '../ui/Button.js';
 import { createRng } from '../utils/rng.js';
 import { textStyle } from '../ui/text.js';
 import { SPEAKER_CSS } from '../config/constants.js';
@@ -54,6 +56,10 @@ export class UIScene extends Phaser.Scene {
       hints: () => this.sys_.flow.hintsFor(this.state())
     });
     this.subtitles = new Subtitles(this, 40);
+    // Context button near the player: HIDE by a hide spot, COME OUT when hidden.
+    this.hideButton = new Button(this, 480, 250, TEXTS.ui.hide, () => bus.emit('ui:hide', {}),
+      { width: 130, height: 44, size: 18 });
+    this.hideButton.setVisible(false);
     // Visual stand-in for spatial footsteps until audio (Stage 6): position
     // follows the real pan, opacity the real volume (docs/07 section 8.5).
     this.steps = this.add.text(480, 96, '[footsteps]', textStyle({ size: 16, style: 'italic',
@@ -93,6 +99,7 @@ export class UIScene extends Phaser.Scene {
       if (interrupted) this.toast.show(TEXTS.toasts.lowBattery);
     });
     on('beat:fire', ({ id }) => this.beat(id));
+    on('ending:trigger', (p) => this.placeholderEnding(p));
     on('vikram:keyInLock', () => this.subtitle('SFX', TEXTS.captions.KEY_IN_LOCK, BALANCE.vikram.keyWarningSec));
 
     this.hud.setBattery(this.state().battery);
@@ -226,10 +233,38 @@ export class UIScene extends Phaser.Scene {
     const s = this.state();
     this.hud.update(s);
     this.phone.update(s);
+    this.updateHideButton(s);
     const mix = footstepMix(s);
     this.steps.setAlpha(mix ? mix.volume * (mix.muffled ? 0.7 : 1) : 0)
       .setX(480 + (mix ? mix.pan : 0) * 400);
     this.updateVoicemailLines(s);
+  }
+
+  updateHideButton(s) {
+    const spot = nearestHideSpot(s);
+    const show = !this.ending && (s.player.hidden || (spot && !s.player.locked));
+    if (show !== this.hideButton.bg.visible) this.hideButton.setVisible(show);
+    if (!show) return;
+    this.hideButton.setText(s.player.hidden ? TEXTS.ui.comeOut : TEXTS.ui.hide);
+    const x = Phaser.Math.Clamp(s.player.x, 80, 880);
+    this.hideButton.bg.setPosition(x, 250);
+    this.hideButton.label.setPosition(x, 250);
+  }
+
+  // Temporary end screen until EndingScene arrives in Stage 5.
+  placeholderEnding({ id, cause }) {
+    if (this.ending) return;
+    this.ending = true;
+    this.closeModal();
+    this.phone.close();
+    this.add.rectangle(480, 270, 960, 540, 0x000000, 0.92).setDepth(50).setInteractive();
+    this.add.text(480, 230, id, textStyle({ size: 40, color: SPEAKER_CSS.VIKRAM })).setOrigin(0.5).setDepth(51);
+    this.add.text(480, 290, '(' + cause + ') placeholder ending', textStyle({ size: 16, color: SPEAKER_CSS.SFX }))
+      .setOrigin(0.5).setDepth(51);
+    new Button(this, 480, 360, 'TITLE', () => {
+      this.scene.stop('Room');
+      this.scene.start('Title');
+    }, { width: 160 }).bg.setDepth(52);
   }
 
   // Subtitles follow the playback position, so pause and time scale just work.

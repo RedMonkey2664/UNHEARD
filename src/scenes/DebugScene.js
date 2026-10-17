@@ -134,7 +134,7 @@ export class DebugScene extends Phaser.Scene {
     this.noiseSlider = nslider;
 
     const force = section('Force Vikram state');
-    for (const name of ['AWAY', 'ENTERING', 'PATROL', 'INVESTIGATE', 'SEARCH']) {
+    for (const name of ['AWAY', 'ENTERING', 'PATROL', 'INVESTIGATE', 'SEARCH', 'CHASE']) {
       button(force, name, () => this.registry.get('systems').vikram.force(this.state(), name));
     }
 
@@ -159,6 +159,10 @@ export class DebugScene extends Phaser.Scene {
     this.assistButton = button(misc, 'Assist', () => {
       const s = this.state();
       s.settings.assist = !s.settings.assist;
+    });
+    this.godButton = button(misc, 'God mode', () => {
+      const s = this.state();
+      s.debug.godMode = !s.debug.godMode;
     });
     this.prologueButton = button(misc, 'Skip prologue', () => {
       this.registry.set('skipPrologue', !this.registry.get('skipPrologue'));
@@ -217,5 +221,6 @@ export class DebugScene extends Phaser.Scene {
     this.vikramButton.classList.toggle('on', Boolean(this.registry.get('debugShowVikram')));
     this.assistButton.classList.toggle('on', s.settings.assist);
     this.prologueButton.classList.toggle('on', Boolean(this.registry.get('skipPrologue')));
+    this.godButton.classList.toggle('on', s.debug.godMode);
   }
 }

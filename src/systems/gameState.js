@@ -89,7 +89,8 @@ export function createState(settings = {}) {
     messages: [],
     stats: { wrongFixes: 0, replays: 0, skippedMemories: 0, hides: 0,
              investigations: 0, evidenceCount: 0 },
-    settings: { ...DEFAULT_SETTINGS, ...settings }
+    settings: { ...DEFAULT_SETTINGS, ...settings },
+    debug: { godMode: false }
   };
 }
 

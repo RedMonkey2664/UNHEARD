@@ -30,6 +30,32 @@ export function actParams(state) {
   return V.acts[Math.min(5, Math.max(2, state.act))];
 }
 
+export function vikramSpeed(state) {
+  let s = actParams(state).speed;
+  if (state.vikram.state === 'CHASE') s *= V.chaseMult;
+  if (state.settings.assist) s *= BALANCE.assist.vikramSpeedMult;
+  return s;
+}
+
+// SIGHT (docs/03 section 6): same room, not hidden, and within 520 px with
+// the torch on or 130 px without it.
+export function canSee(state) {
+  const v = state.vikram;
+  const p = state.player;
+  if (!v.room || v.room !== p.room || p.hidden) return false;
+  const d = Math.abs(v.x - p.x);
+  return (state.torchOn && d < V.sightTorchOn) || d < V.sightTorchOff;
+}
+
+// Where a player who just left his room appears, seen from his side.
+function entryX(fromRoom, toRoom) {
+  if (toRoom === 'HALL') return ROOMS[fromRoom].doors[0].toX;
+  return ROOMS.HALL.doors.find((d) => d.to === toRoom).toX;
+}
+
+const SEEING_STATES = ['PATROL', 'INVESTIGATE', 'SEARCH'];
+const BUMP_STATES = ['PATROL', 'INVESTIGATE'];
+
 export function createVikramAI(bus, { noise }) {
   function setState(state, next) {
     const v = state.vikram;
@@ -38,11 +64,23 @@ export function createVikramAI(bus, { noise }) {
     bus.emit('vikram:state', { state: next, prev });
   }
 
-  function speed(state) {
-    let s = actParams(state).speed;
-    if (state.vikram.state === 'CHASE') s *= V.chaseMult;
-    if (state.settings.assist) s *= BALANCE.assist.vikramSpeedMult;
-    return s;
+  const speed = vikramSpeed;
+
+  // Ends the run (god mode in debug keeps him from catching anyone).
+  function catchPlayer(state) {
+    if (state.debug?.godMode) return;
+    setState(state, 'CAUGHT');
+    state.vikram.path = [];
+    bus.emit('player:caught', { cause: 'caught' });
+  }
+
+  function chase(state) {
+    const v = state.vikram;
+    v.lastSeen = { room: state.player.room, x: state.player.x };
+    v.phase = 'run';
+    v.path = [];
+    setState(state, 'CHASE');
+    bus.emit('vikram:spotted', {});
   }
 
   function goTo(state, room, x) {
@@ -119,15 +157,16 @@ export function createVikramAI(bus, { noise }) {
     return state.vikram.state === 'HUNT' || state.flags.tapeTaken ? N.investigateAtHunt : N.investigateAt;
   }
 
-  function investigate(state) {
+  // target defaults to the player's position (heard them).
+  function investigate(state, target) {
     const v = state.vikram;
     const p = state.player;
-    v.target = { room: p.room, x: p.x };
+    v.target = target || { room: p.room, x: p.x };
     v.stateTimer = V.investigateTimeout;
     v.refreshTimer = V.investigateRefreshSec;
     state.stats.investigations++;
     setState(state, 'INVESTIGATE');
-    goTo(state, p.room, p.x);
+    goTo(state, v.target.room, v.target.x);
   }
 
   function startSearch(state) {
@@ -177,7 +216,14 @@ export function createVikramAI(bus, { noise }) {
     if (v.phase === 'check') {
       v.stateTimer -= dt;
       if (v.stateTimer > 0) return null;
-      v.searchSpots.shift();
+      const id = v.searchSpots.shift();
+      const p = state.player;
+      // Found if he saw you hide, or if you are making noise.
+      if (p.hidden && p.hideSpotId === id &&
+          (v.seenHiding || state.noise >= N.hideFoundAt)) {
+        catchPlayer(state);
+        return null;
+      }
       v.phase = 'goto';
     }
     return null;
@@ -198,6 +244,37 @@ export function createVikramAI(bus, { noise }) {
       }
     }
     if (stepPath(state, dt) || v.stateTimer <= 0) startSearch(state);
+  }
+
+  function tickChase(state, dt) {
+    const v = state.vikram;
+    const p = state.player;
+    if (p.hidden) {
+      // Saw you hide: straight to that spot. Otherwise he lost you.
+      if (v.seenHiding && p.room === v.room) {
+        const spot = ROOMS[p.room].hideSpots.find((s) => s.id === p.hideSpotId);
+        v.path = [{ walk: spot.x }];
+        if (stepPath(state, dt) || Math.abs(v.x - spot.x) < V.catchDist) catchPlayer(state);
+      } else {
+        investigate(state, v.lastSeen);
+      }
+      return;
+    }
+    if (p.room === v.room && v.phase === 'run') {
+      v.lastSeen = { room: p.room, x: p.x };
+      v.path = [{ walk: p.x }];
+      stepPath(state, dt);
+      if (Math.abs(v.x - p.x) < V.catchDist) catchPlayer(state);
+      return;
+    }
+    // The player went through a door: follow through it, then investigate
+    // where they came in (the door broke his line of sight).
+    if (v.phase === 'run') {
+      v.phase = 'follow';
+      v.target = { room: p.room, x: entryX(v.room, p.room) };
+      goTo(state, v.target.room, v.target.x);
+    }
+    if (stepPath(state, dt)) investigate(state, v.target);
   }
 
   function tickPatrol(state, dt) {
@@ -261,17 +338,29 @@ export function createVikramAI(bus, { noise }) {
           return;
         case 'INVESTIGATE':
           tickInvestigate(state, dt);
-          return;
+          break;
         case 'SEARCH':
           tickSearch(state, dt);
+          break;
+        case 'CHASE':
+          tickChase(state, dt);
           return;
         default:
           return;
       }
+      if (v.state === 'CAUGHT') return;
+      const p = state.player;
+      const d = Math.abs(v.x - p.x);
+      const sameRoom = v.room === p.room && !p.hidden;
+      // Noise 100 close by, or walking into the player, ends it.
+      if (sameRoom && state.noise >= N.catchAt && d <= N.catchDist) return catchPlayer(state);
+      if (sameRoom && BUMP_STATES.includes(v.state) && d < V.catchDist) return catchPlayer(state);
+      if (SEEING_STATES.includes(v.state) && canSee(state)) return chase(state);
       // Hearing: only a patrolling Vikram starts an investigation.
       if (v.state === 'PATROL' && state.noise >= hearingThreshold(state) && noise.proximity(state) > 0) {
         investigate(state);
       }
+      return null;
     },
 
     // Debug: jump straight into a state.
@@ -292,6 +381,7 @@ export function createVikramAI(bus, { noise }) {
       if (name === 'PATROL') startPatrol(state);
       if (name === 'INVESTIGATE') investigate(state);
       if (name === 'SEARCH') startSearch(state);
+      if (name === 'CHASE') chase(state);
     }
   };
   return api;

@@ -151,6 +151,13 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Stage 3a: footstep numbers from docs/07 s8.5 moved into balance.footsteps; systems/footsteps.js computes volume/pan; a "[footsteps]" HUD marker shows them until Stage 6 audio.
   2026-10-17  Stage 3a: debug teleport emits room:enter with teleport: true so it does not spike noise.
   2026-10-17  Stage 3a: ENTERING plays the key warning every time he comes back from AWAY, not only the first time.
+  2026-10-17  Stage 3b: seenHiding is computed whenever the player hides (same room and < 260 px), not only during a chase; it matters in CHASE and in hide-spot checks.
+  2026-10-17  Stage 3b: a door during CHASE: he follows through that one door, then INVESTIGATEs where the player came in (the arrival x).
+  2026-10-17  Stage 3b: a hide spot found during SEARCH (seenHiding or noise >= 40) ends the run as CAUGHT.
+  2026-10-17  Stage 3b: catches are emitted as player:caught; rules.js turns it into ending:trigger CAUGHT (placeholder until the Stage 5 resolver).
+  2026-10-17  Stage 3b: GameState gains debug.godMode (debug panel only; blocks catches).
+  2026-10-17  Stage 3b: Nani's warning (systems/naniWarning.js) estimates his arrival from his queued path; one flicker per approach. Caption LAMP_TICK added to texts.
+  2026-10-17  Stage 3b: the HIDE / COME OUT context button follows the player's x at y 250; H toggles it on desktop.
 
 ## Changelog
 

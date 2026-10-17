@@ -187,7 +187,8 @@ Scenes and entities:
            investigations: 0, evidenceCount: 0 },
   settings: { assist: false, reduceFlash: false,
               volMaster: 1, volVoice: 1, volSfx: 1,
-              hotspotHints: true, vibration: false, subtitleSize: 'M' }
+              hotspotHints: true, vibration: false, subtitleSize: 'M' },
+  debug: { godMode: false }                  // debug panel only
 }
 ```
 
@@ -254,6 +255,8 @@ emit(name, payload). Event names (colon style):
   vikram:door {room, from}    he passed a door (from/room null = outside)
   vikram:dwell {room}         he stopped at a route stop
   vikram:check {spotId}       he is checking a hide spot
+  player:caught {cause}       a catch happened (rules turn it into ending:trigger)
+  ui:hide {}                  HIDE / COME OUT tapped
 
 ## 8. Darkness and torch rendering
 
@@ -361,4 +364,7 @@ All take the GameState as the first argument; bus is injected at creation.
   vikramAI     planPath(from, to, x), actParams(s), createVikramAI(bus, {noise, rng}) ->
                {enter(s), tick(s, dt), force(s, state)}
   rules        connectRules(bus, systems, getState) -> unsubscribe
+  hideSystem   nearestHideSpot(s), createHideSystem(bus, {battery}) -> {hide(s), unhide(s)}
+  naniWarning  secondsUntilEnters(s, room), createNaniWarning(bus) -> {tick(s)}
+  vikramAI     also canSee(s), vikramSpeed(s)
   footsteps    footstepMix(s, hasFilter) -> {volume, pan, muffled} | null

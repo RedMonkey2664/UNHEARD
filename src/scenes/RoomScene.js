@@ -11,6 +11,8 @@ import { bus } from '../systems/eventBus.js';
 import { createBattery } from '../systems/battery.js';
 import { createFinalAct } from '../systems/finalAct.js';
 import { createFixPuzzles } from '../systems/fixPuzzles.js';
+import { createHideSystem } from '../systems/hideSystem.js';
+import { createNaniWarning } from '../systems/naniWarning.js';
 import { createMovement } from '../systems/movement.js';
 import { checkWhen, createInteraction } from '../systems/interaction.js';
 import { createMessages } from '../systems/messages.js';
@@ -56,13 +58,17 @@ export class RoomScene extends Phaser.Scene {
       movement: createMovement(),
       interaction: createInteraction(bus),
       flow: createVoicemailFlow(bus, { battery, puzzles, messages }),
+      hide: createHideSystem(bus, { battery }),
+      naniWarning: createNaniWarning(bus),
       finalAct: createFinalAct(bus, { puzzles })
     };
     this.registry.set('systems', this.systems);
     const offRules = connectRules(bus, this.systems, () => this.state);
     this.events.once('shutdown', offRules);
     this.memoryOpen = false;
+    this.ended = false;
     this.torchHintShown = false;
+    this.vikramHintShown = false;
 
     this.pending = null;        // { type: 'walk' | 'hotspot' | 'door', id, x }
     this.sneakToggle = false;
@@ -73,6 +79,10 @@ export class RoomScene extends Phaser.Scene {
     this.buildVikram();
     this.darkness = new DarknessLayer(this, DEPTH.dark);
     this.outlines = this.add.graphics().setDepth(DEPTH.outline);
+    // Extra vignette while hidden (docs/02 section 8).
+    this.hideVignette = this.add.rectangle(W / 2, H / 2, W - 140, H - 140)
+      .setStrokeStyle(140, 0x000000, 0.85).setDepth(DEPTH.outline).setVisible(false);
+    this.lampFlash = this.add.rectangle(W / 2, H / 2, W, H, COLORS.lamp, 0).setDepth(DEPTH.outline);
     this.debugGfx = this.add.graphics().setDepth(DEPTH.debug);
     this.roomLabel = this.add.text(W / 2, 64, '',
       textStyle({ size: 16, color: CSS.dim })).setOrigin(0.5).setDepth(DEPTH.label).setAlpha(0.6);
@@ -173,6 +183,7 @@ export class RoomScene extends Phaser.Scene {
       this.keys.f.on('down', () => this.toggleTorch());
       this.keys.c.on('down', () => { this.sneakToggle = !this.sneakToggle; });
       this.keys.e.on('down', () => this.interactNearest());
+      this.input.keyboard.addKey(K.H).on('down', () => this.toggleHide());
     }
 
     // Taps on hotspots and doors are handled by those objects; anything else
@@ -187,6 +198,15 @@ export class RoomScene extends Phaser.Scene {
     const on = (name, fn) => this.subs.push(bus.on(name, fn));
     on('room:enter', () => this.buildRoom());
     on('ui:torch', () => this.toggleTorch());
+    on('ui:hide', () => this.toggleHide());
+    on('nani:warn', () => this.lampFlicker());
+    on('ending:trigger', () => { this.ended = true; this.pending = null; });
+    on('vikram:door', ({ room }) => {
+      if (room === this.state.player.room && !this.vikramHintShown) {
+        this.vikramHintShown = true;
+        bus.emit('ui:toast', { text: TEXTS.hints.vikram });
+      }
+    });
     on('ui:sneak', () => { this.sneakToggle = !this.sneakToggle; });
     on('item:added', ({ id, kind }) => {
       const def = kind === 'tool' ? TOOLS[id] : CARD_PIECES[id];
@@ -211,6 +231,24 @@ export class RoomScene extends Phaser.Scene {
   queue(target) {
     if (this.transitioning || this.state.player.locked) return;
     this.pending = target;
+  }
+
+  toggleHide() {
+    const { hide } = this.systems;
+    if (this.state.player.hidden) {
+      hide.unhide(this.state);
+    } else if (hide.hide(this.state)) {
+      this.pending = null;
+      if (this.state.stats.hides === 1) bus.emit('ui:toast', { text: TEXTS.hints.hide });
+    }
+  }
+
+  // Nani's warning: the lamp flickers once (two quick pulses) and ticks.
+  lampFlicker() {
+    this.tweens.killTweensOf(this.lampFlash);
+    this.lampFlash.setAlpha(0);
+    this.tweens.add({ targets: this.lampFlash, alpha: 0.18, duration: 70, yoyo: true, repeat: 1 });
+    bus.emit('ui:subtitle', { who: 'SFX', text: TEXTS.captions.LAMP_TICK, sec: 2 });
   }
 
   toggleTorch() {
@@ -245,11 +283,12 @@ export class RoomScene extends Phaser.Scene {
     const dt = Math.min(deltaMs / 1000, MAX_DT) * (this.registry.get('timeScale') || 1);
     state.clock.runSeconds += dt;
 
-    if (!this.memoryOpen) {
+    if (!this.memoryOpen && !this.ended) {
       if (!this.transitioning) this.stepPlayer(dt);
       // docs/02 section 6 order: flow, Vikram, noise, (presence), battery.
       this.systems.flow.tick(state, dt);
       this.systems.vikram.tick(state, dt);
+      this.systems.naniWarning.tick(state);
       this.systems.noise.tick(state, dt);
       this.systems.battery.tick(state, dt);
     }
@@ -334,6 +373,7 @@ export class RoomScene extends Phaser.Scene {
     this.darkness.draw(p.x, lightY, state.torchOn);
     this.drawWindows();
     this.drawVikram();
+    this.hideVignette.setVisible(p.hidden);
     this.drawOutlines();
     this.drawHitboxes();
   }
