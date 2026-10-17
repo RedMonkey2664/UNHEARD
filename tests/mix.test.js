@@ -63,7 +63,8 @@ describe('footstep mix (docs/07 section 8.5)', () => {
   it('adjacent: 0.35 (0.25 without a filter), muffled, panned by door position', () => {
     const m = footstepMix(walking('KITCHEN', 300, 'HALL', 900));
     expect(m).toMatchObject({ volume: 0.35, muffled: true });
-    expect(m.pan).toBeCloseTo((420 - 900) / 480, 6);
+    expect(m.pan).toBe(-0.9);                 // (420 - 900) / 480 = -1, clamped to -0.9
+    expect(footstepMix(walking('KITCHEN', 300, 'HALL', 600)).pan).toBeCloseTo((420 - 600) / 480, 6);
     expect(footstepMix(walking('KITCHEN', 300, 'HALL', 900), false).volume).toBe(0.25);
   });
 
