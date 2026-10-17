@@ -31,6 +31,10 @@ export function applyPreset(state, act, { flow, battery, messages, finalAct }) {
     const away = p.awayFor ?? BALANCE.vikram.acts[Math.min(Math.max(act, 2), 4)].away;
     Object.assign(v, { state: 'AWAY', room: null, path: [], awayTimer: away });
   }
-  if (p.tape && finalAct) finalAct.tryCode(state, BALANCE.puzzles.lockerCode);
+  // Act 5: tape taken, HUNT started, CALL available (skip the cinematic).
+  if (p.tape && finalAct) {
+    finalAct.tryCode(state, BALANCE.puzzles.lockerCode);
+    finalAct.skipTapeMoment(state);
+  }
   return state;
 }

@@ -174,6 +174,16 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Stage 4: Reduce flash: scares use a dark fade instead of a white frame; JS3's face is a dark silhouette.
   2026-10-17  Stage 4: manifest captions (MANIFEST_FULL, MANIFEST, HOLLOW_FADE) and texts.ui.temptation added to docs/05.
   2026-10-17  Stage 4: phone voicemail rows are 24 px tall so the PLAY #8 NOW row and its "Saves battery." line fit.
+  2026-10-17  Stage 5: endingResolver collects causes per frame and flushes at frame step 10 (LATER > CAUGHT > police); the corner event drops 'caught' and 'dead_air'. Unit tests without a resolver resolve immediately.
+  2026-10-17  Stage 5: balance.final gains tapeMomentSec (8) and endingDelaySec (0.6, the pause before the ending scene).
+  2026-10-17  Stage 5: the tape moment freezes every system except finalAct (player locked, Vikram frozen); its four lines and timings live in data/endings.js TAPE_MOMENT.
+  2026-10-17  Stage 5: HUNT: shuffled rooms (seeded rng, never the room he is in first), walk to the route stop (mid-Hall for the Hall), then SEARCH (4 s look, every hide spot). After INVESTIGATE/SEARCH/CHASE he returns to HUNT, never PATROL.
+  2026-10-17  Stage 5: CORNER is its own Vikram state: straight to the player at 160 px/s (no Assist slowdown), no sight, no catches; reaching the player resolves police_arrived before ETA 0.
+  2026-10-17  Stage 5: calling while walking is refused with "Too loud. Hold still."; moving during the 6 s connect does not drop the call (only noise >= 60 does).
+  2026-10-17  Stage 5: connecting the call clears any running dead-air timer.
+  2026-10-17  Stage 5: CALL is a green button at the top of the VOICEMAIL tab and a round HUD button; POLICE m:ss replaces it once connected.
+  2026-10-17  Stage 5: ending stage directions without on-screen lines became SFX captions or visuals; stills fall back to a warm colour field. MOM and POLICE subtitle colours added (not in docs/05).
+  2026-10-17  Stage 5: the end card saves the ending to unheard.endings when it appears; PLAY AGAIN goes to the headphone gate (a fresh state).
 
 ## Changelog
 

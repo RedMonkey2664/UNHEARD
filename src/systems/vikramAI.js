@@ -5,6 +5,7 @@
 // { door: room, toX }. A door takes doorTime, then he appears at toX.
 
 import { BALANCE } from '../config/balance.js';
+import { ROOM_IDS } from '../config/constants.js';
 import { ROOMS } from '../data/rooms.js';
 
 const V = BALANCE.vikram;
@@ -31,6 +32,8 @@ export function actParams(state) {
 }
 
 export function vikramSpeed(state) {
+  // The corner event is a fixed-speed cinematic (docs/06 section 1.6).
+  if (state.vikram.state === 'CORNER') return V.acts[5].speed;
   let s = actParams(state).speed;
   if (state.vikram.state === 'CHASE') s *= V.chaseMult;
   if (state.settings.assist) s *= BALANCE.assist.vikramSpeedMult;
@@ -53,10 +56,17 @@ function entryX(fromRoom, toRoom) {
   return ROOMS.HALL.doors.find((d) => d.to === toRoom).toX;
 }
 
-const SEEING_STATES = ['PATROL', 'INVESTIGATE', 'SEARCH'];
-const BUMP_STATES = ['PATROL', 'INVESTIGATE'];
+const SEEING_STATES = ['PATROL', 'INVESTIGATE', 'SEARCH', 'HUNT'];
+const BUMP_STATES = ['PATROL', 'INVESTIGATE', 'HUNT'];
+const HEARING_STATES = ['PATROL', 'HUNT'];
 
-export function createVikramAI(bus, { noise }) {
+// Where he stands in a room while hunting: the route stop, or mid-Hall.
+function huntStop(room) {
+  const stop = V.routes.A.find(([r]) => r === room);
+  return stop ? stop[1] : BALANCE.world.width / 2;
+}
+
+export function createVikramAI(bus, { noise, rng }) {
   function setState(state, next) {
     const v = state.vikram;
     const prev = v.state;
@@ -188,10 +198,35 @@ export function createVikramAI(bus, { noise }) {
       .map((s) => s.id);
   }
 
+  // HUNT (Act 5): rooms in a shuffled order, every hide spot in each.
+  function huntNext(state) {
+    const v = state.vikram;
+    if (!v.huntQueue.length) v.huntQueue = rng.shuffle(ROOM_IDS).filter((r) => r !== v.room);
+    const room = v.huntQueue.shift();
+    v.phase = 'walk';
+    setState(state, 'HUNT');
+    goTo(state, room, huntStop(room));
+  }
+
   function endSearch(state) {
     noise.set(state, V.noiseAfterSearch);
     state.vikram.target = null;
-    resumePatrol(state);
+    if (state.flags.tapeTaken) huntNext(state);
+    else resumePatrol(state);
+  }
+
+  // Corner event: straight to the player, even if hidden. No catches.
+  function tickCorner(state, dt) {
+    const v = state.vikram;
+    const p = state.player;
+    if (v.phase === 'reached') return;
+    if (!v.path.length) goTo(state, p.room, p.x);
+    stepPath(state, dt);
+    if (v.room === p.room && Math.abs(v.x - p.x) < V.catchDist) {
+      v.phase = 'reached';
+      v.path = [];
+      bus.emit('corner:reached', {});
+    }
   }
 
   function tickSearch(state, dt) {
@@ -308,6 +343,28 @@ export function createVikramAI(bus, { noise }) {
       bus.emit('vikram:keyInLock', {});
     },
 
+    // Act 5. Outside: back in within huntReenterSec with a slam. Patrolling
+    // or leaving: start hunting now. Busy (investigate/search/chase): those
+    // hand over to the hunt when they end.
+    startHunt(state) {
+      const v = state.vikram;
+      v.huntQueue = [];
+      if (v.state === 'AWAY') return api.reenterNow(state);
+      if (v.state === 'PATROL' || v.state === 'LEAVING') huntNext(state);
+      return true;
+    },
+
+    startCorner(state) {
+      const v = state.vikram;
+      if (!v.room) {
+        v.room = 'HALL';
+        v.x = V.enterX;
+      }
+      v.path = [];
+      v.phase = 'walk';
+      setState(state, 'CORNER');
+    },
+
     // Battery dead / Hunt: if he is outside he is back within huntReenterSec,
     // with a door slam and no key warning.
     reenterNow(state) {
@@ -337,7 +394,8 @@ export function createVikramAI(bus, { noise }) {
           v.room = 'HALL';
           v.x = V.enterX;
           bus.emit('vikram:door', { room: 'HALL', from: null });
-          startPatrol(state);
+          if (state.flags.tapeTaken) huntNext(state);
+          else startPatrol(state);
           return;
         case 'PATROL':
           tickPatrol(state, dt);
@@ -359,6 +417,12 @@ export function createVikramAI(bus, { noise }) {
         case 'CHASE':
           tickChase(state, dt);
           return;
+        case 'HUNT':
+          if (stepPath(state, dt)) startSearch(state);
+          break;
+        case 'CORNER':
+          tickCorner(state, dt);
+          return;
         default:
           return;
       }
@@ -371,7 +435,8 @@ export function createVikramAI(bus, { noise }) {
       if (sameRoom && BUMP_STATES.includes(v.state) && d < V.catchDist) return catchPlayer(state);
       if (SEEING_STATES.includes(v.state) && canSee(state)) return chase(state);
       // Hearing: only a patrolling Vikram starts an investigation.
-      if (v.state === 'PATROL' && state.noise >= hearingThreshold(state) && noise.proximity(state) > 0) {
+      if (HEARING_STATES.includes(v.state) && state.noise >= hearingThreshold(state) &&
+          noise.proximity(state) > 0) {
         investigate(state);
       }
       return null;
@@ -396,6 +461,7 @@ export function createVikramAI(bus, { noise }) {
       if (name === 'INVESTIGATE') investigate(state);
       if (name === 'SEARCH') startSearch(state);
       if (name === 'CHASE') chase(state);
+      if (name === 'HUNT') huntNext(state);
     }
   };
   return api;

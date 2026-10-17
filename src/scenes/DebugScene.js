@@ -188,6 +188,34 @@ export class DebugScene extends Phaser.Scene {
       });
     }
 
+    const fin = section('Final act / endings');
+    button(fin, 'Skip tape moment', () => this.registry.get('systems').finalAct.skipTapeMoment(this.state()));
+    button(fin, 'Connect call now', () => {
+      const s = this.state();
+      const sys = this.registry.get('systems');
+      if (sys.finalAct.call(s).ok) s.flags.callConnectTimer = 99;
+    });
+    button(fin, 'ETA -> 10 s', () => {
+      const s = this.state();
+      if (s.flags.callConnected) s.flags.policeEta = 10;
+    });
+    const trig = (cause, presence) => () => {
+      const s = this.state();
+      if (presence !== undefined) s.presence = presence;
+      const sys = this.registry.get('systems');
+      sys.endings.request(s, cause);
+      sys.endings.flush(s);
+    };
+    button(fin, 'EAT_PROPERLY', trig('police_arrived', 20));
+    button(fin, 'STATIC', trig('police_arrived', 70));
+    button(fin, 'CAUGHT (caught)', trig('caught'));
+    button(fin, 'CAUGHT (dead air)', trig('dead_air'));
+    button(fin, 'LATER (temptation)', trig('temptation'));
+    button(fin, 'LATER (presence_doom)', trig('presence_doom'));
+    button(fin, 'Ending: skip to card', () => {
+      if (this.scene.isActive('Ending')) this.scene.get('Ending').skipToCard();
+    });
+
     const misc = section('Run');
     this.assistButton = button(misc, 'Assist', () => {
       const s = this.state();
@@ -204,7 +232,7 @@ export class DebugScene extends Phaser.Scene {
   }
 
   resetRun() {
-    for (const key of ['Memory', 'Prologue']) if (this.scene.isActive(key)) this.scene.stop(key);
+    for (const key of ['Memory', 'Prologue', 'Ending']) if (this.scene.isActive(key)) this.scene.stop(key);
     this.registry.set('state', createState(this.registry.get('settings')));
     this.scene.get('Room').scene.restart();
   }

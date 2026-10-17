@@ -43,7 +43,7 @@ export function createState(settings = {}) {
       routeIndex: 0, routeId: 'A', cycle: 0,
       target: null, lastSeen: null,
       seenHiding: false, doorTimer: 0,
-      path: [], phase: null, searchSpots: [], refreshTimer: 0,
+      path: [], phase: null, searchSpots: [], refreshTimer: 0, huntQueue: [],
       moving: false, facing: -1
     },
 
@@ -75,6 +75,8 @@ export function createState(settings = {}) {
       deadAirTimer: null, manifestTimer: null,
       manifestCount: 0, manifestRoom: null,
       cornerActive: false,
+      tapeMoment: null,                 // seconds left in the tape moment
+      sirenStarted: false,
       caught: false, endingId: null, endingCause: null
     },
     presenceState: {

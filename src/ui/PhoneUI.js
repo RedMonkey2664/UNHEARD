@@ -135,7 +135,8 @@ export class PhoneUI {
     for (let id = 1; id <= VM_COUNT; id++) vms.push(state.voicemails[id].status);
     return [state.phone.tab, vms.join(), state.phone.playing, state.phone.paused,
       state.phone.playingId, state.messages.length, state.inventory.evidence.length,
-      this.actions.hints().length, state.act, state.flags.temptationShown].join('|');
+      this.actions.hints().length, state.act, state.flags.temptationShown,
+      state.flags.tapeMoment === null, state.flags.callConnecting, state.flags.callConnected].join('|');
   }
 
   rebuild(state) {
@@ -157,6 +158,14 @@ export class PhoneUI {
   buildVoicemail(state) {
     const cur = currentVmId(state);
     let y = CONTENT_Y;
+    const f = state.flags;
+    if (f.tapeTaken && f.tapeMoment === null && !f.callConnected) {
+      const b = new Button(this.scene, X0 + W / 2, y + 20, f.callConnecting ? 'CALLING 112...' : 'CALL 112',
+        () => this.actions.call(), { width: W - 16, height: 40, size: 18 });
+      b.bg.setFillStyle(0x1E5A2C, 1).setStrokeStyle(1, 0x6FCF7F);
+      this.content.add([b.bg, b.label]);
+      y += 46;
+    }
     for (let id = 1; id <= VM_COUNT + 1; id++) {
       const isEight = id === VM_COUNT + 1;
       const vm = VOICEMAILS[id];

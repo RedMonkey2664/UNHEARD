@@ -132,6 +132,8 @@ export const BALANCE = {
     cornerAtEta: 8,
     callConnectSec: 6,
     sirenAtEta: 20,
+    tapeMomentSec: 8,      // scripted tape moment (docs/06 s1.2)
+    endingDelaySec: 0.6,   // pause between ending:trigger and the ending scene
     niceEndingMaxPresence: 59   // Presence <= this -> EAT_PROPERLY
   },
 

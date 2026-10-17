@@ -11,6 +11,7 @@ import { bus } from '../systems/eventBus.js';
 import { createBattery } from '../systems/battery.js';
 import { createFinalAct } from '../systems/finalAct.js';
 import { createBarks } from '../systems/barks.js';
+import { createEndingResolver } from '../systems/endingResolver.js';
 import { createFixPuzzles } from '../systems/fixPuzzles.js';
 import { applyPreset } from '../systems/presets.js';
 import { createHideSystem } from '../systems/hideSystem.js';
@@ -69,11 +70,12 @@ export class RoomScene extends Phaser.Scene {
       movement: createMovement(),
       interaction: createInteraction(bus),
       flow: createVoicemailFlow(bus, { battery, puzzles, messages }),
+      endings: createEndingResolver(bus),
       hide: createHideSystem(bus, { battery }),
       naniWarning: createNaniWarning(bus),
       barks: createBarks(bus),
-      finalAct: createFinalAct(bus, { puzzles })
     };
+    this.systems.finalAct = createFinalAct(bus, { puzzles, battery, vikram: this.systems.vikram });
     this.registry.set('systems', this.systems);
     const offRules = connectRules(bus, this.systems, () => this.state);
     this.events.once('shutdown', offRules);
@@ -234,7 +236,7 @@ export class RoomScene extends Phaser.Scene {
     on('hollow:manifest', ({ full }) => this.manifest(full));
     on('hollow:fade', () => this.hollow.hide());
     on('beat:fire', ({ id }) => { if (id === 'TV_STATIC_SCARE') this.tvScare(); });
-    on('ending:trigger', () => { this.ended = true; this.pending = null; this.hollow.hide(); });
+    on('ending:trigger', (p) => this.goToEnding(p));
     on('vikram:door', ({ room }) => {
       if (room === this.state.player.room && !this.vikramHintShown) {
         this.vikramHintShown = true;
@@ -265,6 +267,17 @@ export class RoomScene extends Phaser.Scene {
   queue(target) {
     if (this.transitioning || this.state.player.locked) return;
     this.pending = target;
+  }
+
+  // Once an ending fires nothing else changes; the EndingScene takes over.
+  goToEnding({ id, cause }) {
+    this.ended = true;
+    this.pending = null;
+    this.hollow.hide();
+    this.time.delayedCall(BALANCE.final.endingDelaySec * 1000, () => {
+      for (const key of ['UI', 'Memory', 'Prologue']) if (this.scene.isActive(key)) this.scene.stop(key);
+      this.scene.start('Ending', { id, cause });
+    });
   }
 
   touchChai() {
@@ -386,7 +399,8 @@ export class RoomScene extends Phaser.Scene {
     state.clock.runSeconds += dt;
     this.lastDt = this.memoryOpen || this.ended ? 0 : dt;
 
-    if (!this.memoryOpen && !this.ended) {
+    const cinematic = this.systems.finalAct.inCinematic(state);
+    if (!this.memoryOpen && !this.ended && !cinematic) {
       if (!this.transitioning) this.stepPlayer(dt);
       // docs/02 section 6 order: flow, Vikram, noise, (presence), battery.
       this.systems.flow.tick(state, dt);
@@ -396,7 +410,11 @@ export class RoomScene extends Phaser.Scene {
       this.systems.noise.tick(state, dt);
       this.systems.presence.tick(state, dt);
       this.systems.battery.tick(state, dt);
+    }
+    // Steps 9 and 10: the final act (also runs the tape cinematic) and endings.
+    if (!this.memoryOpen && !this.ended) {
       this.systems.finalAct.tick(state, dt);
+      this.systems.endings.flush(state);
     }
 
     this.render();

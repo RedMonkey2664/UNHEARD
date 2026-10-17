@@ -3,20 +3,16 @@
 // scenes so the rules are testable. Returns an unsubscribe function.
 
 import { BALANCE } from '../config/balance.js';
+import { createEndingResolver } from './endingResolver.js';
 
 export function connectRules(bus, systems, getState) {
   const offs = [];
   const on = (name, fn) => offs.push(bus.on(name, (p) => fn(getState(), p || {})));
-  const { noise, vikram, barks, presence, temptation } = systems;
-
-  // Placeholder ending trigger until the resolver arrives in Stage 5.
-  function endWith(s, id, cause) {
-    if (s.flags.endingId) return;
-    s.flags.endingId = id;
-    s.flags.endingCause = cause;
-    if (id === 'CAUGHT') s.flags.caught = true;
-    bus.emit('ending:trigger', { id, cause });
-  }
+  const { noise, vikram, barks, presence, temptation, finalAct } = systems;
+  // In the game the resolver is flushed once per frame (frame step 10);
+  // without one (unit tests) causes resolve immediately.
+  const endings = systems.endings || createEndingResolver(bus, { deferred: false });
+  const end = (s, cause) => endings.request(s, cause);
 
   // Noise spikes (docs/03 section 4).
   on('hotspot:interact', (s) => noise.spike(s, 'interact'));
@@ -44,9 +40,11 @@ export function connectRules(bus, systems, getState) {
       if (vmId === 3) s.nani.ng3Until = s.clock.runSeconds + BALANCE.nani.ng3WindowSec;
     });
     on('call:failed', (s) => presence.rise(s, 'callFail'));
-    on('presence:doom', (s) => endWith(s, 'LATER', 'presence_doom'));
+    on('presence:doom', (s) => end(s, 'presence_doom'));
   }
-  on('temptation:pressed', (s) => endWith(s, 'LATER', 'temptation'));
+  on('temptation:pressed', (s) => end(s, 'temptation'));
+  on('police:arrive', (s) => end(s, 'police_arrived'));
+  if (finalAct) on('corner:reached', (s) => finalAct.cornerReached(s));
 
   // Battery dead with no call: he comes in (docs/03 section 3).
   on('battery:zero', (s) => { if (!s.flags.callConnected) vikram.reenterNow(s); });
@@ -57,7 +55,7 @@ export function connectRules(bus, systems, getState) {
     on('vikram:door', (s, { room, from }) => { if (room === 'HALL' && from === null) barks.onEnterHall(s); });
   }
 
-  on('player:caught', (s, { cause }) => endWith(s, 'CAUGHT', cause));
+  on('player:caught', (s, { cause }) => end(s, cause));
 
   return () => offs.forEach((off) => off());
 }

@@ -3,6 +3,7 @@
 
 import Phaser from 'phaser';
 import { BALANCE } from '../config/balance.js';
+import { CALL_TEXT, TAPE_MOMENT } from '../data/endings.js';
 import { TEXTS } from '../data/texts.js';
 import { VOICEMAILS } from '../data/voicemails.js';
 import { bus } from '../systems/eventBus.js';
@@ -45,7 +46,8 @@ export class UIScene extends Phaser.Scene {
     this.hud = new Hud(this, {
       torch: () => bus.emit('ui:torch', {}),
       sneak: () => bus.emit('ui:sneak', {}),
-      phone: () => this.togglePhone()
+      phone: () => this.togglePhone(),
+      call: () => this.onCall()
     });
     this.phone = new PhoneUI(this, {
       row: (id) => this.onRow(id),
@@ -53,6 +55,7 @@ export class UIScene extends Phaser.Scene {
       fix: (id) => this.onFix(id),
       play: (id) => this.onPlay(id),
       pause: () => this.sys_.flow.togglePause(this.state()),
+      call: () => this.onCall(),
       objective: () => this.showObjective(),
       hints: () => this.sys_.flow.hintsFor(this.state()),
       temptationRow: (content, x0, y, w) => this.temptationRow(content, x0, y, w)
@@ -109,7 +112,19 @@ export class UIScene extends Phaser.Scene {
       if (interrupted) this.toast.show(TEXTS.toasts.lowBattery);
     });
     on('beat:fire', ({ id }) => this.beat(id));
-    on('ending:trigger', (p) => this.placeholderEnding(p));
+    on('tape:start', () => {
+      this.phone.close();
+      TAPE_MOMENT.forEach((l) => this.time.delayedCall(l.at * 1000, () => this.subtitle(l.who, l.hi, 3)));
+    });
+    on('call:connecting', () => this.subtitle('YOU', CALL_TEXT.whisper, BALANCE.final.callConnectSec));
+    on('call:connected', () => this.subtitle('POLICE', CALL_TEXT.operator, 4));
+    on('call:failed', () => this.toast.show(TEXTS.toasts.callDropped));
+    on('siren:start', () => this.subtitle('SFX', CALL_TEXT.siren, 3));
+    on('ending:trigger', () => {
+      this.ending = true;
+      this.closeModal();
+      this.phone.close();
+    });
     on('vikram:keyInLock', () => this.subtitle('SFX', TEXTS.captions.KEY_IN_LOCK, BALANCE.vikram.keyWarningSec));
     on('vikram:doorSlam', () => this.subtitle('SFX', TEXTS.captions.DOOR_SLAM, 2));
     on('vikram:bark', ({ text }) => this.subtitle('VIKRAM', text, BARK_SEC));
@@ -292,20 +307,9 @@ export class UIScene extends Phaser.Scene {
     this.hideButton.label.setPosition(x, 250);
   }
 
-  // Temporary end screen until EndingScene arrives in Stage 5.
-  placeholderEnding({ id, cause }) {
-    if (this.ending) return;
-    this.ending = true;
-    this.closeModal();
-    this.phone.close();
-    this.add.rectangle(480, 270, 960, 540, 0x000000, 0.92).setDepth(50).setInteractive();
-    this.add.text(480, 230, id, textStyle({ size: 40, color: SPEAKER_CSS.VIKRAM })).setOrigin(0.5).setDepth(51);
-    this.add.text(480, 290, '(' + cause + ') placeholder ending', textStyle({ size: 16, color: SPEAKER_CSS.SFX }))
-      .setOrigin(0.5).setDepth(51);
-    new Button(this, 480, 360, 'TITLE', () => {
-      this.scene.stop('Room');
-      this.scene.start('Title');
-    }, { width: 160 }).bg.setDepth(52);
+  onCall() {
+    const r = this.sys_.finalAct.call(this.state());
+    if (!r.ok && TEXTS.toasts[r.reason]) this.toast.show(TEXTS.toasts[r.reason]);
   }
 
   // Subtitles follow the playback position, so pause and time scale just work.

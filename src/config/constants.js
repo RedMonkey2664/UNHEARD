@@ -69,7 +69,9 @@ export const SPEAKER_CSS = {
   VIKRAM: '#E58C79',
   HOLLOW: '#5FE0D3',
   SFX: '#9AA0A6',
-  YOU: '#C9C9C9'
+  YOU: '#C9C9C9',
+  MOM: '#E8E2D0',      // not in docs/05; neutral text colour
+  POLICE: '#C9C9C9'
 };
 
 export const ROOM_IDS = ['HALL', 'LIVING', 'KITCHEN', 'BEDROOM'];

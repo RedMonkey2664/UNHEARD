@@ -136,6 +136,7 @@ Scenes and entities:
     phase: null,                            // PATROL walk|dwell, SEARCH look|goto|check
     searchSpots: [],                        // hide spot ids left to check
     refreshTimer: 0,                        // INVESTIGATE target refresh
+    huntQueue: [],                          // HUNT: rooms left in the shuffled order
     moving: false, facing: -1
   },
 
@@ -172,6 +173,8 @@ Scenes and entities:
     manifestCount: 0,                        // full JS2 only when this is 0
     manifestRoom: null,                      // room the Hollow manifested in
     cornerActive: false,                     // corner event cinematic running
+    tapeMoment: null,                        // seconds left in the 8 s tape moment
+    sirenStarted: false,                     // ETA <= 20 siren cue fired
     caught: false, endingId: null, endingCause: null
   },
   presenceState: {
@@ -265,6 +268,9 @@ emit(name, payload). Event names (colon style):
   presence:doom {}            Presence reached 100
   hollow:fade {}              the player escaped a manifestation
   nani:offerFade {}           an ignored chai cup faded
+  tape:start {}               the 8 s tape moment begins
+  siren:start {}              ETA reached sirenAtEta
+  corner:reached {}           Vikram reached the player in the corner event
 
 ## 8. Darkness and torch rendering
 
@@ -377,7 +383,11 @@ All take the GameState as the first argument; bus is injected at creation.
   vikramAI     also canSee(s), vikramSpeed(s), reenterNow(s)
   barks        createBarks(bus) -> {say(s, set), tick(s, dt), onState(s, name), onEnterHall(s)}
   presets      applyPreset(s, act, systems)
-  finalAct     also tick(s, dt) (dead-air countdown)
+  finalAct     createFinalAct(bus, {puzzles, battery, vikram}) -> {lockerUsable, tryCode,
+               skipTapeMoment, inCinematic, canCall, call, tick, cornerReached}
+  endingResolver resolveEnding(cause, s), physicalEvidenceCount(s), epilogueKey(s),
+               createEndingResolver(bus, {deferred}) -> {request(s, cause), flush(s)}
+  vikramAI     also startHunt(s), startCorner(s)
   presence     createPresence(bus, {noise, rng}) -> {rise(s, kind), fall(s, kind), set(s, v),
                touchChai(s), tick(s, dt)}; createTemptation(bus) -> {show(s), press(s)}
   footsteps    footstepMix(s, hasFilter) -> {volume, pan, muffled} | null

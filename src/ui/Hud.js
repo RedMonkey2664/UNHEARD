@@ -68,6 +68,12 @@ export class Hud {
     this.torch = new RoundButton(scene, 24 + UI.roundButton / 2, y, 'Torch', handlers.torch);
     this.sneak = new RoundButton(scene, 24 + UI.roundButton * 1.5 + 14, y, 'Sneak', handlers.sneak);
     this.phone = new RoundButton(scene, 960 - 24 - UI.roundButton / 2, y, 'Phone', handlers.phone);
+    // CALL appears after the tape is taken; POLICE m:ss beside it once connected.
+    this.call = new RoundButton(scene, 960 - 24 - UI.roundButton * 1.5 - 14, y, 'Call', handlers.call);
+    this.callRing = scene.add.graphics();
+    this.eta = scene.add.text(this.call.circle.x - 44, y, '', textStyle({ size: 18, color: CSS.cream, align: 'right' }))
+      .setOrigin(1, 0.5);
+    this.setCallVisible(false);
 
     this.objective = scene.add.text(480, 28, '', textStyle({ size: 18, color: CSS.cream }))
       .setOrigin(0.5).setAlpha(0);
@@ -90,6 +96,33 @@ export class Hud {
     this.scene.tweens.add({ targets: this.objective, alpha: 0, delay: sec * 1000 - 400, duration: 400 });
   }
 
+  setCallVisible(on) {
+    this.call.circle.setVisible(on);
+    this.call.label.setVisible(on);
+    if (on) this.call.circle.setInteractive(); else this.call.circle.disableInteractive();
+  }
+
+  updateCall(state) {
+    const f = state.flags;
+    const show = f.tapeTaken && f.tapeMoment === null && !f.callConnected;
+    if (show !== this.call.circle.visible) this.setCallVisible(show);
+    const g = this.callRing;
+    g.clear();
+    if (f.callConnecting) {
+      const t = f.callConnectTimer / BALANCE.final.callConnectSec;
+      g.lineStyle(4, 0x6FCF7F, 1).beginPath();
+      g.arc(this.call.circle.x, this.call.circle.y, UI.roundButton / 2 + 4, -Math.PI / 2,
+        -Math.PI / 2 + Math.PI * 2 * t, false).strokePath();
+    }
+    if (f.callConnected && f.policeEta !== null) {
+      const sec = Math.ceil(f.policeEta);
+      this.eta.setText(`POLICE ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`);
+      this.eta.setX(this.phone.circle.x - 44);
+    } else {
+      this.eta.setText('');
+    }
+  }
+
   setPhoneDot(on) {
     this.dot.setVisible(on);
   }
@@ -106,6 +139,7 @@ export class Hud {
     this.torch.setActive(state.torchOn);
     this.torch.setDisabled(state.battery <= 0);
     this.sneak.setActive(state.player.sneaking);
+    this.updateCall(state);
   }
 
   drawBattery(pct) {
