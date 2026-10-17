@@ -1,0 +1,124 @@
+# UNHEARD - Spec pack index
+
+Pack version 1.0 (17 Oct 2026)
+Design: Somi. Written with Claude.
+
+## How to use this pack
+
+  1. Make an empty folder called unheard.
+  2. Put CLAUDE.md in the root of that folder.
+  3. Put every other file in unheard/docs/.
+  4. Open a terminal inside unheard and run: claude
+  5. Say: "Read CLAUDE.md and docs/00_INDEX.md, then start Stage 0 from
+     docs/08_BUILD_PLAN_AND_PROMPTS.md."
+  6. Do ONE stage at a time. Playtest after each stage. Commit after each.
+  7. When a stage is done, paste the next stage prompt from docs/08.
+
+Never ask Claude Code to "build the whole game". It will produce a mess.
+The stage prompts in docs/08 are written to avoid that.
+
+## File list
+
+  CLAUDE.md                          project rules Claude Code reads first
+  00_INDEX.md                        this file
+  01_GAME_DESIGN.md                  story, characters, motive, constraints
+  02_TECH_ARCHITECTURE.md            stack, folders, state, events, rendering
+  03_SYSTEMS_AND_BALANCE.md          every number and formula, Vikram AI
+  04_WORLD_ROOMS_AND_ITEMS.md        rooms, coordinates, puzzles, items, data
+  05_SCRIPT_AND_NARRATIVE.md         all text and voice lines, data modules
+  06_ENDINGS_AND_FINAL_ACT.md        final act, ending logic, 4 ending scripts
+  07_UI_UX_ART_AUDIO.md              HUD, phone UI, art, audio, accessibility
+  08_BUILD_PLAN_AND_PROMPTS.md       8 stages with prompts and checklists
+  09_TEST_QA_AND_DEBUG.md            debug panel, tests, tuning, release
+
+## Glossary
+
+  Nani        the player's grandmother (mother's mother). Dead. Ghost helper.
+  Vikram      Mom's cousin. Nani's nephew (she calls him by name, he calls her
+              Maasi). The human villain. Has a key to the flat.
+  The Hollow  a ghost in the voicemail static. Imitates Nani badly. Wants you
+              to rush, stay, and stop listening.
+  Mom         called "Mummy". Away at Mausi's. Only appears as text messages
+              and (in the good ending) in person.
+  VM          voicemail. VM1 to VM7 are puzzles. VM8 is the last one, played
+              only in an ending.
+  Presence    hidden 0-100 meter. How close the Hollow is.
+  Noise       visible 0-100 bar. How much Vikram can hear right now.
+  Battery     visible %. Powers torch, voicemail playback and the call.
+  Hotspot     a tappable object in a room.
+  Hide spot   a place the player can hide (wardrobe, curtain, etc).
+  Act         1 to 5. Derived from how many voicemails are done.
+  Hunt        Act 5 behaviour of Vikram after the tape recorder is taken.
+  Memory      the 20-second flashback after each voicemail.
+  Evidence    proof items E1 to E8 (see docs/04).
+
+## Locked decisions (do not re-debate)
+
+  1. Browser game, Phaser 3, JavaScript, mobile and desktop.
+  2. Side-view single-screen rooms, tap-to-walk on one horizontal floor line.
+  3. Four rooms: Hall, Living room, Kitchen, Bedroom.
+  4. Voicemails are played in a fixed order, 1 to 7. The list shows them in
+     that order. (The "season clue ordering puzzle" is a stretch goal.)
+  5. Vikram is frozen and the player cannot be caught during memory scenes.
+  6. Pressing PLAY #8 NOW ends the run immediately with the "Later" ending.
+  7. Four endings (see below).
+  8. Maximum 3 jump scares.
+  9. Subtitles are always on. Voice is Hinglish.
+ 10. Protagonist is gender-neutral. Nani says "beta" at most once per
+     voicemail. The Hollow overuses it. This is the fair-play tell.
+
+## The four endings
+
+  EAT PROPERLY  good ending. Survive, Presence under 60.
+  STATIC        bittersweet. Survive, Presence 60 to 99.
+  CAUGHT        thriller bad ending. Vikram catches you, or the battery dies.
+  LATER         horror bad ending. Pressed PLAY #8 NOW, or Presence hit 100.
+
+Note: the original brief had three endings (good, thriller-bad, horror-bad).
+A rule gap existed for "finished everything but Presence 60-99". STATIC closes
+that gap. It is derived, so it costs almost no extra work.
+
+## Stretch goals (only when the user asks)
+
+  - Season-clue ordering puzzle for the voicemails (smudged dates).
+  - Hindi / English subtitle toggle.
+  - Phone haptics on mobile when Vikram investigates.
+  - A fill-in-the-blank mini-moment in the STATIC ending.
+  - Peek-slit view while hiding.
+  - Second route for Vikram in Act 3.
+  - Achievements screen for the 4 endings.
+
+## Decisions made during build
+
+(Claude Code: append here, one line each, with the date.)
+
+  2026-10-17  localStorage unheard.settings holds every title-screen setting (assist, reduceFlash, volMaster, volVoice, volSfx, hotspotHints, vibration, subtitleSize). CLAUDE.md updated.
+  2026-10-17  GameState.settings gains hotspotHints (true), vibration (false), subtitleSize ('M').
+  2026-10-17  GameState.flags gains cardAssembled (used by rooms.js desk variants).
+  2026-10-17  GameState.flags gains livingWindowReopened (WINDOW_REOPENS beat, Living window text).
+  2026-10-17  GameState.flags gains callConnectTimer (seconds into the 6 s call connect).
+  2026-10-17  GameState.flags gains manifestCount (full JS2 only on the first manifestation).
+  2026-10-17  GameState.flags gains cornerActive (corner event running; disables caught and dead_air).
+  2026-10-17  GameState.flags gains endingCause (cause passed to ending:trigger).
+  2026-10-17  GameState gains presenceState.idleDarkTimer (idle-in-the-dark accrual).
+  2026-10-17  GameState gains presenceState.armed (per-threshold re-arm on drop).
+  2026-10-17  GameState gains presenceState.nextWhisperAt (ambient whisper schedule).
+  2026-10-17  GameState gains presenceState.ng2Shown (NG2 on first 30 crossing only).
+  2026-10-17  GameState gains hints {currentVm, damagedSeconds} (hint1/hint2 timers).
+  2026-10-17  Ending cause name is 'presence_doom' everywhere; seen-hiding lives in vikram.seenHiding.
+  2026-10-17  Ending resolver: EAT_PROPERLY iff presence <= final.niceEndingMaxPresence (59).
+  2026-10-17  JS2 full scare only on the first manifestation; later ones are sound and shape only.
+  2026-10-17  Hollow whispers H1-H8 (and the STATIC ending Hollow line) say "beta" at least twice.
+  2026-10-17  VM7 is played in Act 3; Act 4 is the locker walk. docs/01 pacing and docs/03 s14 fixed.
+  2026-10-17  SEARCH: searchTime is look-around only; hide-spot checks within the radius follow; Hunt ignores the radius.
+  2026-10-17  Battery 0 before Vikram has entered or while AWAY: he re-enters with a door slam within huntReenterSec; dead-air 25 s applies.
+  2026-10-17  New condition windowClosed: id; window hotspots say "Closed." once closed; reopened Living window has its own text.
+  2026-10-17  FIX toast for house-fixed VMs shows voicemails[n].previewLabel.
+  2026-10-17  Prose numbers moved to balance.js: player.doorFadeSec, torch.blackoutSec/blackoutEvery, noise.catchDist, vikram.keyWarningSec/huntReenterSec/investigateRefreshSec, nani.warnLeadSecAssist/ng2Sec/ng3WindowSec/ng4Dist/ng4FadeSec, hints.hint1Sec/hint2Sec, final.sirenAtEta.
+  2026-10-17  Fonts: system fallback stack; Phaser waits on document.fonts.ready for at most 1.5 s (boot.fontsTimeoutMs in constants.js).
+  2026-10-17  Project root is the folder containing CLAUDE.md; git initialised there.
+  2026-10-17  Stage 0: rotate overlay is a DOM element over the canvas (shown via CSS orientation media query + JS); Phaser game loop pauses while it shows.
+
+## Changelog
+
+  1.0  First full spec pack.
