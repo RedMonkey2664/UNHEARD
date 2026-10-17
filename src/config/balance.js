@@ -167,6 +167,35 @@ export const BALANCE = {
     stepIntervalAt110: 0.55        // seconds between steps at speed 110
   },
 
+  audio: {                         // mix levels (docs/07 s8.4), in dB
+    voicemailDb: -6,
+    barkDb: -9,
+    footstepDb: -8,                // Vikram, at 0 distance
+    playerStepDb: -14,             // player steps: softer than his
+    whisperDbAt60: -18,
+    whisperDbAt100: -8,
+    ambienceDb: -24,
+    musicDb: -20,
+    stingerDb: -6,
+    stingerDbReduced: -12,         // with Reduce flash
+    duckAmbience: 0.4,             // multipliers while a voice plays
+    duckMusic: 0.25,
+    heartbeatMax: 0.8,             // heartbeat volume = noise/100 x this
+    awayBarkGain: 0.3,             // 'away' barks through the front door
+    lowBatteryToneEvery: 20,       // seconds, below 15 percent
+    fadeSec: 0.4,                  // loop fades and ducking smoothing
+    rainDb: -18,                   // VM3 rain loop while windows are open
+    radioStaticDb: -12,            // radio dial static at full
+    radioStaticFloor: 0.15,        // static level right on 94.3
+    hiddenMuffle: 0.5,             // ambience multiplier while hidden
+    sneakStepGain: 0.5,            // player steps while sneaking
+    sirenMinGain: 0.1,             // siren level when it first fades in
+    smallSfxGain: 0.5,             // whistles, operator, low-battery tone
+    foreshadowGain: 0.15,          // distant stair steps after VM1
+    foreshadowStepMs: 600,
+    whistleGapMs: 900
+  },
+
   prologue: {                      // docs/05 section 7
     lineSec: 3,                    // each prologue line
     momTextAtSec: 3,               // after the fade into the Hall

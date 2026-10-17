@@ -221,6 +221,9 @@ export class DebugScene extends Phaser.Scene {
       const s = this.state();
       s.settings.assist = !s.settings.assist;
     });
+    this.muteButton = button(misc, 'Mute voices', () => {
+      this.registry.set('muteVoices', !this.registry.get('muteVoices'));
+    });
     this.godButton = button(misc, 'God mode', () => {
       const s = this.state();
       s.debug.godMode = !s.debug.godMode;
@@ -284,5 +287,6 @@ export class DebugScene extends Phaser.Scene {
     this.assistButton.classList.toggle('on', s.settings.assist);
     this.prologueButton.classList.toggle('on', Boolean(this.registry.get('skipPrologue')));
     this.godButton.classList.toggle('on', s.debug.godMode);
+    this.muteButton.classList.toggle('on', Boolean(this.registry.get('muteVoices')));
   }
 }

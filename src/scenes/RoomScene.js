@@ -3,7 +3,7 @@
 
 import Phaser from 'phaser';
 import { BALANCE } from '../config/balance.js';
-import { COLORS, CSS, LAYOUT, ROOM_COLORS, UI } from '../config/constants.js';
+import { COLORS, CSS, fitHeight, LAYOUT, ROOM_COLORS, UI } from '../config/constants.js';
 import { ROOMS } from '../data/rooms.js';
 import { EVIDENCE, TOOLS, CARD_PIECES } from '../data/items.js';
 import { TEXTS } from '../data/texts.js';
@@ -142,11 +142,22 @@ export class RoomScene extends Phaser.Scene {
 
   // --- building -----------------------------------------------------------
 
+  // Art replaces a placeholder when the file exists (docs/02 section 10).
+  sprite(key, depth) {
+    if (!this.textures.exists(key)) return null;
+    return fitHeight(this.add.image(0, FLOOR, key).setOrigin(0.5, 1).setDepth(depth), LAYOUT.spriteH);
+  }
+
   buildPlayer() {
     this.playerRect = this.add.rectangle(0, FLOOR, LAYOUT.playerW, LAYOUT.playerH, COLORS.cream, 0.85)
       .setOrigin(0.5, 1).setDepth(DEPTH.player);
     this.playerLetter = this.add.text(0, 0, 'P', textStyle({ size: 20, color: CSS.void }))
       .setOrigin(0.5).setDepth(DEPTH.player);
+    this.playerImg = this.sprite('spr_player', DEPTH.player);
+    if (this.playerImg) {
+      this.playerRect.setAlpha(0);
+      this.playerLetter.setAlpha(0);
+    }
   }
 
   // Drawn above the darkness, but only shown when the player could see him.
@@ -155,6 +166,8 @@ export class RoomScene extends Phaser.Scene {
       .setOrigin(0.5, 1).setDepth(DEPTH.vikram).setVisible(false);
     this.vikramLetter = this.add.text(0, 0, 'V', textStyle({ size: 20, color: CSS.void }))
       .setOrigin(0.5).setDepth(DEPTH.vikram).setVisible(false);
+    this.vikramImg = this.sprite('spr_vikram', DEPTH.vikram);
+    if (this.vikramImg) this.vikramImg.setVisible(false);
   }
 
   buildRoom() {
@@ -164,14 +177,35 @@ export class RoomScene extends Phaser.Scene {
     const layer = this.add.container(0, 0).setDepth(DEPTH.room);
     this.roomLayer = layer;
     this.hotspotRects = new Map();
+    this.overlays = new Map();
+    // With a background image the greybox shapes become invisible hit areas.
+    const art = this.textures.exists(room.bg);
+    this.roomArt = art;
+    const shown = art ? 0 : 1;
 
-    layer.add(this.add.rectangle(W / 2, H / 2, W, H, ROOM_COLORS[roomId]));
-    layer.add(this.add.rectangle(W / 2, (FLOOR + H) / 2, W, H - FLOOR, 0x000000, 0.35));
-    layer.add(this.add.text(W / 2, 150, room.label.toUpperCase(),
-      textStyle({ size: 40, color: CSS.text })).setOrigin(0.5).setAlpha(0.25));
+    if (art) {
+      layer.add(this.add.image(W / 2, H / 2, room.bg).setDisplaySize(W, H));
+    } else {
+      layer.add(this.add.rectangle(W / 2, H / 2, W, H, ROOM_COLORS[roomId]));
+      layer.add(this.add.rectangle(W / 2, (FLOOR + H) / 2, W, H - FLOOR, 0x000000, 0.35));
+      layer.add(this.add.text(W / 2, 150, room.label.toUpperCase(),
+        textStyle({ size: 40, color: CSS.text })).setOrigin(0.5).setAlpha(0.25));
+    }
     this.roomLabel.setText(room.label);
+    const overlay = (id, key) => {
+      if (!this.textures.exists(key)) return;
+      const img = this.add.image(W / 2, H / 2, key).setDisplaySize(W, H).setVisible(false);
+      layer.add(img);
+      this.overlays.set(id, img);
+    };
+    overlay('H_WINDOW_' + roomId, 'ov_window_open_' + roomId.toLowerCase());
+    if (roomId === 'LIVING') {
+      overlay('H_TV', 'ov_tv_static');
+      overlay('H_RADIO', 'ov_radio_on');
+    }
 
     for (const spot of room.hideSpots) {
+      if (art) continue;
       const r = this.add.rectangle(spot.x, FLOOR, LAYOUT.hideW, 120, 0x000000, 0.25)
         .setOrigin(0.5, 1).setStrokeStyle(1, COLORS.line);
       const t = this.add.text(spot.x, FLOOR - 128, spot.label, textStyle({ size: 16, color: CSS.dim }))
@@ -182,10 +216,10 @@ export class RoomScene extends Phaser.Scene {
     for (const door of room.doors) {
       const h = FLOOR - LAYOUT.doorTopY;
       const r = this.add.rectangle(door.x, FLOOR, LAYOUT.doorW, h, 0x000000, 0.45)
-        .setOrigin(0.5, 1).setStrokeStyle(2, COLORS.wall);
+        .setOrigin(0.5, 1).setStrokeStyle(2, COLORS.wall).setAlpha(art ? 0.001 : 1);
       const name = door.to ? ROOMS[door.to].label : 'Front door';
       const t = this.add.text(door.x, LAYOUT.doorTopY - 6, name, textStyle({ size: 16 }))
-        .setOrigin(0.5, 1);
+        .setOrigin(0.5, 1).setAlpha(shown);
       r.setInteractive({ useHandCursor: true });
       r.on('pointerdown', () => this.queue({ type: 'door', id: door.id, x: door.x }));
       layer.add([r, t]);
@@ -194,9 +228,9 @@ export class RoomScene extends Phaser.Scene {
     for (const hs of room.hotspots) {
       const h = FLOOR - LAYOUT.hotspotTopY;
       const r = this.add.rectangle(hs.x, FLOOR, hs.w, h, COLORS.lamp, 0.12)
-        .setOrigin(0.5, 1).setStrokeStyle(1, COLORS.lamp, 0.5);
+        .setOrigin(0.5, 1).setStrokeStyle(1, COLORS.lamp, 0.5).setAlpha(art ? 0.001 : 1);
       const t = this.add.text(hs.x, LAYOUT.hotspotTopY + 6, hs.label,
-        textStyle({ size: 16, wrap: Math.max(hs.w + 20, 80) })).setOrigin(0.5, 0);
+        textStyle({ size: 16, wrap: Math.max(hs.w + 20, 80) })).setOrigin(0.5, 0).setAlpha(shown);
       r.setInteractive({ useHandCursor: true });
       r.on('pointerdown', () => this.queue({ type: 'hotspot', id: hs.id, x: hs.x }));
       layer.add([r, t]);
@@ -235,7 +269,14 @@ export class RoomScene extends Phaser.Scene {
     on('nani:glimpse', (p) => this.glimpse(p));
     on('hollow:manifest', ({ full }) => this.manifest(full));
     on('hollow:fade', () => this.hollow.hide());
-    on('beat:fire', ({ id }) => { if (id === 'TV_STATIC_SCARE') this.tvScare(); });
+    on('beat:fire', ({ id }) => {
+      if (id === 'TV_STATIC_SCARE') this.tvScare();
+      const radio = this.overlays?.get('H_RADIO');
+      if (id === 'RADIO_TURNS_ON' && radio) {
+        radio.setVisible(true);
+        this.time.delayedCall(BALANCE.beats.radioTuneSec * 1000, () => radio.active && radio.setVisible(false));
+      }
+    });
     on('ending:trigger', (p) => this.goToEnding(p));
     on('vikram:door', ({ room }) => {
       if (room === this.state.player.room && !this.vikramHintShown) {
@@ -321,10 +362,11 @@ export class RoomScene extends Phaser.Scene {
     const tv = ROOMS.LIVING.hotspots.find((h) => h.id === 'H_TV');
     const face = this.hollow.face;
     face.setPosition(tv.x, LAYOUT.hotspotTopY + 50).setVisible(true).setAlpha(1);
-    if (this.state.settings.reduceFlash) face.setFillStyle(0x202020, 0.9);
+    if (this.state.settings.reduceFlash) this.hollow.darkenFace(true);
     else this.scareFlash();
     this.time.delayedCall(BALANCE.presence.js3Sec * 1000, () => {
-      face.setVisible(false).setFillStyle(0xE6E0D2, 0.9);
+      face.setVisible(false);
+      this.hollow.darkenFace(false);
     });
   }
 
@@ -411,6 +453,7 @@ export class RoomScene extends Phaser.Scene {
       this.systems.presence.tick(state, dt);
       this.systems.battery.tick(state, dt);
     }
+    this.registry.get('audio')?.update(state, dt, !this.memoryOpen && !this.ended);
     // Steps 9 and 10: the final act (also runs the tape cinematic) and endings.
     if (!this.memoryOpen && !this.ended) {
       this.systems.finalAct.tick(state, dt);
@@ -493,6 +536,7 @@ export class RoomScene extends Phaser.Scene {
     if (this.playerRect.height !== h) this.playerRect.setSize(LAYOUT.playerW, h);
     this.playerRect.setPosition(p.x, FLOOR).setVisible(!p.hidden);
     this.playerLetter.setPosition(p.x, FLOOR - h / 2).setVisible(!p.hidden);
+    if (this.playerImg) this.playerImg.setPosition(p.x, FLOOR).setVisible(!p.hidden).setFlipX(p.facing < 0);
 
     const lightY = FLOOR - LAYOUT.lightY;
     this.darkness.draw(p.x, lightY, state.torchOn);
@@ -529,6 +573,10 @@ export class RoomScene extends Phaser.Scene {
     const seen = sameRoom && !s.player.hidden &&
       ((s.torchOn && d <= BALANCE.torch.radius) || d <= BALANCE.vikram.sightTorchOff);
     const show = sameRoom && (seen || this.registry.get('debugShowVikram'));
+    if (this.vikramImg) {
+      this.vikramImg.setVisible(show).setPosition(v.x, FLOOR).setAlpha(seen ? 1 : 0.4).setFlipX(v.facing < 0);
+      return;
+    }
     this.vikramRect.setVisible(show).setPosition(v.x, FLOOR).setAlpha(seen ? 0.9 : 0.4);
     this.vikramLetter.setVisible(show).setPosition(v.x, FLOOR - VIKRAM_H / 2);
   }
@@ -547,7 +595,9 @@ export class RoomScene extends Phaser.Scene {
       } else {
         continue;
       }
-      rect.setFillStyle(cold ? COLORS.cold : COLORS.lamp, cold ? 0.3 : 0.12);
+      const ov = this.overlays.get(id);
+      if (ov) ov.setVisible(cold);
+      else if (!this.roomArt) rect.setFillStyle(cold ? COLORS.cold : COLORS.lamp, cold ? 0.3 : 0.12);
     }
   }
 

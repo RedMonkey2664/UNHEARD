@@ -2,7 +2,7 @@
 // a small warm figure (N) in a doorway or a window, and a steaming cup.
 // Never scary; soft warm rim.
 
-import { COLORS, CSS } from '../config/constants.js';
+import { COLORS, CSS, fitHeight } from '../config/constants.js';
 import { textStyle } from '../ui/text.js';
 
 const FIG_W = 24;
@@ -11,12 +11,18 @@ const FIG_H = 110;
 export class NaniGlimpse {
   constructor(scene, depth) {
     this.scene = scene;
-    this.figure = scene.add.rectangle(0, 0, FIG_W, FIG_H, COLORS.cream, 0.35)
-      .setOrigin(0.5, 1).setStrokeStyle(2, COLORS.lamp, 0.6).setDepth(depth).setVisible(false);
-    this.letter = scene.add.text(0, 0, 'N', textStyle({ size: 16, color: CSS.void }))
+    const art = scene.textures.exists('spr_nani_far');
+    this.figure = art
+      ? fitHeight(scene.add.image(0, 0, 'spr_nani_far').setOrigin(0.5, 1), FIG_H)
+      : scene.add.rectangle(0, 0, FIG_W, FIG_H, COLORS.cream, 0.35).setOrigin(0.5, 1)
+        .setStrokeStyle(2, COLORS.lamp, 0.6);
+    this.figure.setDepth(depth).setVisible(false);
+    this.letter = scene.add.text(0, 0, art ? '' : 'N', textStyle({ size: 16, color: CSS.void }))
       .setOrigin(0.5).setDepth(depth).setVisible(false);
-    this.cup = scene.add.rectangle(0, 0, 26, 30, COLORS.lamp, 0.85).setOrigin(0.5, 1)
-      .setDepth(depth).setVisible(false);
+    this.cup = scene.textures.exists('spr_nani_cup')
+      ? scene.add.image(0, 0, 'spr_nani_cup').setOrigin(0.5, 1)
+      : scene.add.rectangle(0, 0, 26, 30, COLORS.lamp, 0.85).setOrigin(0.5, 1);
+    this.cup.setDepth(depth).setVisible(false);
     this.steam = scene.add.text(0, 0, '~', textStyle({ size: 20, color: CSS.cream }))
       .setOrigin(0.5).setDepth(depth).setVisible(false);
     scene.tweens.add({ targets: this.steam, alpha: 0.2, duration: 700, yoyo: true, repeat: -1 });

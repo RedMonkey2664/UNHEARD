@@ -18,6 +18,10 @@ export class ItemPicker extends Modal {
       const x = MODAL.x + (i - (tools.length - 1) / 2) * 190;
       const b = new Button(scene, x, MODAL.y - 10, TOOLS[id].name, () => this.pick(id),
         { width: 170, height: 80, size: 18 }).addTo(this.root);
+      // Item icon (64 x 64) above the name when the art exists.
+      if (scene.textures.exists(TOOLS[id].icon)) {
+        this.root.add(scene.add.image(x, MODAL.y - 90, TOOLS[id].icon).setDisplaySize(64, 64));
+      }
       return { id, b };
     });
     this.confirm = this.button(MODAL.x, MODAL.y + 110, 'CONFIRM', () => {

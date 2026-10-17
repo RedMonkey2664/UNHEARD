@@ -10,8 +10,9 @@ const START = 100.0;
 const BAR_W = 380;
 
 export class RadioDial extends Modal {
-  constructor(scene, { onConfirm, onClose }) {
+  constructor(scene, { onConfirm, onClose, onChange }) {
     super(scene, 'Radio', onClose);
+    this.onChange = onChange;
     this.value = START;
     this.readout = this.text(MODAL.x, MODAL.y - 70, '', { size: 44, color: CSS.cream });
 
@@ -34,5 +35,6 @@ export class RadioDial extends Modal {
     this.value = round1(clamp(v, R.min, R.max));
     this.readout.setText(this.value.toFixed(1) + ' MHz');
     this.handle.setX(this.barX + ((this.value - R.min) / (R.max - R.min)) * BAR_W);
+    if (this.onChange) this.onChange(this.value);
   }
 }

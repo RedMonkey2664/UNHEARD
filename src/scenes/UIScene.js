@@ -28,6 +28,8 @@ import { SPEAKER_CSS } from '../config/constants.js';
 const TOAST_BEATS = ['HANDWRITING_LATER', 'WARM_WIRE'];
 const CAPTION_SEC = 3;
 const BARK_SEC = 2.5;
+const VIBRATE_INVESTIGATE_MS = 40;
+const VIBRATE_SPOTTED_MS = 200;
 
 export class UIScene extends Phaser.Scene {
   constructor() {
@@ -99,6 +101,12 @@ export class UIScene extends Phaser.Scene {
       this.subtitle('SFX', full ? TEXTS.captions.MANIFEST_FULL : TEXTS.captions.MANIFEST, BALANCE.presence.manifestSec);
     });
     on('hollow:fade', () => this.subtitle('SFX', TEXTS.captions.HOLLOW_FADE, 2));
+    // Spotted: a short red edge pulse; vibration only if enabled (docs/07 s5).
+    on('vikram:spotted', () => {
+      this.hud.spottedPulse();
+      this.vibrate(VIBRATE_SPOTTED_MS);
+    });
+    on('vikram:state', ({ state }) => { if (state === 'INVESTIGATE') this.vibrate(VIBRATE_INVESTIGATE_MS); });
     on('message:received', () => this.notify());
     on('memory:end', () => this.notify());
     on('act:changed', () => this.showObjective());
@@ -215,7 +223,11 @@ export class UIScene extends Phaser.Scene {
     const onClose = () => this.closeModal();
     const fix = (vmId, input) => flow.attemptFix(s, vmId, input).ok;
 
-    if (type === 'RADIO') this.modal = new RadioDial(this, { onClose, onConfirm: (v) => fix(1, v) });
+    if (type === 'RADIO') {
+      const audio = this.registry.get('audio');
+      this.modal = new RadioDial(this, { onClose, onConfirm: (v) => fix(1, v),
+        onChange: (v) => audio?.setRadio(true, v) });
+    }
     if (type === 'COOKER') this.modal = new CounterDial(this, { onClose, onConfirm: (v) => fix(4, v) });
     if (type === 'CARD') {
       this.modal = new CardAssembler(this, { onClose, order: this.shuffledCard(),
@@ -264,6 +276,7 @@ export class UIScene extends Phaser.Scene {
 
   closeModal() {
     if (!this.modal) return;
+    this.registry.get('audio')?.setRadio(false, 0);
     this.modal.destroy();
     this.modal = null;
     this.state().ui.puzzleOpen = false;
@@ -305,6 +318,11 @@ export class UIScene extends Phaser.Scene {
     const x = Phaser.Math.Clamp(s.player.x, 80, 880);
     this.hideButton.bg.setPosition(x, 250);
     this.hideButton.label.setPosition(x, 250);
+  }
+
+  vibrate(ms) {
+    if (!this.state().settings.vibration || !navigator.vibrate) return;
+    try { navigator.vibrate(ms); } catch { /* not supported */ }
   }
 
   onCall() {

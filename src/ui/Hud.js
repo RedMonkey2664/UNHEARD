@@ -96,6 +96,12 @@ export class Hud {
     this.scene.tweens.add({ targets: this.objective, alpha: 0, delay: sec * 1000 - 400, duration: 400 });
   }
 
+  spottedPulse() {
+    this.scene.tweens.killTweensOf(this.vignette);
+    this.vignette.setAlpha(0.6);
+    this.spotted = 0.3;
+  }
+
   setCallVisible(on) {
     this.call.circle.setVisible(on);
     this.call.label.setVisible(on);
@@ -135,6 +141,10 @@ export class Hud {
     this.drawBattery(this.lastBattery ?? Math.ceil(state.battery));
     this.drawNoise(state.noise);
     this.pulse += 0.06;
+    if (this.spotted > 0) {
+      this.spotted -= 1 / 60;
+      return;
+    }
     this.vignette.setAlpha(state.noise >= NOISE_AMBER ? 0.12 + 0.08 * Math.sin(this.pulse) : 0);
     this.torch.setActive(state.torchOn);
     this.torch.setDisabled(state.battery <= 0);

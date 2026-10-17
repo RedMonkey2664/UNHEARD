@@ -47,8 +47,14 @@ export class EndingScene extends Phaser.Scene {
     this.next();
   }
 
-  play(key) {
-    if (key && this.cache.audio.exists(key)) this.sound.play(key);
+  // Through AudioDirector, so missing files fall back silently on a timer.
+  play(key, channel = 'sfx') {
+    const audio = this.registry.get('audio');
+    if (key && audio) audio.play(key, { channel });
+  }
+
+  update(_t, deltaMs) {
+    this.registry.get('audio')?.update(null, deltaMs / 1000, false);
   }
 
   next() {
@@ -58,7 +64,7 @@ export class EndingScene extends Phaser.Scene {
     const beat = this.beats[this.index];
     this.showVisual(beat);
     (beat.audio || []).forEach((k) => this.play(k));
-    this.play(beat.voice);
+    this.play(beat.voice, 'voice');
     this.scheduleLines(beat);
     this.time.delayedCall(beat.hold * 1000, () => this.next());
     return null;
@@ -112,7 +118,7 @@ export class EndingScene extends Phaser.Scene {
 
     if (beat.vm8) {
       const vmLines = beat.vm8.lines || VOICEMAILS[8].lines;
-      this.time.delayedCall(beat.vm8.startAt * 1000, () => this.play('vm8'));
+      this.time.delayedCall(beat.vm8.startAt * 1000, () => this.play('vm8', 'voice'));
       vmLines.forEach((l) => this.time.delayedCall((beat.vm8.startAt + l.t) * 1000,
         () => this.subtitles.show(l.who, l.hi, null)));
       if (beat.vm8.blanks) {

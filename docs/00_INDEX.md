@@ -184,6 +184,14 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Stage 5: CALL is a green button at the top of the VOICEMAIL tab and a round HUD button; POLICE m:ss replaces it once connected.
   2026-10-17  Stage 5: ending stage directions without on-screen lines became SFX captions or visuals; stills fall back to a warm colour field. MOM and POLICE subtitle colours added (not in docs/05).
   2026-10-17  Stage 5: the end card saves the ending to unheard.endings when it appears; PLAY AGAIN goes to the headphone gate (a fresh state).
+  2026-10-17  Stage 6: mix levels from docs/07 s8.4 moved into balance.audio, plus the few extra mix choices the docs leave open (rain, radio static, muffle, siren floor, small sfx).
+  2026-10-17  Stage 6: AudioDirector is one game-level object (registry 'audio') driven by RoomScene each frame; Title and Ending scenes keep its loops fading.
+  2026-10-17  Stage 6: no low-pass filter (Phaser has none built in), so adjacent-room footsteps use the docs' no-filter level (0.25) and hiding halves ambience instead of filtering it.
+  2026-10-17  Stage 6: at Presence >= 60 a whisper (hol_1) is layered under each voicemail at the whisper gain.
+  2026-10-17  Stage 6: the visual "[footsteps]" marker stays after audio as an accessibility cue (it never lies: same pan and volume rules).
+  2026-10-17  Stage 6: spr_* files are used as single images (no sprite-sheet frames yet): the docs do not give frame sizes. Name and size the sheets and the animation can be wired.
+  2026-10-17  Stage 6: with a room background image, greybox shapes and labels hide but their hit areas stay; window/TV/radio overlays show when the file exists, else the tint fallback.
+  2026-10-17  Stage 6: verified with temporary generated test files (WAV tones, PNGs), deleted afterwards; public/assets ships empty.
 
 ## Changelog
 

@@ -60,6 +60,10 @@ export class TitleScene extends Phaser.Scene {
     this.buildSettingsPanel();
   }
 
+  update(_t, deltaMs) {
+    this.registry.get('audio')?.update(null, deltaMs / 1000, false);
+  }
+
   drawShimmer() {
     const g = this.shimmer;
     g.clear();

@@ -13,6 +13,8 @@ import { UIScene } from './scenes/UIScene.js';
 import { MemoryScene } from './scenes/MemoryScene.js';
 import { PrologueScene } from './scenes/PrologueScene.js';
 import { EndingScene } from './scenes/EndingScene.js';
+import { AudioDirector } from './audio/AudioDirector.js';
+import { bus } from './systems/eventBus.js';
 import { loadFonts } from './utils/fonts.js';
 import { watchOrientation } from './utils/orientation.js';
 import { loadSettings } from './utils/storage.js';
@@ -58,6 +60,7 @@ async function start() {
 
   game.events.once('ready', () => {
     game.sound.volume = settings.volMaster;
+    game.registry.set('audio', new AudioDirector(game, bus));
     watchOrientation(game, document.getElementById('rotate'));
   });
 }

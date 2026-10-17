@@ -53,8 +53,14 @@ export const LAYOUT = {
   playerW: 36,
   playerH: 110,
   playerSneakH: 84,
-  lightY: 70               // torch centre above the floor line
+  lightY: 70,              // torch centre above the floor line
+  spriteH: 190             // character art height at 1x (docs/07 section 7)
 };
+
+// Scales an art image to a display height, keeping its aspect.
+export function fitHeight(img, h) {
+  return img.setScale(h / Math.max(1, img.height));
+}
 
 export const ROOM_COLORS = {
   HALL: 0x1C2626,
