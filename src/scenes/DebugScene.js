@@ -110,6 +110,31 @@ export class DebugScene extends Phaser.Scene {
     bat.appendChild(slider);
     this.batterySlider = slider;
 
+    const pres = section('Presence');
+    const pslider = document.createElement('input');
+    Object.assign(pslider, { type: 'range', min: '0', max: '100', step: '1' });
+    pslider.addEventListener('input', () => {
+      this.registry.get('systems').presence.set(this.state(), Number(pslider.value));
+    });
+    pres.appendChild(pslider);
+    this.presenceSlider = pslider;
+    button(pres, '-10', () => this.registry.get('systems').presence.set(this.state(), this.state().presence - 10));
+    button(pres, '+10', () => this.registry.get('systems').presence.set(this.state(), this.state().presence + 10));
+
+    const beats = section('Fire beat');
+    for (const id of ['RADIO_TURNS_ON', 'HANDWRITING_LATER', 'WINDOW_REOPENS', 'PHANTOM_WHISTLES',
+      'REFLECTION_SCARE', 'WARM_WIRE', 'TV_STATIC_SCARE', 'FORESHADOW']) {
+      button(beats, id, () => bus.emit('beat:fire', { id }));
+    }
+    button(beats, 'JS2 manifest', () => this.registry.get('systems').presence.set(this.state(), 90));
+    button(beats, 'Show temptation', () => this.registry.get('systems').temptation.show(this.state()));
+    button(beats, 'Chai offer (45)', () => {
+      const s = this.state();
+      s.nani.lastOfferAt = -999;
+      this.registry.get('systems').presence.set(s, 40);
+      this.registry.get('systems').presence.set(s, 46);
+    });
+
     const tp = section('Teleport');
     for (const room of ROOM_IDS) button(tp, room, () => bus.emit('debug:teleport', { room }));
 
@@ -219,6 +244,7 @@ export class DebugScene extends Phaser.Scene {
       `vm ${vms.join(' ')}`
     ].join('\n');
 
+    if (document.activeElement !== this.presenceSlider) this.presenceSlider.value = String(Math.round(s.presence));
     if (document.activeElement !== this.noiseSlider) this.noiseSlider.value = String(Math.round(s.noise));
     if (document.activeElement !== this.batterySlider) {
       this.batterySlider.value = String(Math.round(s.battery));

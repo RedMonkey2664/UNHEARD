@@ -23,6 +23,12 @@ export class Subtitles {
       color: SPEAKER_CSS[who] || SPEAKER_CSS.YOU,
       style: who === 'SFX' ? 'italic' : 'normal' }));
     this.text.setMaxLines(2).setText(line).setVisible(true);
+    // The Hollow's lines jitter slightly (docs/05 section 1).
+    this.scene.tweens.killTweensOf(this.text);
+    this.text.setX(X);
+    if (who === 'HOLLOW') {
+      this.scene.tweens.add({ targets: this.text, x: X + 1.5, duration: 45, yoyo: true, repeat: -1 });
+    }
     this.strip.setSize(this.text.width + PAD * 2, this.text.height + PAD).setVisible(true);
     if (this.timer) this.timer.remove();
     this.timer = null;

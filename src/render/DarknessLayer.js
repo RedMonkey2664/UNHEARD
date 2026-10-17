@@ -12,7 +12,8 @@ const MASK_SIZE = 512;  // light_mask texture size (BootScene)
 
 export class DarknessLayer {
   constructor(scene, depth) {
-    this.radiusJitter = 0;  // FlickerController sets this from Stage 4
+    this.radiusJitter = 0;  // FlickerController sets these
+    this.blackout = false;
     try {
       this.rt = scene.add.renderTexture(0, 0, W, H).setOrigin(0, 0).setDepth(depth);
       this.light = scene.make.image({ key: 'light_mask', add: false });
@@ -31,12 +32,14 @@ export class DarknessLayer {
 
   // x, y: light centre. torchOn picks the full torch or the dim glow.
   draw(x, y, torchOn) {
-    const radius = Math.max(0, (torchOn ? T.radius : T.dimGlowRadius) + this.radiusJitter);
+    const lit = this.blackout ? 0 : (torchOn ? T.radius : T.dimGlowRadius) + this.radiusJitter;
+    const radius = Math.max(0, lit);
     const alpha = torchOn ? 1 : T.dimGlowAlpha;
 
     if (this.rt) {
       this.rt.clear();
-      this.rt.fill(COLORS.void, T.darknessAlpha);
+      this.rt.fill(COLORS.void, this.blackout ? 1 : T.darknessAlpha);
+      if (radius === 0) return;
       this.light.setPosition(x, y).setScale((radius * 2) / MASK_SIZE).setAlpha(alpha);
       this.rt.erase(this.light);
       return;

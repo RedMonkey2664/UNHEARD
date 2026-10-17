@@ -17,4 +17,20 @@ export class NoteReader extends Modal {
     this.lensTween = scene.tweens.add({ targets: this.lens, x: MODAL.x - 120, duration: 2400,
       yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   }
+
+  // JUMP SCARE 1: the lens reflects a silhouette behind you. Reduce flash:
+  // a darker silhouette and no flash frame.
+  scare(reduceFlash, sec) {
+    const s = this.scene;
+    this.lensTween.pause();
+    const fig = s.add.rectangle(this.lens.x, this.lens.y + 10, 30, 110, 0x000000, reduceFlash ? 0.95 : 0.8);
+    const head = s.add.circle(this.lens.x, this.lens.y - 55, 14, 0x000000, reduceFlash ? 0.95 : 0.8);
+    this.root.add([fig, head]);
+    if (!reduceFlash) {
+      const flash = s.add.rectangle(MODAL.x, MODAL.y, MODAL.w, MODAL.h, 0xffffff, 0.8);
+      this.root.add(flash);
+      s.tweens.add({ targets: flash, alpha: 0, duration: 120 });
+    }
+    s.time.delayedCall(sec * 1000, () => { fig.destroy(); head.destroy(); });
+  }
 }

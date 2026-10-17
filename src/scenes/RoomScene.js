@@ -24,6 +24,11 @@ import { createVikramAI } from '../systems/vikramAI.js';
 import { createVoicemailFlow } from '../systems/voicemailFlow.js';
 import { createRng } from '../utils/rng.js';
 import { DarknessLayer } from '../render/DarknessLayer.js';
+import { FlickerController } from '../render/FlickerController.js';
+import { TintLayer } from '../render/TintLayer.js';
+import { HollowEntity } from '../entities/HollowEntity.js';
+import { NaniGlimpse } from '../entities/NaniGlimpse.js';
+import { createPresence, createTemptation } from '../systems/presence.js';
 import { textStyle } from '../ui/text.js';
 
 const W = BALANCE.world.width;
@@ -32,7 +37,8 @@ const FLOOR = BALANCE.world.floorY;
 const P = BALANCE.player;
 const MAX_DT = 0.05;  // docs/02 section 6: clamp to avoid tunnelling
 
-const DEPTH = { room: 0, player: 5, dark: 10, outline: 11, vikram: 11, debug: 12, label: 13 };
+const DEPTH = { room: 0, player: 5, dark: 10, tint: 10.5, outline: 11, vikram: 11, ghost: 11.5,
+  debug: 12, label: 13, flash: 14 };
 const VIKRAM_COLOR = 0xE58C79;
 const VIKRAM_W = 40;
 const VIKRAM_H = 130;
@@ -51,9 +57,12 @@ export class RoomScene extends Phaser.Scene {
     const puzzles = createFixPuzzles();
     const messages = createMessages(bus);
     const noise = createNoise(bus);
+    const seed = Date.now() >>> 0;
     this.systems = {
       noise,
-      vikram: createVikramAI(bus, { noise, rng: createRng(Date.now() >>> 0) }),
+      presence: createPresence(bus, { noise, rng: createRng(seed ^ 0x9e37) }),
+      temptation: createTemptation(bus),
+      vikram: createVikramAI(bus, { noise, rng: createRng(seed) }),
       battery,
       puzzles,
       messages,
@@ -81,6 +90,19 @@ export class RoomScene extends Phaser.Scene {
     this.buildPlayer();
     this.buildVikram();
     this.darkness = new DarknessLayer(this, DEPTH.dark);
+    this.flicker = new FlickerController(this.darkness);
+    this.tint = new TintLayer(this, DEPTH.tint);
+    this.nani = new NaniGlimpse(this, DEPTH.ghost);
+    this.hollow = new HollowEntity(this, DEPTH.ghost);
+    this.fxRng = createRng(seed ^ 0x51ed);
+    this.shapeTimer = BALANCE.presence.shapeEvery[0];
+    this.shapeSide = 1;
+    this.lastDt = 0;
+    this.flash = this.add.rectangle(W / 2, H / 2, W, H, 0xffffff, 0).setDepth(DEPTH.flash);
+    this.chaiSteam = this.add.text(0, 0, '~', textStyle({ size: 20, color: CSS.cream }))
+      .setOrigin(0.5).setDepth(DEPTH.ghost).setVisible(false);
+    this.tweens.add({ targets: this.chaiSteam, alpha: 0.25, duration: 800, yoyo: true, repeat: -1 });
+    this.nani.cup.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.touchChai());
     this.outlines = this.add.graphics().setDepth(DEPTH.outline);
     // Extra vignette while hidden (docs/02 section 8).
     this.hideVignette = this.add.rectangle(W / 2, H / 2, W - 140, H - 140)
@@ -204,11 +226,15 @@ export class RoomScene extends Phaser.Scene {
 
   bindEvents() {
     const on = (name, fn) => this.subs.push(bus.on(name, fn));
-    on('room:enter', () => this.buildRoom());
+    on('room:enter', () => { this.buildRoom(); this.hollow.hide(); });
     on('ui:torch', () => this.toggleTorch());
     on('ui:hide', () => this.toggleHide());
     on('nani:warn', () => this.lampFlicker());
-    on('ending:trigger', () => { this.ended = true; this.pending = null; });
+    on('nani:glimpse', (p) => this.glimpse(p));
+    on('hollow:manifest', ({ full }) => this.manifest(full));
+    on('hollow:fade', () => this.hollow.hide());
+    on('beat:fire', ({ id }) => { if (id === 'TV_STATIC_SCARE') this.tvScare(); });
+    on('ending:trigger', () => { this.ended = true; this.pending = null; this.hollow.hide(); });
     on('vikram:door', ({ room }) => {
       if (room === this.state.player.room && !this.vikramHintShown) {
         this.vikramHintShown = true;
@@ -241,6 +267,68 @@ export class RoomScene extends Phaser.Scene {
     this.pending = target;
   }
 
+  touchChai() {
+    this.systems.presence.touchChai(this.state);
+  }
+
+  // --- ghosts ---------------------------------------------------------------
+
+  glimpse({ id }) {
+    const p = this.state.player;
+    if (id === 'NG2') {
+      // A thin figure in the doorway at the far side of the room, 8 s.
+      const doors = ROOMS[p.room].doors.filter((d) => !d.locked);
+      const far = doors.sort((a, b) => Math.abs(b.x - p.x) - Math.abs(a.x - p.x))[0];
+      const x = far && Math.abs(far.x - p.x) > W / 3 ? far.x : (p.x < W / 2 ? W - 60 : 60);
+      this.nani.showFigure(x, FLOOR, BALANCE.nani.ng2Sec);
+    }
+    if (id === 'NG3' && p.room === 'LIVING') {
+      // In the Living window glass: a faint reflection, a second late.
+      const win = ROOMS.LIVING.hotspots.find((h) => h.id === 'H_WINDOW_LIVING');
+      this.time.delayedCall(1000, () => this.nani.showFigure(win.x, FLOOR - 70, 3, 0.2));
+    }
+  }
+
+  // Full white flash, or a dark fade with Reduce flash (docs/05 section 6).
+  scareFlash() {
+    const reduce = this.state.settings.reduceFlash;
+    this.flash.setFillStyle(reduce ? 0x000000 : 0xffffff, 1).setAlpha(reduce ? 0.6 : 0.85);
+    this.tweens.add({ targets: this.flash, alpha: 0, duration: reduce ? 500 : 140 });
+  }
+
+  manifest(full) {
+    const p = this.state.player;
+    this.hollow.manifest(Phaser.Math.Clamp(p.x + (p.x < W / 2 ? 110 : -110), 40, W - 40), FLOOR, full);
+    if (full) this.scareFlash();
+  }
+
+  // JS3: the Hollow's face in the TV static, only if the player is there.
+  tvScare() {
+    if (this.state.player.room !== 'LIVING') return;
+    const tv = ROOMS.LIVING.hotspots.find((h) => h.id === 'H_TV');
+    const face = this.hollow.face;
+    face.setPosition(tv.x, LAYOUT.hotspotTopY + 50).setVisible(true).setAlpha(1);
+    if (this.state.settings.reduceFlash) face.setFillStyle(0x202020, 0.9);
+    else this.scareFlash();
+    this.time.delayedCall(BALANCE.presence.js3Sec * 1000, () => {
+      face.setVisible(false).setFillStyle(0xE6E0D2, 0.9);
+    });
+  }
+
+  // At Presence >= 60 a tall dark shape at the edge of the light, never at
+  // the same place twice.
+  updateShape(dt) {
+    const s = this.state;
+    if (s.presence < BALANCE.presence.thresholds.whisper || s.flags.manifestTimer !== null) return;
+    this.shapeTimer -= dt;
+    if (this.shapeTimer > 0) return;
+    this.shapeTimer = this.fxRng.range(...BALANCE.presence.shapeEvery);
+    this.shapeSide = -this.shapeSide;
+    const edge = s.torchOn ? BALANCE.torch.radius - 15 : BALANCE.torch.dimGlowRadius + 30;
+    const x = s.player.x + this.shapeSide * (edge + this.fxRng.range(-20, 20));
+    this.hollow.glimpse(Phaser.Math.Clamp(x, 20, W - 20), FLOOR, BALANCE.presence.shapeSec);
+  }
+
   toggleHide() {
     const { hide } = this.systems;
     if (this.state.player.hidden) {
@@ -270,6 +358,12 @@ export class RoomScene extends Phaser.Scene {
   // E key: the nearest hotspot or door within interact range.
   interactNearest() {
     if (this.transitioning) return;
+    const offer = this.state.nani.offer;
+    if (offer && offer.room === this.state.player.room &&
+        Math.abs(offer.x - this.state.player.x) <= P.interactRange) {
+      this.touchChai();
+      return;
+    }
     const room = ROOMS[this.state.player.room];
     const px = this.state.player.x;
     let best = null;
@@ -290,6 +384,7 @@ export class RoomScene extends Phaser.Scene {
     const state = this.state;
     const dt = Math.min(deltaMs / 1000, MAX_DT) * (this.registry.get('timeScale') || 1);
     state.clock.runSeconds += dt;
+    this.lastDt = this.memoryOpen || this.ended ? 0 : dt;
 
     if (!this.memoryOpen && !this.ended) {
       if (!this.transitioning) this.stepPlayer(dt);
@@ -299,6 +394,7 @@ export class RoomScene extends Phaser.Scene {
       this.systems.naniWarning.tick(state);
       this.systems.barks.tick(state, dt);
       this.systems.noise.tick(state, dt);
+      this.systems.presence.tick(state, dt);
       this.systems.battery.tick(state, dt);
       this.systems.finalAct.tick(state, dt);
     }
@@ -345,6 +441,7 @@ export class RoomScene extends Phaser.Scene {
     if (action.openFix) bus.emit('puzzle:open', { type: action.openFix });
     if (action.openKeypad) bus.emit('puzzle:open', { type: 'KEYPAD' });
     if (action.closeWindow) this.systems.flow.closeWindow(this.state, action.closeWindow);
+    if (action.glimpse) bus.emit('nani:glimpse', { id: action.glimpse });
   }
 
   doDoor(id) {
@@ -384,8 +481,25 @@ export class RoomScene extends Phaser.Scene {
     this.drawWindows();
     this.drawVikram();
     this.hideVignette.setVisible(p.hidden);
+    this.drawGhosts();
     this.drawOutlines();
     this.drawHitboxes();
+  }
+
+  drawGhosts() {
+    const s = this.state;
+    const dt = this.lastDt;
+    this.flicker.update(s, dt);
+    this.tint.update(s.presence, dt);
+    this.updateShape(dt);
+    // NG1: the steaming cup in the Hall until VM1 is done.
+    const chai = ROOMS.HALL.hotspots.find((h) => h.id === 'H_CHAI');
+    const ng1 = s.player.room === 'HALL' && !checkWhen({ vmDone: 1 }, s);
+    this.chaiSteam.setVisible(ng1).setPosition(chai.x, LAYOUT.hotspotTopY - 14);
+    // NG4: Nani's chai offer near the player.
+    const offer = s.nani.offer;
+    if (offer && offer.room === s.player.room) this.nani.showCup(offer.x, FLOOR);
+    else this.nani.hideCup();
   }
 
   // Visible inside the torch circle, or within sightTorchOff even in the dark.

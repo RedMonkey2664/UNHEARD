@@ -164,6 +164,16 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Stage 3c: "Pause and hide." shows in the phone during playback at noise >= 60, and as a one-off toast if the phone is closed.
   2026-10-17  Stage 3c: skip-to-act presets in systems/presets.js; they reset the run, skip the prologue and send Mom's first text.
   2026-10-17  Stage 3c: opening the locker re-derives the act (5) and emits act:changed.
+  2026-10-17  Stage 4: presentation numbers added to balance (tint block, torch.flickerEvery, presence.shapeEvery/shapeSec, js1Sec, js3Sec).
+  2026-10-17  Stage 4: presence and temptation live in systems/presence.js; all rises and falls are wired in rules.js; LATER fires through ending:trigger (placeholder screen until Stage 5).
+  2026-10-17  Stage 4: GameState gains flags.manifestRoom, nani.offer and nani.ng3Until.
+  2026-10-17  Stage 4: "idle" for dark accrual means not moving, not locked, torch off, not hidden, no puzzle, no unpaused playback.
+  2026-10-17  Stage 4: NG4 chai cup appears 120 px toward the middle of the room so it is always reachable; tap or E to touch.
+  2026-10-17  Stage 4: NG2 appears in the farthest unlocked doorway if it is more than a third of the room away, otherwise at the far wall.
+  2026-10-17  Stage 4: the note reader stays open after the VM5 fix for JUMP SCARE 1, then closes itself.
+  2026-10-17  Stage 4: Reduce flash: scares use a dark fade instead of a white frame; JS3's face is a dark silhouette.
+  2026-10-17  Stage 4: manifest captions (MANIFEST_FULL, MANIFEST, HOLLOW_FADE) and texts.ui.temptation added to docs/05.
+  2026-10-17  Stage 4: phone voicemail rows are 24 px tall so the PLAY #8 NOW row and its "Saves battery." line fit.
 
 ## Changelog
 

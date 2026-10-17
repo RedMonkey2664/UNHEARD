@@ -54,7 +54,8 @@ export class UIScene extends Phaser.Scene {
       play: (id) => this.onPlay(id),
       pause: () => this.sys_.flow.togglePause(this.state()),
       objective: () => this.showObjective(),
-      hints: () => this.sys_.flow.hintsFor(this.state())
+      hints: () => this.sys_.flow.hintsFor(this.state()),
+      temptationRow: (content, x0, y, w) => this.temptationRow(content, x0, y, w)
     });
     this.subtitles = new Subtitles(this, 40);
     // Context button near the player: HIDE by a hide spot, COME OUT when hidden.
@@ -86,7 +87,15 @@ export class UIScene extends Phaser.Scene {
       this.toast.show(TEXTS.toasts.wrongFix);
       this.modal?.shake(this.state().settings.reduceFlash);
     });
-    on('fix:success', () => this.closeModal());
+    // The note reader stays open for JUMP SCARE 1, then closes.
+    on('fix:success', ({ type }) => { if (type !== 'NOTE') this.closeModal(); });
+    on('hollow:whisper', ({ text }) => this.subtitle('HOLLOW', text, CAPTION_SEC));
+    on('nani:glimpse', ({ id }) => { if (id === 'NG1') this.subtitle('NANI', TEXTS.nani.chai, CAPTION_SEC); });
+    on('nani:touch', () => this.subtitle('NANI', TEXTS.nani.touch, CAPTION_SEC));
+    on('hollow:manifest', ({ full }) => {
+      this.subtitle('SFX', full ? TEXTS.captions.MANIFEST_FULL : TEXTS.captions.MANIFEST, BALANCE.presence.manifestSec);
+    });
+    on('hollow:fade', () => this.subtitle('SFX', TEXTS.captions.HOLLOW_FADE, 2));
     on('message:received', () => this.notify());
     on('memory:end', () => this.notify());
     on('act:changed', () => this.showObjective());
@@ -218,6 +227,18 @@ export class UIScene extends Phaser.Scene {
     }
   }
 
+  // PLAY #8 NOW (docs/07 section 3): full width, teal, slow pulse. A lie.
+  temptationRow(content, x0, y, w) {
+    const b = new Button(this, x0 + w / 2, y + 18, TEXTS.ui.temptation,
+      () => this.sys_.temptation.press(this.state()), { width: w - 16, height: 32, size: 16 });
+    b.bg.setFillStyle(0x0E3B38, 1).setStrokeStyle(1, 0x4FD1C5);
+    b.label.setColor(SPEAKER_CSS.HOLLOW);
+    const sub = this.add.text(x0 + w / 2, y + 44, TEXTS.ui.temptationSub,
+      textStyle({ size: 16, color: SPEAKER_CSS.HOLLOW })).setOrigin(0.5);
+    content.add([b.bg, b.label, sub]);
+    this.tweens.add({ targets: [b.bg, b.label], alpha: 0.55, duration: 1400, yoyo: true, repeat: -1 });
+  }
+
   // Tray order is shuffled but never already in the right order.
   shuffledCard() {
     const ids = BALANCE.puzzles.cardOrder;
@@ -238,6 +259,11 @@ export class UIScene extends Phaser.Scene {
   beat(id) {
     const text = TEXTS.captions[id];
     if (!text) return;
+    if (id === 'REFLECTION_SCARE' && this.modal instanceof NoteReader) {
+      const sec = BALANCE.presence.js1Sec;
+      this.modal.scare(this.state().settings.reduceFlash, sec);
+      this.time.delayedCall(sec * 1000 + 800, () => this.closeModal());
+    }
     if (TOAST_BEATS.includes(id)) this.toast.show(text, CAPTION_SEC);
     else this.subtitle('SFX', text, id === 'RADIO_TURNS_ON' ? BALANCE.beats.radioTuneSec : CAPTION_SEC);
   }

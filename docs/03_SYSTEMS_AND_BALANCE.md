@@ -37,7 +37,14 @@ export const BALANCE = {
     blackoutSec: 0.3,      // Presence >= 60 blackout length
     blackoutEvery: [20, 35],// random seconds between blackouts
     outlineDistOff: 80,    // torch off: hotspot outlines within this (always)
-    outlineDistOn: 120     // torch on: hotspot hint outlines (Hotspot hints setting)
+    outlineDistOn: 120,    // torch on: hotspot hint outlines (Hotspot hints setting)
+    flickerEvery: [0.15, 0.6] // Presence >= 30: seconds between radius jitters
+  },
+
+  tint: {                          // warm-to-cold grade by Presence (docs/02 s8)
+    warm: 0xFFD79A, warmAlpha: 0.10,
+    cold: 0x4FD1C5, coldAlpha: 0.30,
+    updateSec: 0.25
   },
 
   noise: {
@@ -107,7 +114,11 @@ export const BALANCE = {
     maxNaniTouches: 3,
     naniOfferCooldown: 90, // seconds between chai offers
     whisperEvery: [20, 35],// random seconds between ambient whispers
-    whisperNoise: 15       // noise added when a whisper lands during a search
+    whisperNoise: 15,      // noise added when a whisper lands during a search
+    shapeEvery: [6, 12],   // Presence >= 60: seconds between Hollow-shape glimpses
+    shapeSec: 0.8,         // how long a glimpse lasts
+    js1Sec: 0.4,           // reflection scare (docs/04 s5)
+    js3Sec: 0.5            // TV face flash (docs/05 s3)
   },
 
   nani: {

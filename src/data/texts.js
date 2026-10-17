@@ -111,6 +111,9 @@ export const TEXTS = {
     KEY_IN_LOCK:      '[a key in the lock]',
     LAMP_TICK:        '[the lamp flickers. A soft tick.]',   // Nani's warning
     DOOR_SLAM:        '[the front door slams]',
+    MANIFEST_FULL:    '[a sting of sound. Something steps into the light.]',  // JS2
+    MANIFEST:         '[the static thickens. Something is in the room.]',
+    HOLLOW_FADE:      '[the static drains away]',
     PREVIEW_CLEAN:    '[the first seconds, clear]'
   },
 
@@ -124,6 +127,7 @@ export const TEXTS = {
     callTip: 'Hold still while it connects.',
     emptyNotes: 'Nothing yet.',
     hide: 'HIDE',
-    comeOut: 'COME OUT'
+    comeOut: 'COME OUT',
+    temptation: 'PLAY #8 NOW'
   }
 };

@@ -73,7 +73,7 @@ export function createState(settings = {}) {
       callConnecting: false, callConnected: false, policeEta: null,
       callConnectTimer: 0,
       deadAirTimer: null, manifestTimer: null,
-      manifestCount: 0,
+      manifestCount: 0, manifestRoom: null,
       cornerActive: false,
       caught: false, endingId: null, endingCause: null
     },
@@ -85,7 +85,9 @@ export function createState(settings = {}) {
       ng2Shown: false
     },
     hints: { currentVm: 1, damagedSeconds: 0 },
-    nani: { touchesUsed: 0, lastOfferAt: -999 },
+    nani: { touchesUsed: 0, lastOfferAt: -999,
+            offer: null,                // NG4 chai cup: {room, x, left}
+            ng3Until: null },           // NG3 reflection window end (runSeconds)
     messages: [],
     stats: { wrongFixes: 0, replays: 0, skippedMemories: 0, hides: 0,
              investigations: 0, evidenceCount: 0 },

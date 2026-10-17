@@ -170,6 +170,7 @@ Scenes and entities:
     callConnectTimer: 0,                     // seconds into the 6 s connect
     deadAirTimer: null, manifestTimer: null,
     manifestCount: 0,                        // full JS2 only when this is 0
+    manifestRoom: null,                      // room the Hollow manifested in
     cornerActive: false,                     // corner event cinematic running
     caught: false, endingId: null, endingCause: null
   },
@@ -181,7 +182,9 @@ Scenes and entities:
     ng2Shown: false                          // NG2 fires on first crossing only
   },
   hints: { currentVm: 1, damagedSeconds: 0 },// for hint1 / hint2 timers
-  nani: { touchesUsed: 0, lastOfferAt: -999 },
+  nani: { touchesUsed: 0, lastOfferAt: -999,
+          offer: null,                       // NG4 chai cup: {room, x, left}
+          ng3Until: null },                  // NG3 reflection window end
   messages: [],                              // {from, text, time}
   stats: { wrongFixes: 0, replays: 0, skippedMemories: 0, hides: 0,
            investigations: 0, evidenceCount: 0 },
@@ -259,6 +262,9 @@ emit(name, payload). Event names (colon style):
   ui:hide {}                  HIDE / COME OUT tapped
   vikram:doorSlam {}          he is back in at once (battery dead / Hunt)
   vikram:bark {set, index, text}
+  presence:doom {}            Presence reached 100
+  hollow:fade {}              the player escaped a manifestation
+  nani:offerFade {}           an ignored chai cup faded
 
 ## 8. Darkness and torch rendering
 
@@ -372,4 +378,6 @@ All take the GameState as the first argument; bus is injected at creation.
   barks        createBarks(bus) -> {say(s, set), tick(s, dt), onState(s, name), onEnterHall(s)}
   presets      applyPreset(s, act, systems)
   finalAct     also tick(s, dt) (dead-air countdown)
+  presence     createPresence(bus, {noise, rng}) -> {rise(s, kind), fall(s, kind), set(s, v),
+               touchChai(s), tick(s, dt)}; createTemptation(bus) -> {show(s), press(s)}
   footsteps    footstepMix(s, hasFilter) -> {volume, pan, muffled} | null
