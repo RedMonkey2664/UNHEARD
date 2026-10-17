@@ -308,6 +308,20 @@ export function createVikramAI(bus, { noise }) {
       bus.emit('vikram:keyInLock', {});
     },
 
+    // Battery dead / Hunt: if he is outside he is back within huntReenterSec,
+    // with a door slam and no key warning.
+    reenterNow(state) {
+      const v = state.vikram;
+      if (v.state !== 'AWAY') return false;
+      state.flags.vikramEntered = true;
+      v.room = null;
+      v.path = [];
+      v.stateTimer = V.huntReenterSec;
+      setState(state, 'ENTERING');
+      bus.emit('vikram:doorSlam', {});
+      return true;
+    },
+
     tick(state, dt) {
       const v = state.vikram;
       switch (v.state) {

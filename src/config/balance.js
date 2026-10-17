@@ -77,6 +77,7 @@ export const BALANCE = {
     keyWarningSec: 3,      // key-in-the-lock warning before ENTERING ends
     huntReenterSec: 2,     // re-entry with a door slam when Hunt starts while AWAY
     investigateRefreshSec: 1, // target refresh while noise stays above threshold
+    awayBarkRange: 150,    // 'away' barks heard in the Hall within this of x 880
     acts: {
       2: { away: 30, speed: 110, dwell: 1.0, route: 'A' },
       3: { away: 18, speed: 125, dwell: 1.2, route: 'A' },

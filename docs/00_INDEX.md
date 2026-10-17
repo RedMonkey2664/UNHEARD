@@ -158,6 +158,12 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Stage 3b: GameState gains debug.godMode (debug panel only; blocks catches).
   2026-10-17  Stage 3b: Nani's warning (systems/naniWarning.js) estimates his arrival from his queued path; one flicker per approach. Caption LAMP_TICK added to texts.
   2026-10-17  Stage 3b: the HIDE / COME OUT context button follows the player's x at y 250; H toggles it on desktop.
+  2026-10-17  Stage 3c: battery 0 without a call brings Vikram back (door slam within huntReenterSec, any act including Act 1); full HUNT behaviour lands in Stage 5.
+  2026-10-17  Stage 3c: the dead-air timer counts down in finalAct.tick (frame step 9) and ends with player:caught cause dead_air.
+  2026-10-17  Stage 3c: barks rotate through each set in order (no randomness), 12 s global cooldown, only when audible; 'away' lines within balance.vikram.awayBarkRange (150 px, new) of the front door.
+  2026-10-17  Stage 3c: "Pause and hide." shows in the phone during playback at noise >= 60, and as a one-off toast if the phone is closed.
+  2026-10-17  Stage 3c: skip-to-act presets in systems/presets.js; they reset the run, skip the prologue and send Mom's first text.
+  2026-10-17  Stage 3c: opening the locker re-derives the act (5) and emits act:changed.
 
 ## Changelog
 

@@ -257,6 +257,8 @@ emit(name, payload). Event names (colon style):
   vikram:check {spotId}       he is checking a hide spot
   player:caught {cause}       a catch happened (rules turn it into ending:trigger)
   ui:hide {}                  HIDE / COME OUT tapped
+  vikram:doorSlam {}          he is back in at once (battery dead / Hunt)
+  vikram:bark {set, index, text}
 
 ## 8. Darkness and torch rendering
 
@@ -366,5 +368,8 @@ All take the GameState as the first argument; bus is injected at creation.
   rules        connectRules(bus, systems, getState) -> unsubscribe
   hideSystem   nearestHideSpot(s), createHideSystem(bus, {battery}) -> {hide(s), unhide(s)}
   naniWarning  secondsUntilEnters(s, room), createNaniWarning(bus) -> {tick(s)}
-  vikramAI     also canSee(s), vikramSpeed(s)
+  vikramAI     also canSee(s), vikramSpeed(s), reenterNow(s)
+  barks        createBarks(bus) -> {say(s, set), tick(s, dt), onState(s, name), onEnterHall(s)}
+  presets      applyPreset(s, act, systems)
+  finalAct     also tick(s, dt) (dead-air countdown)
   footsteps    footstepMix(s, hasFilter) -> {volume, pan, muffled} | null

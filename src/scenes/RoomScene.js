@@ -10,7 +10,9 @@ import { TEXTS } from '../data/texts.js';
 import { bus } from '../systems/eventBus.js';
 import { createBattery } from '../systems/battery.js';
 import { createFinalAct } from '../systems/finalAct.js';
+import { createBarks } from '../systems/barks.js';
 import { createFixPuzzles } from '../systems/fixPuzzles.js';
+import { applyPreset } from '../systems/presets.js';
 import { createHideSystem } from '../systems/hideSystem.js';
 import { createNaniWarning } from '../systems/naniWarning.js';
 import { createMovement } from '../systems/movement.js';
@@ -60,6 +62,7 @@ export class RoomScene extends Phaser.Scene {
       flow: createVoicemailFlow(bus, { battery, puzzles, messages }),
       hide: createHideSystem(bus, { battery }),
       naniWarning: createNaniWarning(bus),
+      barks: createBarks(bus),
       finalAct: createFinalAct(bus, { puzzles })
     };
     this.registry.set('systems', this.systems);
@@ -93,6 +96,11 @@ export class RoomScene extends Phaser.Scene {
     this.scene.launch('UI');
     if (this.scene.manager.keys.Debug && !this.scene.isActive('Debug')) {
       this.scene.launch('Debug');
+    }
+    const preset = this.registry.get('pendingPreset');
+    if (preset) {
+      this.registry.set('pendingPreset', null);
+      applyPreset(this.state, preset, this.systems);
     }
     this.startPrologue();
   }
@@ -289,8 +297,10 @@ export class RoomScene extends Phaser.Scene {
       this.systems.flow.tick(state, dt);
       this.systems.vikram.tick(state, dt);
       this.systems.naniWarning.tick(state);
+      this.systems.barks.tick(state, dt);
       this.systems.noise.tick(state, dt);
       this.systems.battery.tick(state, dt);
+      this.systems.finalAct.tick(state, dt);
     }
 
     this.render();

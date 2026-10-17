@@ -155,6 +155,14 @@ export class DebugScene extends Phaser.Scene {
       button(done, String(n), () => this.registry.get('systems').flow.debugComplete(this.state(), n));
     }
 
+    const acts = section('Skip to act (resets the run)');
+    for (let n = 1; n <= 5; n++) {
+      button(acts, 'Act ' + n, () => {
+        this.registry.set('pendingPreset', n);
+        this.resetRun();
+      });
+    }
+
     const misc = section('Run');
     this.assistButton = button(misc, 'Assist', () => {
       const s = this.state();

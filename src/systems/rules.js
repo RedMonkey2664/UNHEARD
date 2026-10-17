@@ -5,7 +5,7 @@
 export function connectRules(bus, systems, getState) {
   const offs = [];
   const on = (name, fn) => offs.push(bus.on(name, (p) => fn(getState(), p || {})));
-  const { noise, vikram } = systems;
+  const { noise, vikram, barks } = systems;
 
   // Noise spikes (docs/03 section 4).
   on('hotspot:interact', (s) => noise.spike(s, 'interact'));
@@ -21,6 +21,15 @@ export function connectRules(bus, systems, getState) {
     }
     if (completed === 2 && !s.flags.vikramEntered) vikram.enter(s);
   });
+
+  // Battery dead with no call: he comes in (docs/03 section 3).
+  on('battery:zero', (s) => { if (!s.flags.callConnected) vikram.reenterNow(s); });
+
+  // Barks on state changes and when he steps into the Hall.
+  if (barks) {
+    on('vikram:state', (s, { state: name }) => barks.onState(s, name));
+    on('vikram:door', (s, { room, from }) => { if (room === 'HALL' && from === null) barks.onEnterHall(s); });
+  }
 
   // Placeholder ending trigger until the resolver arrives in Stage 5.
   on('player:caught', (s, { cause }) => {

@@ -3,6 +3,7 @@
 // keeps running behind it.
 
 import Phaser from 'phaser';
+import { BALANCE } from '../config/balance.js';
 import { COLORS, CSS } from '../config/constants.js';
 import { EVIDENCE } from '../data/items.js';
 import { TEXTS } from '../data/texts.js';
@@ -48,6 +49,10 @@ export class PhoneUI {
     this.root.add(this.content);
     this.progress = scene.add.graphics();
     this.root.add(this.progress);
+    // Reacts to noise, not to Vikram's state, so the AI is never revealed.
+    this.pauseHint = scene.add.text(X0 + W / 2, Y0 + H - 16, TEXTS.ui.pauseHint,
+      textStyle({ size: 16, color: '#E58C79' })).setOrigin(0.5).setVisible(false);
+    this.root.add(this.pauseHint);
 
     // NOTES and MESSAGES can be longer than the panel: mask and drag to scroll.
     const maskShape = scene.make.graphics({ add: false });
@@ -120,6 +125,8 @@ export class PhoneUI {
       this.rebuild(state);
     }
     this.drawProgress(state);
+    this.pauseHint.setVisible(state.phone.playing && !state.phone.paused &&
+      state.noise >= BALANCE.noise.investigateAt);
   }
 
   // Rebuild only when something the panel shows has changed.

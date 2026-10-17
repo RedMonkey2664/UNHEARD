@@ -26,6 +26,7 @@ import { SPEAKER_CSS } from '../config/constants.js';
 // Beats shown as a toast; the rest are SFX captions.
 const TOAST_BEATS = ['HANDWRITING_LATER', 'WARM_WIRE'];
 const CAPTION_SEC = 3;
+const BARK_SEC = 2.5;
 
 export class UIScene extends Phaser.Scene {
   constructor() {
@@ -101,6 +102,9 @@ export class UIScene extends Phaser.Scene {
     on('beat:fire', ({ id }) => this.beat(id));
     on('ending:trigger', (p) => this.placeholderEnding(p));
     on('vikram:keyInLock', () => this.subtitle('SFX', TEXTS.captions.KEY_IN_LOCK, BALANCE.vikram.keyWarningSec));
+    on('vikram:doorSlam', () => this.subtitle('SFX', TEXTS.captions.DOOR_SLAM, 2));
+    on('vikram:bark', ({ text }) => this.subtitle('VIKRAM', text, BARK_SEC));
+    on('noise:changed', ({ value }) => this.pauseNudge(value));
 
     this.hud.setBattery(this.state().battery);
   }
@@ -132,6 +136,17 @@ export class UIScene extends Phaser.Scene {
       this.phone.close();
       this.hud.setPhoneDot(true);
     });
+  }
+
+  // With the phone closed mid-playback, the "Pause and hide." hint is a toast,
+  // once per crossing of the investigate threshold.
+  pauseNudge(value) {
+    const s = this.state();
+    const loud = value >= BALANCE.noise.investigateAt;
+    if (loud && !this.wasLoud && s.phone.playing && !s.phone.paused && !s.phone.open) {
+      this.toast.show(TEXTS.ui.pauseHint);
+    }
+    this.wasLoud = loud;
   }
 
   notify() {

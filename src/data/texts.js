@@ -110,6 +110,7 @@ export const TEXTS = {
     FORESHADOW:       '[far away: footsteps on the stairs. They stop. They go away.]',
     KEY_IN_LOCK:      '[a key in the lock]',
     LAMP_TICK:        '[the lamp flickers. A soft tick.]',   // Nani's warning
+    DOOR_SLAM:        '[the front door slams]',
     PREVIEW_CLEAN:    '[the first seconds, clear]'
   },
 
