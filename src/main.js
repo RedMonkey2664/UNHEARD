@@ -9,6 +9,7 @@ import { BootScene } from './scenes/BootScene.js';
 import { HeadphoneGateScene } from './scenes/HeadphoneGateScene.js';
 import { RoomScene } from './scenes/RoomScene.js';
 import { TitleScene } from './scenes/TitleScene.js';
+import { UIScene } from './scenes/UIScene.js';
 import { loadFonts } from './utils/fonts.js';
 import { watchOrientation } from './utils/orientation.js';
 import { loadSettings } from './utils/storage.js';
@@ -17,6 +18,13 @@ async function start() {
   await loadFonts(FONT_FILES, assetFiles, BOOT.fontsTimeoutMs);
 
   const settings = loadSettings();
+
+  const scenes = [BootScene, TitleScene, HeadphoneGateScene, RoomScene, UIScene];
+  // Dynamic import keeps the debug panel out of production bundles.
+  if (import.meta.env.DEV) {
+    const { DebugScene } = await import('./scenes/DebugScene.js');
+    scenes.push(DebugScene);
+  }
 
   const game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -38,8 +46,11 @@ async function start() {
         g.registry.set('settings', settings);
       }
     },
-    scene: [BootScene, TitleScene, HeadphoneGateScene, RoomScene]
+    scene: scenes
   });
+
+  // Dev only: lets the debug tools and smoke tests reach the game.
+  if (import.meta.env.DEV) window.__game = game;
 
   game.events.once('ready', () => {
     game.sound.volume = settings.volMaster;

@@ -36,7 +36,40 @@ export const BOOT = {
 
 export const UI = {
   minTapPx: 44,            // CSS px after scaling (docs/02 section 2)
-  minTextPx: 16
+  minTextPx: 16,
+  examineSec: 3,           // examine line duration (docs/04 section 2)
+  toastSec: 2.5,           // docs/07 section 1
+  subtitlePx: { S: 18, M: 22, L: 26 },
+  subtitleWrap: 560,
+  roundButton: 56          // torch, sneak, phone (docs/07 section 1)
+};
+
+// Greybox geometry (render only; gameplay numbers are in balance.js).
+export const LAYOUT = {
+  hotspotTopY: 280,        // hotspot hit area top (docs/04 section 3 notes)
+  doorTopY: 240,
+  doorW: 70,
+  hideW: 90,
+  playerW: 36,
+  playerH: 110,
+  playerSneakH: 84,
+  lightY: 70               // torch centre above the floor line
+};
+
+export const ROOM_COLORS = {
+  HALL: 0x1C2626,
+  LIVING: 0x2A231E,
+  KITCHEN: 0x1D2924,
+  BEDROOM: 0x25212B
+};
+
+// Subtitle speaker colours (docs/05 section 1).
+export const SPEAKER_CSS = {
+  NANI: '#F3DDB1',
+  VIKRAM: '#E58C79',
+  HOLLOW: '#5FE0D3',
+  SFX: '#9AA0A6',
+  YOU: '#C9C9C9'
 };
 
 export const ROOM_IDS = ['HALL', 'LIVING', 'KITCHEN', 'BEDROOM'];

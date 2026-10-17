@@ -6,7 +6,8 @@ All numbers live in src/config/balance.js. Change numbers there only.
 
 ```js
 export const BALANCE = {
-  world: { width: 960, height: 540, floorY: 430 },
+  world: { width: 960, height: 540, floorY: 430,
+           walkMinX: 30, walkMaxX: 930 },  // player x bounds in every room
 
   player: {
     walkSpeed: 130,        // px per second
@@ -34,7 +35,9 @@ export const BALANCE = {
     darknessAlpha: 0.96,
     flickerJitter: 25,
     blackoutSec: 0.3,      // Presence >= 60 blackout length
-    blackoutEvery: [20, 35]// random seconds between blackouts
+    blackoutEvery: [20, 35],// random seconds between blackouts
+    outlineDistOff: 80,    // torch off: hotspot outlines within this (always)
+    outlineDistOn: 120     // torch on: hotspot hint outlines (Hotspot hints setting)
   },
 
   noise: {

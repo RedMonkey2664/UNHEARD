@@ -98,6 +98,18 @@ export function completedCount(state) {
   return n;
 }
 
+// Statuses only: VM 1..n done, the next one current, the rest locked. Used by
+// debug and presets; the consequences of each memory are not replayed here.
+export function setCompleted(state, n) {
+  for (let id = 1; id <= VM_COUNT; id++) {
+    const vm = state.voicemails[id];
+    if (id <= n) vm.status = VM_STATUS.DONE;
+    else if (id === n + 1) vm.status = id === VM_COUNT ? VM_STATUS.FIXED : VM_STATUS.DAMAGED;
+    else vm.status = VM_STATUS.LOCKED;
+  }
+  state.act = deriveAct(state);
+}
+
 // Act is derived, never stored independently (docs/03 section 2).
 // state.act is only a cache of this value.
 export function deriveAct(state) {

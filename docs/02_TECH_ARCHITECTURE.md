@@ -230,6 +230,12 @@ emit(name, payload). Event names (colon style):
   call:connected {}           police:arrive {}         corner:start {}
   ending:trigger {id, cause}
 
+  UI and debug events (scene to scene only, systems never listen):
+  ui:torch {}  ui:sneak {}  ui:phone {}      HUD button taps
+  ui:subtitle {who, text, sec}               show a subtitle line
+  ui:toast {text}                            show a toast
+  debug:teleport {room}                      debug panel (dev only)
+
 ## 8. Darkness and torch rendering
 
 Everything in the world (background, objects, player, Vikram, Nani, Hollow)
@@ -308,3 +314,17 @@ Wrap every access in try/catch. The game must work with storage blocked.
   - Vitest for all of src/systems/. See docs/09 for the case list.
   - Systems accept a seeded rng and explicit dt so tests are deterministic.
   - A debug "time scale" key (x1, x3) exists for manual playtesting.
+
+## 15. System public APIs (filled in as stages are built)
+
+All take the GameState as the first argument; bus is injected at creation.
+
+  gameState    createState(settings), completedCount(s), deriveAct(s),
+               setCompleted(s, n)  (debug/presets: statuses only)
+  eventBus     createEventBus() -> {on, off, emit, clear}; shared `bus`
+  battery      createBattery(bus) -> {tick(s, dt), spend(s, amount),
+               playCost(vmId), tickPlayback(s, dt), setTorch(s, on), set(s, v)}
+  movement     createMovement() -> {move(s, dt, {dir, targetX}) -> arrived}
+  interaction  checkWhen(when, s), pickVariant(hotspot, s), currentVmId(s),
+               createInteraction(bus) -> {interact(s, hotspotId) -> {text, action},
+               useDoor(s, doorId) -> {passed, text}, teleport(s, room, x)}

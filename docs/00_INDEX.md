@@ -123,6 +123,16 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  vite.config.js plugin exposes virtual:asset-files (files present in public/assets); BootScene requests only those. Restart dev server after adding assets.
   2026-10-17  Extra small modules: utils/storage.js, utils/fonts.js, utils/orientation.js, ui/text.js. DEFAULT_SETTINGS lives in config/constants.js.
   2026-10-17  Stage 0: rotate overlay is a DOM element over the canvas (shown via CSS orientation media query + JS); Phaser game loop pauses while it shows.
+  2026-10-17  Stage 1: balance.world.walkMinX/walkMaxX (30/930) and torch.outlineDistOff/outlineDistOn (80/120) added to docs/03 and balance.js.
+  2026-10-17  Stage 1: systems/movement.js and systems/interaction.js added (pure; player movement, conditions, hotspot actions, doors).
+  2026-10-17  Stage 1: E interacts with the nearest hotspot OR door in range (keyboard players need doors too).
+  2026-10-17  Stage 1: tapping a hotspot walks until within interactRange then interacts; tapping a door walks to the door x then passes.
+  2026-10-17  Stage 1: examine text shows as a YOU-grey subtitle for 3 s; toasts are used for pickups and evidence.
+  2026-10-17  Stage 1: hotspot actions openFix, closeWindow, openKeypad and glimpse are returned but not run until Stages 2 and 4.
+  2026-10-17  Stage 1: debug panel is a DOM overlay managed by DebugScene, loaded via dynamic import in dev only. window.__game is exposed in dev only.
+  2026-10-17  Stage 1: debug "VMs done 0-7" sets statuses only (no memory consequences) until Stage 2 adds "Complete voicemail N".
+  2026-10-17  Stage 1: battery:changed fires when the shown whole percent changes (and on spend/set), not every frame.
+  2026-10-17  index.html gets an empty inline favicon so the browser logs no 404.
 
 ## Changelog
 
