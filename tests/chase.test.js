@@ -44,9 +44,9 @@ function run(ctx, seconds) {
 }
 
 describe('sight', () => {
-  it('torch on: 520 px; torch off: 130 px; hidden: never', () => {
+  it('torch on: sightTorchOn; torch off: sightTorchOff; hidden: never', () => {
     const ctx = setup();
-    place(ctx, 'HALL', 900, 900 - 500);
+    place(ctx, 'HALL', 900, 900 - (V.sightTorchOn - 20));
     expect(canSee(ctx.state)).toBe(false);
     ctx.state.torchOn = true;
     expect(canSee(ctx.state)).toBe(true);
@@ -183,12 +183,12 @@ describe('hiding', () => {
     return ctx.state.vikram.state;
   }
 
-  it('a checked hide spot is found when noise >= 40', () => {
-    expect(searchWardrobe(40, false)).toBe('CAUGHT');
+  it('a checked hide spot is found when noise >= hideFoundAt', () => {
+    expect(searchWardrobe(BALANCE.noise.hideFoundAt, false)).toBe('CAUGHT');
   });
 
   it('a checked hide spot is not found when quiet and unseen', () => {
-    expect(searchWardrobe(39, false)).toBe('PATROL');
+    expect(searchWardrobe(BALANCE.noise.hideFoundAt - 1, false)).toBe('PATROL');
   });
 
   it('a checked hide spot is always found if he saw you hide', () => {
@@ -218,9 +218,11 @@ describe("Nani's lamp warning", () => {
     ctx.state.presence = presence;
   }
 
-  it('flickers once, 2.5 s before he enters the room', () => {
+  it('flickers once, warnLeadSec before he enters the room', () => {
     const ctx = setup();
     approaching(ctx);
+    // Start far enough away that the warning is not due yet.
+    ctx.state.vikram.x = 420 + vikramSpeed(ctx.state) * (BALANCE.nani.warnLeadSec + 0.5);
     const warn = createNaniWarning(ctx.bus);
     let firedAt = null;
     for (let t = 0; t < 4 && ctx.state.vikram.room === 'HALL'; t += DT) {
@@ -239,7 +241,9 @@ describe("Nani's lamp warning", () => {
     const ctx = setup();
     approaching(ctx);
     ctx.state.settings.assist = true;
-    ctx.state.vikram.x = 420 + 2.5 * vikramSpeed(ctx.state);   // ETA 3.5 s
+    // ETA halfway between the normal and the Assist lead.
+    const eta = (BALANCE.nani.warnLeadSec + BALANCE.nani.warnLeadSecAssist) / 2;
+    ctx.state.vikram.x = 420 + (eta - V.doorTime) * vikramSpeed(ctx.state);
     createNaniWarning(ctx.bus).tick(ctx.state);
     expect(ctx.log.map(([n]) => n)).toContain('nani:warn');
   });

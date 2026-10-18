@@ -38,11 +38,11 @@ describe('proximity', () => {
 describe('noise tick', () => {
   const bus = createEventBus();
 
-  it('walking near him rises at 14/s x 1.5', () => {
+  it('walking near him rises at rise.walk x sameClose', () => {
     const s = withVikram('HALL', 600);
     s.player.moving = true;
     createNoise(bus).tick(s, 1);
-    expect(s.noise).toBeCloseTo(14 * 1.5, 6);
+    expect(s.noise).toBeCloseTo(N.rise.walk * N.prox.sameClose, 6);
   });
 
   it('sources stack: sneak + torch + voicemail + puzzle', () => {
@@ -52,7 +52,7 @@ describe('noise tick', () => {
     s.phone.playing = true;
     s.ui.puzzleOpen = true;
     createNoise(bus).tick(s, 1);
-    expect(s.noise).toBeCloseTo(5 + 6 + 8 + 6, 6);
+    expect(s.noise).toBeCloseTo(N.rise.sneak + N.rise.torch + N.rise.voicemail + N.rise.puzzle, 6);
   });
 
   it('paused playback adds nothing', () => {
@@ -81,7 +81,7 @@ describe('noise tick', () => {
     expect(s.noise).toBe(50 - 2 * N.decayHiddenSameRoom);
   });
 
-  it('clamps 0 to 100; Assist multiplies by 0.6', () => {
+  it('clamps 0 to 100; Assist multiplies by noiseMult', () => {
     const s = withVikram('HALL', 600);
     s.player.moving = true;
     const n = createNoise(bus);
@@ -91,7 +91,7 @@ describe('noise tick', () => {
     a.settings.assist = true;
     a.player.moving = true;
     n.tick(a, 1);
-    expect(a.noise).toBeCloseTo(14 * 1.5 * 0.6, 6);
+    expect(a.noise).toBeCloseTo(N.rise.walk * N.prox.sameClose * BALANCE.assist.noiseMult, 6);
   });
 });
 
@@ -100,13 +100,13 @@ describe('spikes', () => {
     const n = createNoise(createEventBus());
     const s = withVikram('KITCHEN', 400);       // adjacent 0.35
     n.spike(s, 'door');
-    expect(s.noise).toBeCloseTo(10 * 0.35, 6);
+    expect(s.noise).toBeCloseTo(N.spike.door * N.prox.adjacent, 6);
     const far = withVikram('KITCHEN', 400, 'LIVING');
     n.spike(far, 'wrongFix');
     expect(far.noise).toBe(0);
     const a = withVikram('HALL', 600);
     a.settings.assist = true;
     n.spike(a, 'interact');
-    expect(a.noise).toBeCloseTo(8 * 1.5 * 0.6, 6);
+    expect(a.noise).toBeCloseTo(N.spike.interact * N.prox.sameClose * BALANCE.assist.noiseMult, 6);
   });
 });

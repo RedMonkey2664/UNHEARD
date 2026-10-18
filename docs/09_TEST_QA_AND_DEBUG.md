@@ -47,7 +47,7 @@ Skip-to-act presets (state to apply):
 ## 2. Unit tests (Vitest, tests/)
 
 battery.test.js
-  - torch drains 0.08 per second; no drain when off or hidden
+  - torch drains torchDrainPerSec; no drain when off or hidden
   - playback cost linear over the duration; VM5 totals 12
   - pause stops drain
   - wrong fix costs 4; assist multiplies costs by 0.8
@@ -66,16 +66,16 @@ presence.test.js
   - thresholds fire once per upward crossing and re-arm after a drop
   - idle-dark accrual only after 5 s idle with torch off, not hidden
   - manifest timer: leave in time -> 75; stay -> 100
-  - memory skip +20, memory done -5, Nani touch -10 (max 3)
+  - memory skip, memory done, Nani touch (max 3) by the balance values
 
 vikram.test.js (seeded rng, explicit dt)
   - AWAY timer then ENTERING then PATROL
   - route A visits LIVING, KITCHEN, BEDROOM and leaves; route B reversed
   - walking through doors takes doorTime
-  - sight: torch on 520, off 130, hidden never seen
+  - sight: torch on sightTorchOn, off sightTorchOff, hidden never seen
   - noise >= 60 -> INVESTIGATE (40 in Hunt)
   - INVESTIGATE timeout 10 s -> SEARCH; SEARCH 6 s (4 s Hunt)
-  - hide check: found if seenHiding or noise >= 40
+  - hide check: found if seenHiding or noise >= hideFoundAt
   - CHASE speed x 1.3; CAUGHT at < 45 px; door breaks chase
   - frozen when memory is open
   - act parameters switch with completed count

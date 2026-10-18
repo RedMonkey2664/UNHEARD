@@ -12,7 +12,7 @@
 |     subtitle line (bottom centre, over a soft dark strip)    |
 | [TORCH] [SNEAK]                         [CALL*]   [PHONE]    |
 +--------------------------------------------------------------+
-  * CALL only after the tape is taken. POLICE 1:15 shows beside it.
+  * CALL only after the tape is taken. POLICE 1:00 shows beside it.
 ```
 
 Elements:
@@ -89,7 +89,7 @@ The game keeps running behind it. The room area above it stays tappable.
 ```
 
 Voicemail row states:
-  done       grey. Tap to replay (costs battery, Presence +10, no memory).
+  done       grey. Tap to replay (costs battery, Presence +8, no memory).
   current    expanded with buttons:
                PREVIEW 3s  always enabled (free)
                FIX         enabled when status is damaged

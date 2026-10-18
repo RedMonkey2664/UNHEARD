@@ -33,15 +33,15 @@ Process:
   - while connecting, noise gains +6/s x proximity (like a puzzle)
   - if noise >= 60 during connecting: the call drops. Toast "The call
     dropped.", Presence +5, no battery cost. The player may try again.
-  - on connect: battery -2, flags.callConnected = true, the ETA starts at 75 s
-    and counts down on the HUD ("POLICE 1:15") and in the phone.
+  - on connect: battery -2, flags.callConnected = true, the ETA starts at 60 s
+    and counts down on the HUD ("POLICE 1:00") and in the phone.
   - phone voice (operator, tiny): "Police are on their way. Stay where you are
     and stay quiet." (voice file op_1)
-If tapeTaken and battery < 3 and the call is not connected: start the 25 s
+If tapeTaken and battery < 3 and the call is not connected: start the 35 s
 dead-air timer (see docs/03 section 3).
 
 ### 1.5 Surviving the countdown
-  - ETA 75 to 9: normal HUNT rules. Caught or dead-air still apply.
+  - ETA 60 to 9: normal HUNT rules. Caught or dead-air still apply.
   - ETA <= final.sirenAtEta (20): a distant siren fades in.
   - ETA <= 8: CORNER EVENT (below).
   - The player may move, hide, and use doors as usual until the corner event.
@@ -257,7 +257,7 @@ End card shows:
   4. Hollow manifests, player leaves in time          -> no ending; Presence 75
   5. Vikram catches the player (collision)            -> CAUGHT
   6. Noise 100 with Vikram within 200 px, not hidden  -> CAUGHT
-  7. Battery 0 and 25 s pass (call not connected)     -> CAUGHT (dead_air)
+  7. Battery 0 and 35 s pass (call not connected)     -> CAUGHT (dead_air)
   8. Battery 0 after call connected                   -> no change
   9. Full run, Presence 20 at ETA 0                   -> EAT_PROPERLY
  10. Full run, Presence 70 at ETA 0                   -> STATIC

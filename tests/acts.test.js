@@ -24,17 +24,24 @@ function setup() {
 }
 
 describe('per-act parameters', () => {
-  it.each([[2, 2, 30, 110, 'A'], [6, 3, 18, 125, 'A'], [7, 4, 10, 140, 'B']])(
-    'completed %i -> act %i: away %i s, speed %i, route %s', (done, act, away, speed, route) => {
-      const { state } = setupFlow();
-      setCompleted(state, done);
-      expect(state.act).toBe(act);
-      expect(actParams(state)).toMatchObject({ away, speed, route });
-    });
+  it.each([[2, 2], [6, 3], [7, 4]])('completed %i -> act %i uses that act\'s parameters', (done, act) => {
+    const { state } = setupFlow();
+    setCompleted(state, done);
+    expect(state.act).toBe(act);
+    expect(actParams(state)).toEqual(V.acts[act]);
+  });
+
+  it('later acts are faster with shorter gaps, and Act 4 reverses the route', () => {
+    expect(V.acts[3].speed).toBeGreaterThan(V.acts[2].speed);
+    expect(V.acts[4].speed).toBeGreaterThan(V.acts[3].speed);
+    expect(V.acts[3].away).toBeLessThan(V.acts[2].away);
+    expect(V.acts[4].away).toBeLessThan(V.acts[3].away);
+    expect(V.acts[4].route).toBe('B');
+  });
 });
 
 describe('dead air', () => {
-  it('battery 0 without a call: he comes back with a door slam within 2 s, CAUGHT after 25 s', () => {
+  it('battery 0 without a call: he comes back with a door slam, CAUGHT after deadAirDoomSec', () => {
     const ctx = setup();
     setCompleted(ctx.state, 2);
     Object.assign(ctx.state.vikram, { state: 'AWAY', awayTimer: 999 });
@@ -44,7 +51,7 @@ describe('dead air', () => {
     expect(ctx.names()).toContain('vikram:doorSlam');
     runFor((dt) => ctx.vikram.tick(ctx.state, dt), V.huntReenterSec + 0.1);
     expect(ctx.state.vikram.room).toBe('HALL');
-    runFor((dt) => ctx.finalAct.tick(ctx.state, dt), 24.9);
+    runFor((dt) => ctx.finalAct.tick(ctx.state, dt), BALANCE.battery.deadAirDoomSec - 0.1);
     expect(ctx.state.flags.endingId).toBeNull();
     runFor((dt) => ctx.finalAct.tick(ctx.state, dt), 0.2);
     expect(ctx.log).toContainEqual(['ending:trigger', { id: 'CAUGHT', cause: 'dead_air' }]);
@@ -115,17 +122,17 @@ describe('barks', () => {
 });
 
 describe('noise from playback and puzzles', () => {
-  it('playing a voicemail near him adds 8/s; an open puzzle 6/s', () => {
+  it('playing a voicemail near him adds rise.voicemail; an open puzzle rise.puzzle', () => {
     const ctx = setup();
     Object.assign(ctx.state.vikram, { state: 'PATROL', room: 'HALL', x: 800 });
     ctx.state.player.x = 500;                  // 300 px: sameMid x1.0
     ctx.state.phone.playing = true;
     ctx.noise.tick(ctx.state, 1);
-    expect(ctx.state.noise).toBeCloseTo(8, 6);
+    expect(ctx.state.noise).toBeCloseTo(BALANCE.noise.rise.voicemail, 6);
     ctx.state.phone.playing = false;
     ctx.state.ui.puzzleOpen = true;
     ctx.noise.tick(ctx.state, 1);
-    expect(ctx.state.noise).toBeCloseTo(14, 6);
+    expect(ctx.state.noise).toBeCloseTo(BALANCE.noise.rise.voicemail + BALANCE.noise.rise.puzzle, 6);
   });
 });
 

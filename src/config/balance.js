@@ -14,13 +14,13 @@ export const BALANCE = {
 
   battery: {
     start: 100,
-    torchDrainPerSec: 0.08,
+    torchDrainPerSec: 0.06,      // eased from 0.08 (tuning table)
     playCost: 6,           // VM1,2,3,4,6,7
     playCostLong: 12,      // VM5 only
-    wrongFixCost: 4,
+    wrongFixCost: 3,
     callCost: 2,
     callMinBattery: 3,
-    deadAirDoomSec: 25     // after battery hits 0, Vikram finds you
+    deadAirDoomSec: 35     // after battery hits 0, Vikram finds you
   },
 
   torch: {
@@ -48,11 +48,11 @@ export const BALANCE = {
     investigateAtHunt: 40,
     catchAt: 100,
     catchDist: 200,        // noise catch only if Vikram is this close, same room
-    hideFoundAt: 40,       // noise at which a hidden player is found on check
+    hideFoundAt: 50,       // noise at which a hidden player is found on check
     callStartMax: 40,      // noise must be below this to start the call
     callFailAt: 60,        // noise at or above this while connecting drops the call
-    rise: { walk: 14, sneak: 5, torch: 6, voicemail: 8, puzzle: 6 }, // per sec
-    spike: { interact: 8, wrongFix: 12, door: 10, wrongCode: 8 },     // instant
+    rise: { walk: 11, sneak: 4, torch: 4, voicemail: 7, puzzle: 5 }, // per sec
+    spike: { interact: 6, wrongFix: 10, door: 8, wrongCode: 6 },      // instant
     decayIdle: 8,          // per sec when nothing is adding noise
     decayHiddenSameRoom: 4,// per sec when hidden and Vikram is in your room
     prox: {                // multiplier on rise and spike
@@ -67,9 +67,9 @@ export const BALANCE = {
   },
 
   vikram: {
-    sightTorchOn: 520,     // sees an unhidden player within this distance
+    sightTorchOn: 440,     // sees an unhidden player within this distance
     sightTorchOff: 130,    // ...or within this if torch is off
-    seenHidingDist: 260,   // if closer than this when you hide, he saw you
+    seenHidingDist: 210,   // if closer than this when you hide, he saw you
     catchDist: 45,
     chaseMult: 1.3,
     searchTime: 6,
@@ -86,10 +86,10 @@ export const BALANCE = {
     investigateRefreshSec: 1, // target refresh while noise stays above threshold
     awayBarkRange: 150,    // 'away' barks heard in the Hall within this of x 880
     acts: {
-      2: { away: 30, speed: 110, dwell: 1.0, route: 'A' },
-      3: { away: 18, speed: 125, dwell: 1.2, route: 'A' },
-      4: { away: 10, speed: 140, dwell: 1.3, route: 'B' },
-      5: { away: 0,  speed: 160, dwell: 0.6, route: 'HUNT' }
+      2: { away: 40, speed: 100, dwell: 1.0, route: 'A' },
+      3: { away: 25, speed: 112, dwell: 1.2, route: 'A' },
+      4: { away: 15, speed: 125, dwell: 1.3, route: 'B' },
+      5: { away: 0,  speed: 145, dwell: 0.6, route: 'HUNT' }
     },
     routes: {              // [room, stand-x, dwell seconds]
       A: [['LIVING', 450, 6], ['KITCHEN', 420, 6], ['BEDROOM', 400, 8]],
@@ -99,8 +99,8 @@ export const BALANCE = {
 
   presence: {
     max: 100,
-    rise: { wrongFix: 10, replay: 10, skipMemory: 20,
-            idleDarkPer10s: 2, callFail: 5 },
+    rise: { wrongFix: 7, replay: 8, skipMemory: 15,
+            idleDarkPer10s: 1, callFail: 4 },
     fall: { memoryDone: 5, naniTouch: 10 },
     thresholds: { flicker: 30, naniHelp: 45, whisper: 60, manifest: 90, doom: 100 },
     idleDarkAfter: 5,      // seconds idle in the dark before accrual starts
@@ -117,7 +117,7 @@ export const BALANCE = {
   },
 
   nani: {
-    warnLeadSec: 2.5,      // lamp flicker before Vikram enters your room
+    warnLeadSec: 3.5,      // lamp flicker before Vikram enters your room
     warnLeadSecAssist: 4,
     ng2Sec: 8,             // doorway figure visible time
     ng3WindowSec: 30,      // reflection only if player enters Living within this
@@ -125,10 +125,10 @@ export const BALANCE = {
     ng4FadeSec: 12         // offer fades if ignored this long
   },
 
-  hints: { hint1Sec: 90, hint2Sec: 180 },  // seconds the current VM is damaged
+  hints: { hint1Sec: 60, hint2Sec: 120 },  // seconds the current VM is damaged
 
   final: {
-    policeEtaSec: 75,
+    policeEtaSec: 60,      // eased from 75 (tuning table)
     cornerAtEta: 8,
     callConnectSec: 6,
     sirenAtEta: 20,

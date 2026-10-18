@@ -89,13 +89,13 @@ describe('playback drain', () => {
 });
 
 describe('one-off costs', () => {
-  it('wrong fix costs 4; Assist makes it 3.2', () => {
+  it('wrong fix costs wrongFixCost; Assist multiplies it by costMult', () => {
     const a = setup();
     a.battery.spend(a.state, B.wrongFixCost);
-    expect(a.state.battery).toBe(96);
+    expect(a.state.battery).toBeCloseTo(100 - B.wrongFixCost, 6);
     const b = setup({ assist: true });
     b.battery.spend(b.state, B.wrongFixCost);
-    expect(b.state.battery).toBeCloseTo(96.8, 6);
+    expect(b.state.battery).toBeCloseTo(100 - B.wrongFixCost * BALANCE.assist.costMult, 6);
   });
 });
 
@@ -129,7 +129,7 @@ describe('battery:changed', () => {
   it('fires when the shown whole percent changes, not every frame', () => {
     const { state, battery, events } = setup();
     battery.setTorch(state, true);
-    run((dt) => battery.tick(state, dt), 30);   // 2.4 % drained
+    run((dt) => battery.tick(state, dt), 2.4 / B.torchDrainPerSec);   // 2.4 % drained
     const changed = events.filter(([n]) => n === 'battery:changed').map(([, p]) => Math.ceil(p.value));
     expect(changed).toEqual([100, 99, 98]);
   });

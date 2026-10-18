@@ -28,18 +28,23 @@ function finish(ctx, id, skip = false) {
 }
 
 describe('rises and falls', () => {
-  it('wrong fix +10, skip +20 (instead of -5), finished memory -5, replay +10', () => {
+  it('wrong fix, skip (instead of the memory fall), finished memory, replay and failed call', () => {
     const ctx = setup();
+    let p = PR.rise.wrongFix;
     ctx.flow.attemptFix(ctx.state, 1, 99);
-    expect(ctx.state.presence).toBe(10);
+    expect(ctx.state.presence).toBe(p);
     finish(ctx, 1, true);
-    expect(ctx.state.presence).toBe(30);
+    p += PR.rise.skipMemory;
+    expect(ctx.state.presence).toBe(p);
     finish(ctx, 2);
-    expect(ctx.state.presence).toBe(25);
+    p -= PR.fall.memoryDone;
+    expect(ctx.state.presence).toBe(p);
     ctx.flow.play(ctx.state, 1);
-    expect(ctx.state.presence).toBe(35);
+    p += PR.rise.replay;
+    expect(ctx.state.presence).toBe(p);
     ctx.bus.emit('call:failed', {});
-    expect(ctx.state.presence).toBe(40);
+    p += PR.rise.callFail;
+    expect(ctx.state.presence).toBe(p);
   });
 
   it('clamps 0 to 100', () => {
@@ -50,12 +55,12 @@ describe('rises and falls', () => {
     expect(ctx.state.presence).toBe(100);
   });
 
-  it('idle in the dark: nothing for 5 s, then +2 per 10 s', () => {
+  it('idle in the dark: nothing for idleDarkAfter, then idleDarkPer10s per 10 s', () => {
     const ctx = setup();
-    runFor((dt) => ctx.presence.tick(ctx.state, dt), 5);
+    runFor((dt) => ctx.presence.tick(ctx.state, dt), PR.idleDarkAfter);
     expect(ctx.state.presence).toBe(0);
     runFor((dt) => ctx.presence.tick(ctx.state, dt), 10);
-    expect(ctx.state.presence).toBeCloseTo(2, 1);
+    expect(ctx.state.presence).toBeCloseTo(PR.rise.idleDarkPer10s, 1);
   });
 
   it('no idle accrual with the torch on, hidden, moving or playing', () => {

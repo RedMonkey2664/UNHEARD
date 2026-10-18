@@ -56,7 +56,7 @@ describe('entering and patrol', () => {
     expect(ctx.state.vikram).toMatchObject({ room: 'HALL', routeId: 'A' });
   });
 
-  it('route A visits LIVING, KITCHEN, BEDROOM then leaves (about 60 s); AWAY is 30 s', () => {
+  it('route A visits LIVING, KITCHEN, BEDROOM then leaves; AWAY lasts the act\'s away time', () => {
     const ctx = setup();
     ctx.state.player.room = 'HALL';
     ctx.state.player.x = 30;
@@ -67,11 +67,13 @@ describe('entering and patrol', () => {
     ctx.bus.on('vikram:dwell', ({ room }) => dwells.push(room));
     const patrol = until(ctx, () => ctx.state.vikram.state === 'AWAY');
     expect(dwells).toEqual(['LIVING', 'KITCHEN', 'BEDROOM']);
-    // 3720 px at 110 px/s + 20 s dwell + 6 doors at 1 s.
-    expect(patrol).toBeGreaterThan(57);
-    expect(patrol).toBeLessThan(62);
+    // 3720 px of walking + 20 s of dwell + 6 doors (docs/03 section 14).
+    const A2 = V.acts[2];
+    const expected = 3720 / A2.speed + 20 * A2.dwell + 6 * V.doorTime;
+    expect(patrol).toBeGreaterThan(expected - 2);
+    expect(patrol).toBeLessThan(expected + 2);
     const away = until(ctx, () => ctx.state.vikram.state === 'ENTERING');
-    expect(away).toBeCloseTo(30, 0);
+    expect(away).toBeCloseTo(V.acts[2].away, 0);
   });
 
   it('doors take doorTime', () => {
@@ -85,7 +87,7 @@ describe('entering and patrol', () => {
     expect(v.x).toBe(70);
   });
 
-  it('Act 4 uses route B (reversed) and a 10 s away gap', () => {
+  it('Act 4 uses route B (reversed) and its own away gap', () => {
     const ctx = setup(4);
     ctx.state.player.hidden = true;
     ctx.vikram.enter(ctx.state);
@@ -95,7 +97,7 @@ describe('entering and patrol', () => {
     ctx.bus.on('vikram:dwell', ({ room }) => dwells.push(room));
     until(ctx, () => ctx.state.vikram.state === 'AWAY');
     expect(dwells).toEqual(['BEDROOM', 'KITCHEN', 'LIVING']);
-    expect(until(ctx, () => ctx.state.vikram.state === 'ENTERING')).toBeCloseTo(10, 0);
+    expect(until(ctx, () => ctx.state.vikram.state === 'ENTERING')).toBeCloseTo(V.acts[4].away, 0);
   });
 });
 
@@ -180,7 +182,7 @@ describe('rules', () => {
     expect(ctx.state.vikram.state).toBe('ENTERING');
     ctx.state.vikram = { ...ctx.state.vikram, state: 'PATROL', room: 'LIVING', x: 100 };
     ctx.bus.emit('hotspot:interact', { id: 'H_RADIO' });
-    expect(ctx.state.noise).toBeCloseTo(8 * 1.5, 6);
+    expect(ctx.state.noise).toBeCloseTo(BALANCE.noise.spike.interact * BALANCE.noise.prox.sameClose, 6);
   });
 
   it('is deterministic for a given seed', () => {

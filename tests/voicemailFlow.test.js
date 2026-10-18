@@ -213,13 +213,14 @@ describe('replay', () => {
 });
 
 describe('hints', () => {
-  it('hint1 after 90 s damaged, hint2 added after 180 s', () => {
+  it('hint1 after hint1Sec damaged, hint2 added after hint2Sec', () => {
     const { flow, state } = setupFlow();
-    runFor((dt) => flow.tick(state, dt), 89, 0.5);
+    const H = BALANCE.hints;
+    runFor((dt) => flow.tick(state, dt), H.hint1Sec - 1, 0.5);
     expect(flow.hintsFor(state)).toEqual([]);
     runFor((dt) => flow.tick(state, dt), 2, 0.5);
     expect(flow.hintsFor(state)).toEqual([VOICEMAILS[1].hint1]);
-    runFor((dt) => flow.tick(state, dt), 90, 0.5);
+    runFor((dt) => flow.tick(state, dt), H.hint2Sec - H.hint1Sec, 0.5);
     expect(flow.hintsFor(state)).toEqual([VOICEMAILS[1].hint1, VOICEMAILS[1].hint2]);
   });
 });

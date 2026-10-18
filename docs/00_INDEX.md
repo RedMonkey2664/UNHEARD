@@ -211,6 +211,7 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-18  Audio: spoken lines (Nani, Vikram barks, Mom, police, operator, you_later, Nani's chai lines) are not generated; they stay as subtitles until recordings are added. A real .ogg/.mp3 with the same key is preferred over the .wav.
   2026-10-18  Audio: BootScene shows a thin loading bar while the sound loads.
   2026-10-18  Audio: a low eerie bed (music_eerie_loop, balance.audio.eerieDb -22) plays under the title and the whole game, ducks under voices, and gives way to the memory music in memories.
+  2026-10-18  Easier tuning (user request): torch drain 0.06, wrong fix 3, dead air 35 s; noise rises walk 11 / sneak 4 / torch 4 / voicemail 7 / puzzle 5, spikes 6/10/8/6, hide found at 50; Vikram sight 440, seen-hiding 210, acts away 40/25/15 and speed 100/112/125/145; Presence wrong fix 7, replay 8, skip 15, idle 1 per 10 s, call fail 4; Nani's warning 3.5 s; hints at 60/120 s; police ETA 60 s. Investigate threshold stays 60. Tests now read their numbers from balance.js.
 
 ## Changelog
 

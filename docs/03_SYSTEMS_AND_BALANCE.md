@@ -19,13 +19,13 @@ export const BALANCE = {
 
   battery: {
     start: 100,
-    torchDrainPerSec: 0.08,
+    torchDrainPerSec: 0.06,      // eased from 0.08 (tuning table)
     playCost: 6,           // VM1,2,3,4,6,7
     playCostLong: 12,      // VM5 only
-    wrongFixCost: 4,
+    wrongFixCost: 3,
     callCost: 2,
     callMinBattery: 3,
-    deadAirDoomSec: 25     // after battery hits 0, Vikram finds you
+    deadAirDoomSec: 35     // after battery hits 0, Vikram finds you
   },
 
   torch: {
@@ -53,11 +53,11 @@ export const BALANCE = {
     investigateAtHunt: 40,
     catchAt: 100,
     catchDist: 200,        // noise catch only if Vikram is this close, same room
-    hideFoundAt: 40,       // noise at which a hidden player is found on check
+    hideFoundAt: 50,       // noise at which a hidden player is found on check
     callStartMax: 40,      // noise must be below this to start the call
     callFailAt: 60,        // noise at or above this while connecting drops the call
-    rise: { walk: 14, sneak: 5, torch: 6, voicemail: 8, puzzle: 6 }, // per sec
-    spike: { interact: 8, wrongFix: 12, door: 10, wrongCode: 8 },     // instant
+    rise: { walk: 11, sneak: 4, torch: 4, voicemail: 7, puzzle: 5 }, // per sec
+    spike: { interact: 6, wrongFix: 10, door: 8, wrongCode: 6 },      // instant
     decayIdle: 8,          // per sec when nothing is adding noise
     decayHiddenSameRoom: 4,// per sec when hidden and Vikram is in your room
     prox: {                // multiplier on rise and spike
@@ -72,9 +72,9 @@ export const BALANCE = {
   },
 
   vikram: {
-    sightTorchOn: 520,     // sees an unhidden player within this distance
+    sightTorchOn: 440,     // sees an unhidden player within this distance
     sightTorchOff: 130,    // ...or within this if torch is off
-    seenHidingDist: 260,   // if closer than this when you hide, he saw you
+    seenHidingDist: 210,   // if closer than this when you hide, he saw you
     catchDist: 45,
     chaseMult: 1.3,
     searchTime: 6,
@@ -91,10 +91,10 @@ export const BALANCE = {
     investigateRefreshSec: 1, // target refresh while noise stays above threshold
     awayBarkRange: 150,    // 'away' barks heard in the Hall within this of x 880
     acts: {
-      2: { away: 30, speed: 110, dwell: 1.0, route: 'A' },
-      3: { away: 18, speed: 125, dwell: 1.2, route: 'A' },
-      4: { away: 10, speed: 140, dwell: 1.3, route: 'B' },
-      5: { away: 0,  speed: 160, dwell: 0.6, route: 'HUNT' }
+      2: { away: 40, speed: 100, dwell: 1.0, route: 'A' },
+      3: { away: 25, speed: 112, dwell: 1.2, route: 'A' },
+      4: { away: 15, speed: 125, dwell: 1.3, route: 'B' },
+      5: { away: 0,  speed: 145, dwell: 0.6, route: 'HUNT' }
     },
     routes: {              // [room, stand-x, dwell seconds]
       A: [['LIVING', 450, 6], ['KITCHEN', 420, 6], ['BEDROOM', 400, 8]],
@@ -104,8 +104,8 @@ export const BALANCE = {
 
   presence: {
     max: 100,
-    rise: { wrongFix: 10, replay: 10, skipMemory: 20,
-            idleDarkPer10s: 2, callFail: 5 },
+    rise: { wrongFix: 7, replay: 8, skipMemory: 15,
+            idleDarkPer10s: 1, callFail: 4 },
     fall: { memoryDone: 5, naniTouch: 10 },
     thresholds: { flicker: 30, naniHelp: 45, whisper: 60, manifest: 90, doom: 100 },
     idleDarkAfter: 5,      // seconds idle in the dark before accrual starts
@@ -122,7 +122,7 @@ export const BALANCE = {
   },
 
   nani: {
-    warnLeadSec: 2.5,      // lamp flicker before Vikram enters your room
+    warnLeadSec: 3.5,      // lamp flicker before Vikram enters your room
     warnLeadSecAssist: 4,
     ng2Sec: 8,             // doorway figure visible time
     ng3WindowSec: 30,      // reflection only if player enters Living within this
@@ -130,10 +130,10 @@ export const BALANCE = {
     ng4FadeSec: 12         // offer fades if ignored this long
   },
 
-  hints: { hint1Sec: 90, hint2Sec: 180 },  // seconds the current VM is damaged
+  hints: { hint1Sec: 60, hint2Sec: 120 },  // seconds the current VM is damaged
 
   final: {
-    policeEtaSec: 75,
+    policeEtaSec: 60,      // eased from 75 (tuning table)
     cornerAtEta: 8,
     callConnectSec: 6,
     sirenAtEta: 20,
@@ -248,13 +248,13 @@ all costs multiplied by assist.costMult if Assist is on
 If battery reaches 0:
   - emit battery:zero, torch forced off permanently, phone shows a dead screen
   - playback in progress stops (voicemail stays 'fixed', not played)
-  - if the call has NOT been placed: start flags.deadAirTimer = 25 s and put
+  - if the call has NOT been placed: start flags.deadAirTimer = 35 s and put
     Vikram into HUNT right away. If he is AWAY or has not entered yet (Act 1),
     he re-enters with a door slam within vikram.huntReenterSec (2 s), no key
     warning. When the timer ends -> ending CAUGHT with cause 'dead_air'.
   - if the call HAS connected: nothing else changes (the call stays up).
 
-The same 25 s dead-air timer also starts if the tape has been taken, the call
+The same 35 s dead-air timer also starts if the tape has been taken, the call
 is not connected, and battery < callMinBattery (3). Otherwise the player would
 be stuck with no way to call.
 
@@ -263,8 +263,8 @@ Budget check (so the numbers make sense):
   Call: 2
   Mandatory total: 50
   Left for torch and mistakes: 50
-  Torch: 50 / 0.08 = 625 seconds of torch (about 10 minutes)
-  Each wrong fix costs 4 (so 3 mistakes = 12 = 150 s less torch)
+  Torch: 50 / 0.06 = 833 seconds of torch (about 14 minutes)
+  Each wrong fix costs 3 (so 3 mistakes = 9 = 150 s less torch)
   Target: a median player ends with 8 to 15 percent left.
 
 ## 4. Noise (what Vikram can hear right now)
@@ -335,12 +335,12 @@ What noise does:
 Starts at 0. Not shown on screen. Shown indirectly (flicker, tint, whispers).
 
 Rises:
-  wrong fix            +10
-  replaying a voicemail already done, +10 (replay is allowed but costs battery)
-  skipping a memory    +20
-  idle in the dark     +2 per 10 s (only after 5 s idle, torch OFF, not hidden,
+  wrong fix            +7
+  replaying a voicemail already done, +8 (replay is allowed but costs battery)
+  skipping a memory    +15
+  idle in the dark     +1 per 10 s (only after 5 s idle, torch OFF, not hidden,
                        not playing, no puzzle open, not in a cutscene)
-  failed call          +5
+  failed call          +4
 Falls:
   memory finished (not skipped)  -5
   touching Nani's chai cup       -10 (max 3 touches per game)
@@ -420,7 +420,7 @@ Route (Acts 2 to 4):
 Senses:
   SIGHT: Vikram sees the player if
          same room AND player not hidden AND
-         ( (torchOn AND dist < 520) OR dist < 130 )
+         ( (torchOn AND dist < 440) OR dist < 130 )
          -> CHASE (emit vikram:spotted)
   HEARING: noise >= threshold with prox > 0 -> INVESTIGATE, target = player's
            position, refreshed once per second while noise stays above the
@@ -439,7 +439,7 @@ SEARCH (look-around time searchTime = 6 s, or 4 s in Hunt):
     checking time is extra, on top of searchTime.
   - In Hunt the radius is ignored: he checks every hide spot in the room.
   - When he checks the spot where the player is hidden:
-        found if (vikram.seenHiding) OR (noise >= 40)
+        found if (vikram.seenHiding) OR (noise >= 50)
         otherwise he moves on
   - At the end: noise set to 30 (so you cannot instantly repeat), state back to
     PATROL (resuming the route where it was) or, in Hunt, picks the next room.
@@ -450,7 +450,7 @@ CHASE:
   - if the player passes through a door: Vikram runs to that door, goes
     through (doorTime), then INVESTIGATE with target = last seen x
   - if the player reaches a hide spot and presses HIDE:
-        seenHiding = (distance to Vikram < 260 AND same room)
+        seenHiding = (distance to Vikram < 210 AND same room)
         if seenHiding he goes straight to that spot and finds you
         otherwise he does not know where you went -> INVESTIGATE then SEARCH
 
@@ -471,7 +471,7 @@ paused while MemoryScene is open. The player cannot be caught then.
 
 Nani's warning (only if Presence < 60):
   When Vikram's next step will bring him into the player's CURRENT room,
-  nani.warnLeadSec (2.5 s) before he arrives, that room's lamp flickers once
+  nani.warnLeadSec (3.5 s) before he arrives, that room's lamp flickers once
   and a soft "tick" plays. In Assist mode the lead time is
   nani.warnLeadSecAssist (4 s).
 
@@ -486,13 +486,13 @@ Hide spots (positions in docs/04). Pressing HIDE within 80 px of a hide spot:
     adds noise.
   - Presence idle-dark accrual does NOT count while hidden.
 Unhiding while Vikram is in the same room and within 130 px (torch off) or
-520 px (torch on) means he sees you.
+440 px (torch on) means he sees you.
 
 ## 8. Torch
 
   - Toggle with a button (mobile) or F (desktop).
   - ON: radius 180. Drains battery. Adds noise (6/s x proximity). Lets Vikram
-    see you from 520 px.
+    see you from 440 px.
   - OFF: only a 40 px dim glow around the player. Hotspots within 80 px show a
     faint outline so the player can still find things in the dark.
   - Forced OFF when: hidden, or battery is 0.
@@ -516,7 +516,7 @@ Gating: only the lowest-numbered not-done VM can be previewed, fixed or
 played. Tapping a locked VM shows a toast: "Not yet."
 
 Replay: a done VM can be replayed from the phone. It costs the normal battery
-cost, adds Presence +10, and shows no memory scene.
+cost, adds Presence +8, and shows no memory scene.
 
 Preview: free, plays the first 3 seconds of the damaged audio. Emits
 vm:preview. Does not add Presence.
@@ -526,7 +526,7 @@ noise >= 60 the phone shows a hint "Pause and hide." (It reacts to noise, not
 to Vikram's hidden state, so the AI state is never revealed.)
 
 Memory skip: the SKIP button appears 4 s into a memory scene. Skipping jumps to
-the end, Presence +20 (instead of -5), and marks memorySkipped = true.
+the end, Presence +15 (instead of -5), and marks memorySkipped = true.
 
 ## 10. Fix types (validators in systems/fixPuzzles.js)
 
@@ -541,8 +541,8 @@ the end, Presence +20 (instead of -5), and marks memorySkipped = true.
             item is EARPHONES.
   NONE      VM7. No fix.
 
-Wrong fix (any type): battery -4, noise spike (wrongFix) x proximity,
-Presence +10, a failure sound, stats.wrongFixes++.
+Wrong fix (any type): battery -3, noise spike (wrongFix) x proximity,
+Presence +7, a failure sound, stats.wrongFixes++.
 Wrong fix resets that puzzle's partial state (for WINDOWS: all three windows
 reopen; for CARD: pieces return to the tray).
 NOTE without GLASSES: "Too small to read." No penalty.
@@ -581,14 +581,14 @@ Toggle in the title screen settings.
 
 ## 14. Worked example: Act 2 timing
 
-Act 2 patrol (speed 110): about 34 s of walking (3720 px) plus 20 s of dwell
-plus six doors at 1 second: roughly 60 seconds. Then 30 seconds AWAY. A player
+Act 2 patrol (speed 100): about 37 s of walking (3720 px) plus 20 s of dwell
+plus six doors at 1 second: roughly 63 seconds. Then 40 seconds AWAY. A player
 who has already found the clue can fix (about 5 s) and play (14 s) a voicemail
 inside the AWAY window. VM3 to VM6 are all played in Act 2.
-In Act 3 (VM7, 11 s) the window shrinks to 18 s and the patrol is faster. A
+In Act 3 (VM7, 11 s) the window shrinks to 25 s and the patrol is faster. A
 player who does not start playback the moment he leaves cannot finish in one
 window, so they must PAUSE, hide, and resume. That is intended.
-In Act 4 there is no playback left. The 10 s window (route B) is for the walk
+In Act 4 there is no playback left. The 15 s window (route B) is for the walk
 to the Kitchen locker and entering the code.
 
 ## 15. Tuning table (symptom -> knob)

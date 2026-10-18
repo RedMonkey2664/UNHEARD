@@ -151,8 +151,8 @@ the opposite: staying, listening, eating the meal she asked for.
                 The temptation button appears after VM4.
   12:00 - 14:00 Act 3. Mom's second text. VM7, under the tightest away
                 window (pause mid-playback and hide).
-  14:00 - 15:00 Act 4. Walk to the locker (10 s away windows, route B).
-  15:00 - 19:00 Act 5. Tape, call 112, survive 75 seconds.
+  14:00 - 15:00 Act 4. Walk to the locker (15 s away windows, route B).
+  15:00 - 19:00 Act 5. Tape, call 112, survive 60 seconds.
   19:00 - 21:00 Ending scene, end card, play again.
 
 Vikram's rhythm in Acts 2 to 4: roughly 60 seconds of patrol, then he steps
@@ -171,7 +171,7 @@ Win:
 
 Fail (each is an ending, not a game-over screen):
   - CAUGHT: Vikram reaches you, or noise hits 100 with him close and you are
-    not hidden, or battery hits 0 and 25 seconds pass.
+    not hidden, or battery hits 0 and 35 seconds pass.
   - LATER: you press PLAY #8 NOW, or Presence reaches 100 (cause
     'presence_doom').
 

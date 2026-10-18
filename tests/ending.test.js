@@ -148,11 +148,11 @@ describe('test matrix (docs/06 section 9)', () => {
     expect(ctx.endingOf()).toEqual([{ id: 'CAUGHT', cause: 'caught' }]);
   });
 
-  it('7. Battery 0 and 25 s pass (call not connected) -> CAUGHT (dead_air)', () => {
+  it('7. Battery 0 and deadAirDoomSec pass (call not connected) -> CAUGHT (dead_air)', () => {
     const ctx = setupAll();
     ctx.state.debug.godMode = true;
     ctx.battery.set(ctx.state, 0);
-    runFor(() => ctx.frame(), 24.8);
+    runFor(() => ctx.frame(), BALANCE.battery.deadAirDoomSec - 0.2);
     expect(ctx.endingOf()).toEqual([]);
     runFor(() => ctx.frame(), 0.4);
     expect(ctx.endingOf()).toEqual([{ id: 'CAUGHT', cause: 'dead_air' }]);
@@ -261,7 +261,7 @@ describe('final act rules', () => {
     expect(ctx.state.player.locked).toBe(false);
   });
 
-  it('CALL needs noise < 40 and standing still; noise >= 60 drops it (+5 Presence, no battery)', () => {
+  it('CALL needs quiet and standing still; loud noise drops it (+callFail Presence, no battery)', () => {
     const ctx = setupAll();
     const s = act5(ctx);
     s.noise = 45;
@@ -277,7 +277,7 @@ describe('final act rules', () => {
     s.noise = 60;
     ctx.finalAct.tick(s, DT);
     expect(s.flags.callConnecting).toBe(false);
-    expect(s.presence).toBe(5);
+    expect(s.presence).toBe(BALANCE.presence.rise.callFail);
     expect(s.battery).toBe(battery);
     s.noise = 0;
     connectCall(ctx);
