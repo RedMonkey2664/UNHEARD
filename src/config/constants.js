@@ -220,5 +220,6 @@ export const DEFAULT_SETTINGS = {
   volSfx: 1,
   hotspotHints: true,
   vibration: false,
-  subtitleSize: 'M'
+  subtitleSize: 'M',
+  view3d: true             // first person 3D; false = 2D classic
 };

@@ -60,7 +60,9 @@ export class TitleScene extends Phaser.Scene {
 
     this.drawEndingDots(loadEndings());
 
-    new Button(this, W / 2, 440, 'BEGIN', () => this.begin(), { width: 220, height: 56, size: 22 });
+    new Button(this, W / 2, 430, 'BEGIN', () => this.begin(), { width: 220, height: 56, size: 22 });
+    this.viewBtn = new Button(this, W / 2, 498, '', () => this.toggleView(), { width: 300, height: 44, size: 16 });
+    this.refreshViewButton();
     new Button(this, W - 90, 44, 'Settings', () => this.openSettings(), { width: 140, height: 44 });
     new Button(this, 100, 44, TEXTS.howTo.open, () => this.howToPlay(), { width: 160, height: 44 });
 
@@ -122,6 +124,18 @@ export class TitleScene extends Phaser.Scene {
   begin() {
     if (this.panel.visible) return;
     this.scene.start('HowToPlay', { mode: 'start' });
+  }
+
+  // 3D first person (default) or the original 2D side view.
+  toggleView() {
+    if (this.panel.visible) return;
+    this.settings.view3d = !this.settings.view3d;
+    this.commit();
+    this.refreshViewButton();
+  }
+
+  refreshViewButton() {
+    this.viewBtn.setText(this.settings.view3d ? TEXTS.title.view3d : TEXTS.title.view2d);
   }
 
   howToPlay() {

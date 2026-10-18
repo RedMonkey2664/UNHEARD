@@ -10,7 +10,9 @@ export const TEXTS = {
       'Flashing lights (can be reduced in settings).',
       'Best played with headphones.'
     ],
-    gate: 'Tap to begin. Wear headphones.'
+    gate: 'Tap to begin. Wear headphones.',
+    view3d: 'View: 3D first person  (tap to change)',
+    view2d: 'View: 2D classic  (tap to change)'
   },
 
   // How to play: shown after BEGIN and from the title's "How to play" button.
@@ -33,6 +35,23 @@ export const TEXTS = {
           { k: 'Footsteps button', d: 'Sneak: slower, but much quieter.' },
           { k: 'Phone button', d: 'Voicemails, messages, notes and the 112 call.' },
           { k: 'HIDE', d: 'Appears when you stand by a hiding place.' }
+        ],
+        touch3d: [
+          { k: 'Drag', d: 'Look around.' },
+          { k: 'Tap the floor', d: 'Walk there.' },
+          { k: 'Tap an object', d: 'Walk to it and use it (windows, drawers, the radio...).' },
+          { k: 'Torch button', d: 'Light. Uses battery, and he can see it.' },
+          { k: 'Footsteps button', d: 'Sneak: slower, but much quieter.' },
+          { k: 'Phone / HIDE', d: 'Voicemails and 112. HIDE appears by a hiding place.' }
+        ],
+        keys3d: [
+          { k: 'W / S', d: 'Walk forward and back.' },
+          { k: 'A / D', d: 'Step left and right.' },
+          { k: 'Drag mouse, or arrows', d: 'Look around.' },
+          { k: 'Click, or E', d: 'Use what you click (or the nearest object).' },
+          { k: 'F / Shift or C', d: 'Torch (uses battery) / sneak quietly.' },
+          { k: 'H / P or Tab', d: 'Hide by a hiding place / open the phone.' },
+          { k: 'Space', d: 'Pause a voicemail that is playing.' }
         ],
         keys: [
           { k: 'A / D or arrows', d: 'Walk. You can also click the floor.' },
@@ -77,6 +96,8 @@ export const TEXTS = {
 
   hints: {
     start:     'Tap the floor to walk. Tap objects to look.',
+    start3d:   'Drag to look around. Tap the floor to walk, tap objects to use them.',
+    start3dKeys: 'W/S to walk, A/D to step, drag the mouse to look. Click objects to use them.',
     phone:     'Your phone is your torch. Open it at the bottom right.',
     torch:     'Light costs battery. Light also shows you to others.',
     damaged:   'A damaged voicemail needs a fix from the house.',

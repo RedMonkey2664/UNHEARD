@@ -5,6 +5,7 @@
 import Phaser from 'phaser';
 import { BALANCE } from '../config/balance.js';
 import { CSS } from '../config/constants.js';
+import { DEVICE } from '../utils/device.js';
 import { TEXTS } from '../data/texts.js';
 import { bus } from '../systems/eventBus.js';
 import { textStyle } from '../ui/text.js';
@@ -41,7 +42,9 @@ export class PrologueScene extends Phaser.Scene {
     });
     const handOver = momAt + P.momTextHoldSec * 1000 + 500;
     this.time.delayedCall(handOver, () => {
-      bus.emit('ui:toast', { text: TEXTS.hints.start, sec: P.hintSec });
+      const hint = !this.registry.get('view3d') ? TEXTS.hints.start
+        : (DEVICE.touch ? TEXTS.hints.start3d : TEXTS.hints.start3dKeys);
+      bus.emit('ui:toast', { text: hint, sec: P.hintSec });
       bus.emit('ui:objective', {});
       state.flags.arrivalShown = true;
       state.player.locked = false;

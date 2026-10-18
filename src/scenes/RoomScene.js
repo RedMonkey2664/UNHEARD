@@ -29,6 +29,7 @@ import { FlickerController } from '../render/FlickerController.js';
 import { TintLayer } from '../render/TintLayer.js';
 import { RoomDecor } from '../render/RoomDecor.js';
 import { ART_ANCHOR, DOOR_ANCHOR } from '../render/art/roomArt.js';
+import { View3D } from '../render3d/View3D.js';
 import { HollowEntity } from '../entities/HollowEntity.js';
 import { NaniGlimpse } from '../entities/NaniGlimpse.js';
 import { createPresence, createTemptation } from '../systems/presence.js';
@@ -39,6 +40,7 @@ const H = BALANCE.world.height;
 const FLOOR = BALANCE.world.floorY;
 const P = BALANCE.player;
 const MAX_DT = 0.05;  // docs/02 section 6: clamp to avoid tunnelling
+const DRAG_PX = 10;   // 3D: a press that moves further than this is a look, not a tap
 
 const DEPTH = { room: 0, props: 1, player: 5, dark: 10, warm: 10.2, tint: 10.5, emissive: 10.6, dust: 10.7,
   outline: 11, vikram: 11, glint: 11.2, ghost: 11.5, debug: 12, vignette: 13.6, grain: 13.7, label: 13.8,
@@ -100,6 +102,18 @@ export class RoomScene extends Phaser.Scene {
     this.transitioning = false;
 
     this.cameras.main.setBackgroundColor(COLORS.void);
+    // First person: Three.js draws the room under the Phaser canvas. This
+    // scene keeps running the game and its input; its own camera draws
+    // nothing (alpha 0 skips rendering but keeps input).
+    this.view3d = this.state.settings.view3d ? new View3D(this.game) : null;
+    this.registry.set('view3d', Boolean(this.view3d));
+    if (this.view3d) {
+      this.cameras.main.setAlpha(0);
+      this.events.once('shutdown', () => {
+        this.view3d.dispose();
+        this.view3d = null;
+      });
+    }
     this.buildPlayer();
     this.buildVikram();
     this.darkness = new DarknessLayer(this, DEPTH.dark);
@@ -113,6 +127,10 @@ export class RoomScene extends Phaser.Scene {
     this.lastDt = 0;
     this.flash = this.add.rectangle(W / 2, H / 2, W, H, 0xffffff, 0).setDepth(DEPTH.flash);
     this.nani.cup.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.touchChai());
+    if (this.view3d) {
+      this.nani.cup.disableInteractive();
+      this.mirrorGhostsIn3d();
+    }
     this.decor = new RoomDecor(this, DEPTH);
     this.animT = 0;
     // Extra vignette while hidden (docs/02 section 8).
@@ -232,6 +250,24 @@ export class RoomScene extends Phaser.Scene {
       this.addMark(hs.id, hs.x, ART_ANCHOR[hs.id] ?? LAYOUT.hotspotTopY, hs.label);
     }
     this.decor.build(roomId);
+    // In 3D the room is picked by ray, so the 2D hit areas must not catch taps.
+    if (this.view3d) for (const o of layer.list) if (o.input) o.disableInteractive();
+  }
+
+  // The 2D ghosts still run their timers; the 3D view shows them too.
+  mirrorGhostsIn3d() {
+    const v = this.view3d;
+    const h = this.hollow;
+    const { glimpse, manifest, hide } = h;
+    h.glimpse = (x, y, sec) => { glimpse.call(h, x, y, sec); v.hollowShow(x, sec, false); };
+    h.manifest = (x, y, face) => { manifest.call(h, x, y, face); v.hollowShow(x, 0, face); };
+    h.hide = () => { hide.call(h); v.hollowHide(); };
+    const n = this.nani;
+    const showFigure = n.showFigure;
+    n.showFigure = (x, y, sec, alpha = 0.35) => {
+      showFigure.call(n, x, y, sec, alpha);
+      v.naniShow(x, sec, alpha, y < FLOOR - 10 ? 1.0 : 0);
+    };
   }
 
   // A glint on the object and a label above it, both hidden until near.
@@ -258,7 +294,8 @@ export class RoomScene extends Phaser.Scene {
   bindInput() {
     const K = Phaser.Input.Keyboard.KeyCodes;
     this.keys = this.input.keyboard?.addKeys({
-      a: K.A, d: K.D, left: K.LEFT, right: K.RIGHT, e: K.E, f: K.F, c: K.C, shift: K.SHIFT
+      a: K.A, d: K.D, left: K.LEFT, right: K.RIGHT, e: K.E, f: K.F, c: K.C, shift: K.SHIFT,
+      w: K.W, s: K.S, up: K.UP, down: K.DOWN
     });
     if (this.keys) {
       this.keys.f.on('down', () => this.toggleTorch());
@@ -270,9 +307,41 @@ export class RoomScene extends Phaser.Scene {
     // Taps on hotspots and doors are handled by those objects; anything else
     // is a walk target.
     this.input.on('pointerdown', (pointer, over) => {
+      if (this.view3d) {
+        this.drag = { id: pointer.id, x: pointer.x, y: pointer.y, lx: pointer.x, ly: pointer.y, moved: false };
+        return;
+      }
       if (over.length || this.transitioning) return;
       this.queue({ type: 'walk', x: pointer.worldX });
     });
+    if (!this.view3d) return;
+    // 3D: drag to look around; a tap (no drag) walks to or uses what is under it.
+    this.input.on('pointermove', (pointer) => {
+      const d = this.drag;
+      if (!d || !pointer.isDown || pointer.id !== d.id) return;
+      if (!d.moved && Math.hypot(pointer.x - d.x, pointer.y - d.y) > DRAG_PX) d.moved = true;
+      if (d.moved) this.view3d.look(pointer.x - d.lx, pointer.y - d.ly);
+      d.lx = pointer.x;
+      d.ly = pointer.y;
+    });
+    this.input.on('pointerup', (pointer) => {
+      const d = this.drag;
+      this.drag = null;
+      if (d && !d.moved && pointer.id === d.id) this.tap3d(pointer.x, pointer.y);
+    });
+  }
+
+  tap3d(px, py) {
+    if (this.transitioning) return;
+    const hit = this.view3d.pick(px, py);
+    if (!hit) return;
+    if (hit.type === 'cup') {
+      this.touchChai();
+      return;
+    }
+    if (this.state.player.hidden) return;
+    if (hit.type === 'floor') this.queue({ type: 'walk', x: hit.x });
+    else this.queue({ type: hit.type, id: hit.id, x: hit.x });
   }
 
   bindEvents() {
@@ -287,6 +356,7 @@ export class RoomScene extends Phaser.Scene {
     on('beat:fire', ({ id }) => {
       if (id === 'TV_STATIC_SCARE') this.tvScare();
       if (id === 'RADIO_TURNS_ON') this.decor.radioOn(BALANCE.beats.radioTuneSec);
+      if (id === 'RADIO_TURNS_ON') this.view3d?.radioOn(BALANCE.beats.radioTuneSec);
       const radio = this.overlays?.get('H_RADIO');
       if (id === 'RADIO_TURNS_ON' && radio) {
         radio.setVisible(true);
@@ -370,6 +440,7 @@ export class RoomScene extends Phaser.Scene {
   // Full white flash, or a dark fade with Reduce flash (docs/05 section 6).
   scareFlash() {
     const reduce = this.state.settings.reduceFlash;
+    this.view3d?.flash(reduce ? '#000' : '#fff', reduce ? 0.6 : 0.85, reduce ? 500 : 140);
     this.flash.setFillStyle(reduce ? 0x000000 : 0xffffff, 1).setAlpha(reduce ? 0.6 : 0.85);
     this.tweens.add({ targets: this.flash, alpha: 0, duration: reduce ? 500 : 140 });
   }
@@ -385,6 +456,7 @@ export class RoomScene extends Phaser.Scene {
     if (this.state.player.room !== 'LIVING') return;
     const tv = ROOMS.LIVING.hotspots.find((h) => h.id === 'H_TV');
     const face = this.hollow.face;
+    this.view3d?.tvFace(BALANCE.presence.js3Sec);
     face.setPosition(tv.x, ART_ANCHOR.H_TV + 32).setVisible(true).setAlpha(1);
     if (this.state.settings.reduceFlash) this.hollow.darkenFace(true);
     else this.scareFlash();
@@ -420,6 +492,7 @@ export class RoomScene extends Phaser.Scene {
 
   // Nani's warning: the lamp flickers once (two quick pulses) and ticks.
   lampFlicker() {
+    this.view3d?.lampFlicker();
     this.tweens.killTweensOf(this.lampFlash);
     this.lampFlash.setAlpha(0);
     this.tweens.add({ targets: this.lampFlash, alpha: 0.18, duration: 70, yoyo: true, repeat: 1 });
@@ -490,9 +563,17 @@ export class RoomScene extends Phaser.Scene {
   stepPlayer(dt) {
     const state = this.state;
     const keys = this.keys;
-    const dir = keys
-      ? (keys.d.isDown || keys.right.isDown ? 1 : 0) - (keys.a.isDown || keys.left.isDown ? 1 : 0)
-      : 0;
+    let dir = 0;
+    if (keys && this.view3d) {
+      // W/S walk where you look, A/D step sideways, arrows left/right turn.
+      const fwd = (keys.w.isDown || keys.up.isDown ? 1 : 0) - (keys.s.isDown || keys.down.isDown ? 1 : 0);
+      const strafe = (keys.d.isDown ? 1 : 0) - (keys.a.isDown ? 1 : 0);
+      const turn = (keys.right.isDown ? 1 : 0) - (keys.left.isDown ? 1 : 0);
+      if (turn) this.view3d.turn(turn, dt);
+      dir = this.view3d.moveDir(fwd, strafe);
+    } else if (keys) {
+      dir = (keys.d.isDown || keys.right.isDown ? 1 : 0) - (keys.a.isDown || keys.left.isDown ? 1 : 0);
+    }
     if (dir) this.pending = null;
     state.player.sneaking = this.sneakToggle || Boolean(keys?.shift.isDown);
 
@@ -509,6 +590,10 @@ export class RoomScene extends Phaser.Scene {
     if (target.type === 'door' && arrived) {
       this.pending = null;
       this.doDoor(target.id);
+    }
+    if (target.type === 'hide' && arrived) {
+      this.pending = null;
+      this.toggleHide();
     }
   }
 
@@ -542,6 +627,7 @@ export class RoomScene extends Phaser.Scene {
     // 0.4 s total: half out, swap rooms, half in.
     const half = (P.doorFadeSec * 1000) / 2;
     const cam = this.cameras.main;
+    this.view3d?.fadeThrough(P.doorFadeSec * 1000);
     this.transitioning = true;
     this.state.player.moving = false;
     cam.fadeOut(half, 0, 0, 0);
@@ -558,6 +644,10 @@ export class RoomScene extends Phaser.Scene {
     const state = this.state;
     const p = state.player;
     this.animT += this.lastDt;
+    if (this.view3d) {
+      this.render3d();
+      return;
+    }
     const step = Math.floor(this.animT * ART.walkFps) % 4;
     const h = p.sneaking ? LAYOUT.playerSneakH : LAYOUT.playerH;
     if (this.playerRect.height !== h) this.playerRect.setSize(LAYOUT.playerW, h);
@@ -603,6 +693,26 @@ export class RoomScene extends Phaser.Scene {
     this.drawGhosts();
     this.drawHints();
     this.drawHitboxes();
+  }
+
+  // First person: the 2D layers are skipped; flicker and the Hollow's shape
+  // timers still run, and the 3D view draws the same state.
+  render3d() {
+    const s = this.state;
+    const p = s.player;
+    const T = BALANCE.torch;
+    const dt = this.lastDt;
+    this.flicker.update(s, dt);
+    this.updateShape(dt);
+    this.view3d.update(s, dt, {
+      windowOpen: this.windowOpen,
+      tvOn: checkWhen({ vmDone: 7 }, s),
+      steam: p.room === 'HALL' && !checkWhen({ vmDone: 1 }, s),
+      jitter: this.darkness.radiusJitter,
+      blackout: this.darkness.blackout,
+      busy: p.hidden || p.locked || this.ended,
+      hintDist: s.torchOn ? (s.settings.hotspotHints ? T.outlineDistOn : 0) : T.outlineDistOff
+    });
   }
 
   isWindowOpen(id) {

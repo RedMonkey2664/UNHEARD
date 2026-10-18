@@ -42,6 +42,7 @@ async function start() {
     width: BALANCE.world.width,
     height: BALANCE.world.height,
     backgroundColor: COLORS.void,
+    transparent: true,       // the 3D view is drawn under the Phaser canvas
     banner: false,
     disableContextMenu: true,
     scale: {

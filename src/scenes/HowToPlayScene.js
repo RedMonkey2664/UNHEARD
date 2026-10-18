@@ -72,7 +72,9 @@ export class HowToPlayScene extends Phaser.Scene {
   showPage() {
     const T = TEXTS.howTo;
     const page = T.pages[this.page];
-    const rows = page.rows || (DEVICE.touch ? page.touch : page.keys);
+    const view3d = this.registry.get('settings')?.view3d;
+    const set = (DEVICE.touch ? 'touch' : 'keys') + (view3d ? '3d' : '');
+    const rows = page.rows || page[set];
     this.heading.setText(page.heading);
 
     this.rows.removeAll(true);

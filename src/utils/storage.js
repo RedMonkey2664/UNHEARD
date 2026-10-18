@@ -39,7 +39,7 @@ function writeJson(key, value, storage) {
 export function sanitizeSettings(raw) {
   const s = { ...DEFAULT_SETTINGS };
   if (!raw || typeof raw !== 'object') return s;
-  for (const key of ['assist', 'reduceFlash', 'hotspotHints', 'vibration']) {
+  for (const key of ['assist', 'reduceFlash', 'hotspotHints', 'vibration', 'view3d']) {
     if (typeof raw[key] === 'boolean') s[key] = raw[key];
   }
   for (const key of ['volMaster', 'volVoice', 'volSfx']) {

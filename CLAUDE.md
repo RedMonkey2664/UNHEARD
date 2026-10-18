@@ -37,6 +37,7 @@ propose a fix. Do not silently pick one.
 ## Tech stack (do not change without asking the user)
 
   - Phaser 3 (latest 3.x), plain JavaScript (ES modules), no TypeScript
+  - Three.js 0.185.1 for the 3D first-person view (approved by the user, docs/11)
   - Vite for dev server and build, Vitest for unit tests
   - Node 20+
   - No backend, no analytics, no external CDN, no external fonts at runtime
@@ -159,3 +160,4 @@ dependency that is not Phaser, Vite or Vitest without asking the user first.
   docs/08_BUILD_PLAN_AND_PROMPTS.md      stages, prompts, acceptance checklists
   docs/09_TEST_QA_AND_DEBUG.md           debug panel, tests, tuning, release
   docs/10_VISUAL_PASS.md                 code-drawn art, lighting, HUD/phone/title styling
+  docs/11_3D_VIEW.md                     3D first-person view (Three.js), 2D classic kept

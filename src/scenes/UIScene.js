@@ -318,6 +318,10 @@ export class UIScene extends Phaser.Scene {
     if (show !== this.hideButton.bg.visible) this.hideButton.setVisible(show);
     if (!show) return;
     this.hideButton.setText(s.player.hidden ? TEXTS.ui.comeOut : TEXTS.ui.hide);
+    if (this.registry.get('view3d')) {
+      this.hideButton.setPosition(480, 330);
+      return;
+    }
     const x = Phaser.Math.Clamp(s.player.x, 80, 880);
     this.hideButton.setPosition(x, 250);
   }
