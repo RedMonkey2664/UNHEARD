@@ -11,10 +11,12 @@ function img(key) {
   return { key, url: IMG + key + '.png' };
 }
 
-// ogg first, mp3 for Safari. duration in seconds; 0 means a loop with no end.
+// ogg first, mp3 for Safari, then the code-generated wav (scripts/
+// make-audio.mjs) when no recording exists. Only files that exist are loaded.
+// duration in seconds; 0 means a loop with no end.
 function audio(folder, key, duration) {
   const base = AUD + folder + '/' + key;
-  return { key, urls: [base + '.ogg', base + '.mp3'], duration };
+  return { key, urls: [base + '.ogg', base + '.mp3', base + '.wav'], duration };
 }
 
 function range(prefix, from, to) {

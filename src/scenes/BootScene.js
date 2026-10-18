@@ -3,6 +3,7 @@
 
 import Phaser from 'phaser';
 import { AUDIO, IMAGES } from '../data/assets.js';
+import { COLORS } from '../config/constants.js';
 import { generateArt } from '../render/art/generateArt.js';
 
 export class BootScene extends Phaser.Scene {
@@ -31,6 +32,19 @@ export class BootScene extends Phaser.Scene {
     });
 
     this.registry.set('missingAssets', missing);
+    this.showProgress();
+  }
+
+  // A thin bar while the sound loads (about 6 MB), so a phone on mobile data
+  // never looks frozen.
+  showProgress() {
+    const W = this.scale.width;
+    const H = this.scale.height;
+    const barW = 240;
+    const track = this.add.rectangle(W / 2, H / 2, barW, 2, COLORS.line);
+    const bar = this.add.rectangle(W / 2 - barW / 2, H / 2, 0, 2, COLORS.cream).setOrigin(0, 0.5);
+    this.load.on('progress', (p) => bar.setSize(barW * p, 2));
+    this.load.once('complete', () => { track.destroy(); bar.destroy(); });
   }
 
   create() {

@@ -49,4 +49,8 @@ The build is a static site in `dist/` and works from any subfolder.
   upload as an HTML game, viewport 960 x 540, with "Mobile friendly" and
   "Fullscreen button" ticked.
 
-App icons are generated with `node scripts/make-icons.mjs`.
+App icons are generated with `node scripts/make-icons.mjs`, and the sound
+effects, ambience, music and voicemail beds with `node scripts/make-audio.mjs`.
+Spoken lines are shown as subtitles; to add real recordings, put an `.ogg` or
+`.mp3` with the same name (for example `public/assets/audio/voice/vm1.mp3`)
+next to the generated file and it is used instead.
