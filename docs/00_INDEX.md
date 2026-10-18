@@ -30,6 +30,7 @@ The stage prompts in docs/08 are written to avoid that.
   07_UI_UX_ART_AUDIO.md              HUD, phone UI, art, audio, accessibility
   08_BUILD_PLAN_AND_PROMPTS.md       8 stages with prompts and checklists
   09_TEST_QA_AND_DEBUG.md            debug panel, tests, tuning, release
+  10_VISUAL_PASS.md                  visual pass: code-drawn art, lighting, UI styling
 
 ## Glossary
 
@@ -192,6 +193,15 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Stage 6: spr_* files are used as single images (no sprite-sheet frames yet): the docs do not give frame sizes. Name and size the sheets and the animation can be wired.
   2026-10-17  Stage 6: with a room background image, greybox shapes and labels hide but their hit areas stay; window/TV/radio overlays show when the file exists, else the tint fallback.
   2026-10-17  Stage 6: verified with temporary generated test files (WAV tones, PNGs), deleted afterwards; public/assets ships empty.
+  2026-10-18  Stage 1.5: art is drawn on Phaser canvas textures at boot (Canvas 2D for gradients); a real PNG with the same key always wins.
+  2026-10-18  Stage 1.5: torch-off glints (80 px) always show, as docs/03 s8 requires for navigating the dark; the Hotspot hints setting turns off only the 120 px torch-on glints. docs/10 s4 put both under the setting; docs/03 ranks higher.
+  2026-10-18  Stage 1.5: hit areas are unchanged (docs/04); glints and labels sit on the drawn objects via ART_ANCHOR in render/art/roomArt.js.
+  2026-10-18  Stage 1.5: at most two labels show, the nearest within interactRange plus one more only if it is >= 90 px away (ART.labelGap); a sweep of every room found no overlaps.
+  2026-10-18  Stage 1.5: generated character art keeps its own size (player 156 px, Vikram 178 px) so it fits the drawn doors; real PNGs are fitted to the docs/07 190 px.
+  2026-10-18  Stage 1.5: the phone in the player's hand has a tiny emissive glow so the player can always find themselves in the dark.
+  2026-10-18  Stage 1.5: the edge vignette is Phaser's WebGL vignette shader (a texture banded visibly); the dithered texture is the canvas-renderer fallback. No vignette on the title (it would dim the buttons).
+  2026-10-18  Stage 1.5: keyboard phone toggles (P, Tab) are instant; taps slide (250 ms open, 180 ms close, strong ease-out). Title glitch and curtain sway are off under OS reduced-motion.
+  2026-10-18  Stage 1.5: visual-only numbers live in constants.js ART; colours in COLORS (new tokens added). balance.js and data files unchanged.
 
 ## Changelog
 

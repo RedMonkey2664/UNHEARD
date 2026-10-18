@@ -35,7 +35,7 @@ export class CardAssembler extends Modal {
   }
 
   reset() {
-    if (this.scraps) this.scraps.forEach((s) => { s.btn.bg.destroy(); s.btn.label.destroy(); });
+    if (this.scraps) this.scraps.forEach((s) => s.btn.destroy());
     this.slots.forEach((s) => { s.id = null; });
     this.selected = null;
     this.scraps = this.initial.map((id, i) => {
@@ -57,8 +57,7 @@ export class CardAssembler extends Modal {
     if (!this.selected || this.slots[i].id) return;
     const scrap = this.scraps.find((s) => s.id === this.selected);
     this.slots[i].id = this.selected;
-    scrap.btn.bg.setPosition(this.slots[i].x, this.slotsY);
-    scrap.btn.label.setPosition(this.slots[i].x, this.slotsY);
+    scrap.btn.setPosition(this.slots[i].x, this.slotsY);
     scrap.btn.setSelected(false);
     this.selected = null;
     if (this.slots.every((s) => s.id)) {

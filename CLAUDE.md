@@ -81,6 +81,39 @@ Commands you must keep working:
 - Do not add features that are not in the docs. Stretch goals are listed in
   docs/00_INDEX.md and are only built when the user asks.
 
+## Skills policy
+
+Before using any skill, read its description and use it only if it fits the
+task. docs/07 and docs/10 define the art direction (palette, mood, fonts).
+Skills are for CRAFT (spacing, typography, motion, accessibility, testing).
+A skill must never change the palette, the mood or the stack.
+
+Use these skills when the task matches:
+- UI polish (HUD, phone panel, title screen, toasts, buttons):
+  frontend-design (one copy only), ui-ux-pro-max, redesign-existing-projects,
+  high-end-visual-design, design-taste-frontend.
+- Motion and micro-interactions (button presses, panel slides, memory-scene
+  fades, glitch effects): emil-design-eng, then review-animations to check them.
+  Implement them with Phaser tweens, not a new library.
+- Static art files (title card, memory stills mem_1..7, ending stills, grain
+  and static textures into public/assets/img): canvas-design and
+  algorithmic-art. Keep every file under the sizes in docs/07.
+- Reference mockups the user gives as images: image-to-code. If an
+  image-generation tool is available, imagegen-frontend-mobile /
+  imagegen-frontend-web may be used for reference art only. Never ship
+  generated images with real logos, brands or recognisable people.
+- Verification: webapp-testing (run the game in a browser, take screenshots of
+  each room with torch on and with the Art preview toggle, tap through the
+  voicemail loop, report console errors) and chrome-browser or
+  built-in-browser to look at localhost. Use this at the end of every stage.
+- Long data files (voicemails.js, texts.js, endings.js, rooms.js):
+  full-output-enforcement, so nothing is shortened or left as a placeholder.
+
+Do NOT use: document, PDF, spreadsheet, slide, Google, Slack, MCP, brand,
+theme, video or GSAP skills, and do not use minimalist-ui or
+industrial-brutalist-ui (their style clashes with docs/07). Do not add any
+dependency that is not Phaser, Vite or Vitest without asking the user first.
+
 ## Things you must NOT do
 
 - Do not add gore, graphic violence or real brands, songs or logos.
@@ -125,3 +158,4 @@ Commands you must keep working:
   docs/07_UI_UX_ART_AUDIO.md             HUD, phone, art, audio, accessibility
   docs/08_BUILD_PLAN_AND_PROMPTS.md      stages, prompts, acceptance checklists
   docs/09_TEST_QA_AND_DEBUG.md           debug panel, tests, tuning, release
+  docs/10_VISUAL_PASS.md                 code-drawn art, lighting, HUD/phone/title styling

@@ -1,6 +1,7 @@
-// Phone panel (docs/07 section 3): VOICEMAIL, MESSAGES, NOTES. 300 x 380,
-// anchored bottom right above the HUD buttons, slides up in 0.25 s. The game
-// keeps running behind it.
+// Phone panel (docs/07 section 3, styled per docs/10 section 6): a phone
+// device with VOICEMAIL, MESSAGES and NOTES. The screen is 300 x 384,
+// anchored bottom right above the HUD buttons; it slides up in 0.25 s. The
+// game keeps running behind it.
 
 import Phaser from 'phaser';
 import { BALANCE } from '../config/balance.js';
@@ -8,6 +9,7 @@ import { COLORS, CSS } from '../config/constants.js';
 import { EVIDENCE } from '../data/items.js';
 import { TEXTS } from '../data/texts.js';
 import { VOICEMAILS } from '../data/voicemails.js';
+import { PHONE_DEVICE } from '../render/art/uiArt.js';
 import { VM_COUNT } from '../systems/gameState.js';
 import { currentVmId } from '../systems/interaction.js';
 import { clockLabel } from '../systems/messages.js';
@@ -18,43 +20,67 @@ const X0 = 646;
 const Y0 = 76;
 const W = 300;
 const H = 384;
-const CONTENT_Y = Y0 + 80;
-const CONTENT_H = H - 86;
+const CONTENT_Y = Y0 + 78;
+const CONTENT_H = H - 84;
 const ROW_H = 24;
-const SLIDE_MS = 250;
+const OPEN_MS = 250;
+const CLOSE_MS = 180;
 const TABS = ['VOICEMAIL', 'MESSAGES', 'NOTES'];
-const STATUS_LABEL = { locked: 'locked', damaged: 'DAMAGED', fixed: 'FIXED',
-  playing: 'PLAYING', memory: '...', done: 'done' };
+const TAB_NAMES = { VOICEMAIL: 'Voicemail', MESSAGES: 'Messages', NOTES: 'Notes' };
+const hex = (c) => '#' + c.toString(16).padStart(6, '0');
+
+// Status chips (docs/10): text, fill, text colour.
+const CHIPS = {
+  locked: ['LOCKED', COLORS.chipLocked, '#6B7472'],
+  damaged: ['DAMAGED', COLORS.chipDamaged, hex(COLORS.amber)],
+  fixed: ['FIXED', COLORS.chipFixed, hex(COLORS.green)],
+  playing: ['PLAYING', COLORS.wall, CSS.cream],
+  memory: ['...', COLORS.wall, CSS.cream],
+  done: ['DONE', COLORS.chipDone, CSS.dim]
+};
 
 export class PhoneUI {
-  // actions: { preview(id), fix(id), play(id), pause(), objective() }
+  // actions: { row, preview, fix, play, pause, call, objective, hints, temptationRow }
   constructor(scene, actions) {
     this.scene = scene;
     this.actions = actions;
     this.root = scene.add.container(0, 0).setDepth(25).setVisible(false);
     this.sig = '';
 
-    const panel = scene.add.rectangle(X0 + W / 2, Y0 + H / 2, W, H, COLORS.panel, 0.92)
-      .setStrokeStyle(1, COLORS.line).setInteractive();
-    this.timeText = scene.add.text(X0 + 14, Y0 + 16, '', textStyle({ size: 16, align: 'left' }))
+    const P = PHONE_DEVICE;
+    const device = scene.add.image(X0 - P.bezel, Y0 - P.bezel, 'ui_phone').setOrigin(0, 0);
+    // The whole device swallows taps; the room above it stays tappable.
+    const panel = scene.add.rectangle(X0 + W / 2, Y0 + H / 2, W + P.bezel * 2, H + P.bezel * 2,
+      COLORS.panel, 0.001).setInteractive();
+    this.timeText = scene.add.text(X0 + 18, Y0 + 14, '', textStyle({ size: 16, align: 'left', color: CSS.dim }))
       .setOrigin(0, 0.5);
-    this.batText = scene.add.text(X0 + W - 14, Y0 + 16, '', textStyle({ size: 16, align: 'right' }))
+    this.batText = scene.add.text(X0 + W - 18, Y0 + 14, '', textStyle({ size: 16, align: 'right', color: CSS.dim }))
       .setOrigin(1, 0.5);
-    this.root.add([panel, this.timeText, this.batText]);
+    this.root.add([device, panel, this.timeText, this.batText]);
 
-    this.tabButtons = TABS.map((tab, i) => new Button(scene, X0 + 52 + i * 98, Y0 + 52, tab,
-      () => this.setTab(tab), { width: 94, height: 44, size: 16 }).addTo(this.root));
+    // Tabs: plain words with an underline under the open one.
+    this.tabs = TABS.map((tab, i) => {
+      const cx = X0 + 52 + i * 98;
+      const hit = scene.add.rectangle(cx, Y0 + 46, 94, 44, COLORS.panel, 0.001).setInteractive({ useHandCursor: true });
+      hit.on('pointerdown', () => this.setTab(tab));
+      const label = scene.add.text(cx, Y0 + 44, TAB_NAMES[tab], textStyle({ size: 16 })).setOrigin(0.5);
+      this.root.add([hit, label]);
+      return { tab, label };
+    });
+    this.underline = scene.add.graphics();
+    this.root.add(this.underline);
+    this.drawnTab = null;
 
     this.content = scene.add.container(0, 0);
     this.root.add(this.content);
     this.progress = scene.add.graphics();
     this.root.add(this.progress);
     // Reacts to noise, not to Vikram's state, so the AI is never revealed.
-    this.pauseHint = scene.add.text(X0 + W / 2, Y0 + H - 16, TEXTS.ui.pauseHint,
-      textStyle({ size: 16, color: '#E58C79' })).setOrigin(0.5).setVisible(false);
+    this.pauseHint = scene.add.text(X0 + W / 2, Y0 + H - 18, TEXTS.ui.pauseHint,
+      textStyle({ size: 16, color: hex(COLORS.danger) })).setOrigin(0.5).setVisible(false);
     this.root.add(this.pauseHint);
 
-    // NOTES and MESSAGES can be longer than the panel: mask and drag to scroll.
+    // NOTES and MESSAGES can be longer than the screen: mask and drag to scroll.
     const maskShape = scene.make.graphics({ add: false });
     maskShape.fillStyle(0xffffff).fillRect(X0, CONTENT_Y - 4, W, CONTENT_H + 4);
     this.content.setMask(maskShape.createGeometryMask());
@@ -79,26 +105,38 @@ export class PhoneUI {
     return this.state().phone.open;
   }
 
-  open(tab) {
+  // instant: keyboard toggles skip the slide (they repeat, so motion would lag).
+  open(tab, instant = false) {
     const s = this.state();
     if (tab) s.phone.tab = tab;
     if (s.phone.open) return;
     s.phone.open = true;
     this.sig = '';
-    this.root.setVisible(true).setY(H);
-    this.scene.tweens.add({ targets: this.root, y: 0, duration: SLIDE_MS, ease: 'Quad.easeOut' });
+    this.scene.tweens.killTweensOf(this.root);
+    this.root.setVisible(true);
+    if (instant) {
+      this.root.setY(0);
+      return;
+    }
+    this.root.setY(H * 0.6);
+    this.scene.tweens.add({ targets: this.root, y: 0, duration: OPEN_MS, ease: 'Quart.easeOut' });
   }
 
-  close() {
+  close(instant = false) {
     const s = this.state();
     if (!s.phone.open) return;
     s.phone.open = false;
-    this.scene.tweens.add({ targets: this.root, y: H, duration: SLIDE_MS, ease: 'Quad.easeIn',
+    this.scene.tweens.killTweensOf(this.root);
+    if (instant) {
+      this.root.setVisible(false);
+      return;
+    }
+    this.scene.tweens.add({ targets: this.root, y: H * 0.6, duration: CLOSE_MS, ease: 'Quart.easeOut',
       onComplete: () => { if (!this.state().phone.open) this.root.setVisible(false); } });
   }
 
-  toggle() {
-    if (this.isOpen()) this.close(); else this.open();
+  toggle(instant = false) {
+    if (this.isOpen()) this.close(instant); else this.open(null, instant);
   }
 
   setTab(tab) {
@@ -116,8 +154,8 @@ export class PhoneUI {
   update(state) {
     if (!state.phone.open) return;
     this.timeText.setText(clockLabel(state.clock.runSeconds));
-    this.batText.setText('BAT ' + Math.ceil(state.battery) + '%');
-    this.tabButtons.forEach((b, i) => b.setSelected(TABS[i] === state.phone.tab));
+    this.batText.setText(Math.ceil(state.battery) + '%');
+    this.drawTabs(state.phone.tab);
 
     const sig = this.signature(state);
     if (sig !== this.sig) {
@@ -127,6 +165,18 @@ export class PhoneUI {
     this.drawProgress(state);
     this.pauseHint.setVisible(state.phone.playing && !state.phone.paused &&
       state.noise >= BALANCE.noise.investigateAt);
+  }
+
+  drawTabs(active) {
+    if (active === this.drawnTab) return;
+    this.drawnTab = active;
+    const g = this.underline.clear();
+    for (const t of this.tabs) {
+      const on = t.tab === active;
+      t.label.setColor(on ? CSS.cream : CSS.dim);
+      if (on) g.fillStyle(COLORS.cream, 1).fillRoundedRect(t.label.x - t.label.width / 2, Y0 + 56, t.label.width, 2, 1);
+    }
+    g.fillStyle(COLORS.line, 1).fillRect(X0 + 8, Y0 + 64, W - 16, 1);
   }
 
   // Rebuild only when something the panel shows has changed.
@@ -155,52 +205,62 @@ export class PhoneUI {
     return t;
   }
 
+  chip(status, rightX, y) {
+    const [label, fill, color] = CHIPS[status];
+    const t = this.scene.add.text(0, y, label, textStyle({ size: 16, color })).setOrigin(1, 0.5);
+    const w = t.width + 14;
+    t.setX(rightX - 7);
+    const g = this.scene.add.graphics();
+    g.fillStyle(fill, 1).fillRoundedRect(rightX - w, y - 10, w, 20, 10);
+    this.content.add([g, t]);
+    return w;
+  }
+
+  addButton(x, y, label, fn, w, h = 40) {
+    const b = new Button(this.scene, x, y, label, fn, { width: w, height: h, size: 16 });
+    this.content.add(b.parts());
+    return b;
+  }
+
   buildVoicemail(state) {
     const cur = currentVmId(state);
     let y = CONTENT_Y;
     const f = state.flags;
     if (f.tapeTaken && f.tapeMoment === null && !f.callConnected) {
-      const b = new Button(this.scene, X0 + W / 2, y + 20, f.callConnecting ? 'CALLING 112...' : 'CALL 112',
-        () => this.actions.call(), { width: W - 16, height: 40, size: 18 });
-      b.bg.setFillStyle(0x1E5A2C, 1).setStrokeStyle(1, 0x6FCF7F);
-      this.content.add([b.bg, b.label]);
-      y += 46;
+      const b = this.addButton(X0 + W / 2, y + 20, f.callConnecting ? 'Calling 112...' : 'Call 112',
+        () => this.actions.call(), W - 24);
+      b.setColors({ fill: COLORS.greenDark, stroke: COLORS.green, text: CSS.cream });
+      y += 48;
     }
     for (let id = 1; id <= VM_COUNT + 1; id++) {
       const isEight = id === VM_COUNT + 1;
       const vm = VOICEMAILS[id];
       const status = isEight ? 'locked' : state.voicemails[id].status;
-      const done = status === 'done';
-      const color = done ? CSS.dim : status === 'locked' ? '#59605E' : CSS.cream;
-      const row = this.scene.add.rectangle(X0 + W / 2, y + ROW_H / 2, W - 12, ROW_H, 0x000000, 0.001)
+      const color = status === 'done' ? CSS.dim : status === 'locked' ? '#59605E' : CSS.cream;
+      const mid = y + ROW_H / 2;
+      const row = this.scene.add.rectangle(X0 + W / 2, mid, W - 12, ROW_H, COLORS.panel, 0.001)
         .setInteractive({ useHandCursor: true });
       row.on('pointerdown', () => this.actions.row(isEight ? null : id));
       this.content.add(row);
-      const title = isEight ? '??? ??? ???' : vm.title;
-      this.addText(X0 + 12, y + 4, `${id}  ${title}`, { color });
-      const stamp = isEight ? '' : vm.stamp + '  ';
-      this.addText(X0 + W - 12, y + 4, stamp + STATUS_LABEL[status], { color, align: 'right' })
-        .setOrigin(1, 0);
+      this.addText(X0 + 14, mid, String(id), { color: CSS.dim }).setOrigin(0, 0.5);
+      this.addText(X0 + 32, mid, isEight ? '??? ??? ???' : vm.title, { color }).setOrigin(0, 0.5);
+      const chipW = this.chip(status, X0 + W - 12, mid);
+      if (!isEight) {
+        this.addText(X0 + W - 18 - chipW, mid, vm.stamp, { color: '#59605E' }).setOrigin(1, 0.5);
+      }
       y += ROW_H;
 
       if (id === cur && !state.phone.playing) {
         const s = state.voicemails[id].status;
-        const mk = (dx, label, fn, enabled) => {
-          const b = new Button(this.scene, X0 + dx, y + 22, label, fn, { width: 90, height: 40, size: 16 });
-          b.setEnabled(enabled);
-          this.content.add([b.bg, b.label]);
-        };
-        mk(52, 'PREVIEW 3s', () => this.actions.preview(id), true);
-        mk(150, 'FIX', () => this.actions.fix(id), s === 'damaged');
-        mk(248, 'PLAY', () => this.actions.play(id), s === 'fixed');
-        y += 48;
+        this.addButton(X0 + 54, y + 24, 'Preview 3s', () => this.actions.preview(id), 92);
+        this.addButton(X0 + 150, y + 24, 'Fix', () => this.actions.fix(id), 92).setEnabled(s === 'damaged');
+        this.addButton(X0 + 246, y + 24, 'Play', () => this.actions.play(id), 92).setEnabled(s === 'fixed');
+        y += 50;
       }
       if (state.phone.playing && state.phone.playingId === id) {
-        const b = new Button(this.scene, X0 + 56, y + 22, state.phone.paused ? 'RESUME' : 'PAUSE',
-          () => this.actions.pause(), { width: 100, height: 40, size: 16 });
-        this.content.add([b.bg, b.label]);
-        this.progressY = y + 22;
-        y += 48;
+        this.addButton(X0 + 58, y + 24, state.phone.paused ? 'Resume' : 'Pause', () => this.actions.pause(), 96);
+        this.progressY = y + 24;
+        y += 50;
       }
     }
     if (state.flags.temptationShown) this.actions.temptationRow?.(this.content, X0, y, W);
@@ -208,12 +268,13 @@ export class PhoneUI {
 
   buildMessages(state) {
     let y = CONTENT_Y;
-    if (!state.messages.length) this.addText(X0 + 12, y, TEXTS.ui.emptyNotes, { color: CSS.dim });
+    if (!state.messages.length) this.addText(X0 + 14, y, TEXTS.ui.emptyNotes, { color: CSS.dim });
     for (const m of state.messages) {
-      this.addText(X0 + 12, y, `${m.from}  ·  ${m.time}`, { color: CSS.dim });
+      this.addText(X0 + 14, y, m.from, { color: CSS.cream });
+      this.addText(X0 + W - 14, y, m.time, { color: CSS.dim, align: 'right' }).setOrigin(1, 0);
       y += 22;
-      const t = this.addText(X0 + 12, y, m.text, { color: CSS.cream, wrap: W - 24 });
-      y += t.height + 14;
+      const t = this.addText(X0 + 14, y, m.text, { color: CSS.text, wrap: W - 28 });
+      y += t.height + 16;
     }
     this.maxScroll = Math.max(0, y - (CONTENT_Y + CONTENT_H));
   }
@@ -221,32 +282,32 @@ export class PhoneUI {
   buildNotes(state) {
     let y = CONTENT_Y;
     const heading = (label) => {
-      this.addText(X0 + 12, y, label, { color: CSS.lamp });
+      this.addText(X0 + 14, y, label, { color: CSS.lamp });
       y += 22;
     };
     const para = (str, color = CSS.text) => {
-      const t = this.addText(X0 + 12, y, str, { color, wrap: W - 24 });
-      y += t.height + 8;
+      const t = this.addText(X0 + 14, y, str, { color, wrap: W - 28 });
+      y += t.height + 10;
       return t;
     };
 
-    heading('OBJECTIVE');
+    heading('Objective');
     const obj = para(TEXTS.objectives[state.act], CSS.cream);
     obj.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.actions.objective());
 
     const hints = this.actions.hints();
     if (hints.length) {
-      heading('HINT');
+      heading('Hint');
       hints.forEach((h) => para(h, CSS.dim));
     }
     if (state.flags.tapeTaken) para(TEXTS.ui.callTip, CSS.dim);
 
-    heading('EVIDENCE');
+    heading('Evidence');
     if (!state.inventory.evidence.length) para(TEXTS.ui.emptyNotes, CSS.dim);
-    for (const id of state.inventory.evidence) para(`${EVIDENCE[id].name} - ${EVIDENCE[id].desc}`);
+    for (const id of state.inventory.evidence) para(`${EVIDENCE[id].name}: ${EVIDENCE[id].desc}`);
 
     if (state.inventory.evidence.includes('E4')) {
-      heading('LOCKER CODE');
+      heading('Locker code');
       para('0614', CSS.cream);
     }
     this.maxScroll = Math.max(0, y - (CONTENT_Y + CONTENT_H));
@@ -257,9 +318,11 @@ export class PhoneUI {
     g.clear();
     if (!state.phone.playing || state.phone.tab !== 'VOICEMAIL' || this.progressY == null) return;
     const dur = VOICEMAILS[state.phone.playingId].durationSec;
-    const x = X0 + 120;
-    const w = W - 136;
-    g.fillStyle(COLORS.line, 1).fillRect(x, this.progressY - 3, w, 6);
-    g.fillStyle(COLORS.cream, 1).fillRect(x, this.progressY - 3, w * Math.min(1, state.phone.playPos / dur), 6);
+    const x = X0 + 118;
+    const w = W - 134;
+    const t = Math.min(1, state.phone.playPos / dur);
+    g.fillStyle(COLORS.line, 1).fillRoundedRect(x, this.progressY - 3, w, 6, 3);
+    g.fillStyle(COLORS.cream, 1).fillRoundedRect(x, this.progressY - 3, Math.max(6, w * t), 6, 3);
+    g.fillStyle(COLORS.cream, 1).fillCircle(x + w * t, this.progressY, 5);
   }
 }

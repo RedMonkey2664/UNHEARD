@@ -3,6 +3,7 @@
 
 import Phaser from 'phaser';
 import { AUDIO, IMAGES } from '../data/assets.js';
+import { generateArt } from '../render/art/generateArt.js';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -34,10 +35,13 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     this.makeLightMask();
+    // Code-drawn art for every key that did not load as a file (docs/10).
+    this.registry.set('generatedArt', generateArt(this));
     this.scene.start('Title');
   }
 
-  // Radial gradient used by the DarknessLayer to erase the torch circle.
+  // Radial gradient used by the DarknessLayer to erase the torch circle: a
+  // soft falloff so the torch reads as warm light, not a cut-out (docs/10).
   makeLightMask() {
     if (this.textures.exists('light_mask')) return;
     const size = 512;
@@ -46,7 +50,8 @@ export class BootScene extends Phaser.Scene {
     const ctx = tex.getContext();
     const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
     g.addColorStop(0, 'rgba(255,255,255,1)');
-    g.addColorStop(0.6, 'rgba(255,255,255,0.85)');
+    g.addColorStop(0.45, 'rgba(255,255,255,0.9)');
+    g.addColorStop(0.75, 'rgba(255,255,255,0.45)');
     g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, size, size);

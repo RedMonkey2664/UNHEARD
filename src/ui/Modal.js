@@ -11,13 +11,24 @@ export class Modal {
   constructor(scene, title, onClose) {
     this.scene = scene;
     this.root = scene.add.container(0, 0).setDepth(30);
-    const panel = scene.add.rectangle(MODAL.x, MODAL.y, MODAL.w, MODAL.h, COLORS.panel, 0.97)
-      .setStrokeStyle(1, COLORS.line).setInteractive();
+    // Rounded panel with a hairline rim; an invisible rectangle takes the taps.
+    const skin = scene.add.graphics();
+    const l = MODAL.x - MODAL.w / 2;
+    const t0 = MODAL.y - MODAL.h / 2;
+    skin.fillStyle(COLORS.void, 0.45).fillRoundedRect(l + 4, t0 + 8, MODAL.w, MODAL.h, 18);
+    skin.fillStyle(COLORS.panel, 0.97).fillRoundedRect(l, t0, MODAL.w, MODAL.h, 18);
+    skin.fillStyle(COLORS.glassHi, 0.03).fillRoundedRect(l + 2, t0 + 2, MODAL.w - 4, 50, { tl: 16, tr: 16, bl: 0, br: 0 });
+    skin.lineStyle(1, COLORS.line, 1).strokeRoundedRect(l + 0.5, t0 + 0.5, MODAL.w - 1, MODAL.h - 1, 18);
+    const panel = scene.add.rectangle(MODAL.x, MODAL.y, MODAL.w, MODAL.h, COLORS.panel, 0.001).setInteractive();
+    this.root.add(skin);
     const t = scene.add.text(MODAL.x - MODAL.w / 2 + 20, MODAL.y - MODAL.h / 2 + 26, title,
       textStyle({ size: 20, color: CSS.cream, align: 'left' })).setOrigin(0, 0.5);
     this.root.add([panel, t]);
     this.panel = panel;
     this.button(MODAL.x + MODAL.w / 2 - 60, MODAL.y - MODAL.h / 2 + 26, 'Close', onClose, 92);
+    // Enter: a short fade and lift. Modals stay centred, no scale from a point.
+    this.root.setAlpha(0).setY(6);
+    scene.tweens.add({ targets: this.root, alpha: 1, y: 0, duration: 180, ease: 'Quart.easeOut' });
   }
 
   button(x, y, label, fn, width = 120, size = 18) {

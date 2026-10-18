@@ -10,7 +10,74 @@ export const COLORS = {
   danger:  0xC0392B,
   panel:   0x101617,
   line:    0x2B3B3B,
-  text:    0xE8E2D0
+  text:    0xE8E2D0,
+
+  // Visual pass (docs/10). Room shell.
+  wallTop:    0x070B0C,
+  wainscot:   0x14262A,
+  rail:       0x2E4A48,
+  plaster:    0x41605B,
+  stain:      0x0A1416,
+  skirting:   0x2A1C14,
+  ceiling:    0x040606,
+  floorA:     0x2B2A26,
+  floorB:     0x1E1D1A,
+  grout:      0x0E0D0B,
+  // Materials.
+  wood:       0x4A3122,
+  woodDark:   0x2C1D14,
+  woodLight:  0x6B4A33,
+  steel:      0x8C969A,
+  steelDark:  0x4C5558,
+  brass:      0xC59A4B,
+  fabric:     0x5A3B32,       // sofa
+  fabricDark: 0x3A2620,
+  jute:       0x7A6646,
+  paper:      0xD8CDB4,
+  paperDim:   0x9E967F,
+  redPencil:  0xB8352A,
+  marigold:   0xD98A1E,
+  marigoldDry: 0x7E5A22,
+  clay:       0x8A4E2C,
+  sheet:      0xC9C3B3,
+  glass:      0x8FB8B4,
+  tile:       0x2F4A4A,
+  // Outside and emissives.
+  night:      0x0A1622,
+  nightGlow:  0x2C4B66,
+  street:     0xF0C27A,
+  headlight:  0xFFF2D0,
+  diya:       0xFFB347,
+  ledRed:     0xFF3B30,
+  pilotBlue:  0x4FA3FF,
+  dialAmber:  0xFFB25C,
+  bulb:       0xFFE7B8,
+  torchWarm:  0xFFE3B0,
+  // Characters.
+  hoodie:     0x2A3236,
+  hoodieRim:  0x56636A,
+  skin:       0x8A6047,
+  skinDark:   0x5E3F2E,
+  shirt:      0x7D8A99,
+  trousers:   0x23262B,
+  hair:       0x15110F,
+  saree:      0xEDE7DA,
+  sareeShade: 0xB9B2A3,
+  greyHair:   0x9A9A96,
+  hollow:     0x030304,
+  hollowFace: 0xE6E0D2,
+  phoneGlow:  0xBFE8FF,
+  // UI.
+  glassHi:    0xFFFFFF,
+  amber:      0xE8A33D,
+  green:      0x6FCF7F,
+  greenDark:  0x1E5A2C,
+  chipDone:   0x2E3A39,
+  chipDamaged: 0x6A4A1A,
+  chipFixed:  0x2F5A3A,
+  chipLocked: 0x1A2122,
+  bezel:      0x0B0E0F,
+  hollowDeep: 0x0E3B38        // PLAY #8 NOW fill
 };
 
 // CSS strings for Phaser text styles.
@@ -55,6 +122,41 @@ export const LAYOUT = {
   playerSneakH: 84,
   lightY: 70,              // torch centre above the floor line
   spriteH: 190             // character art height at 1x (docs/07 section 7)
+};
+
+// Visual pass (docs/10): presentation-only numbers. Gameplay is untouched.
+export const ART = {
+  seed: 0x5a71,            // room details are seeded so they never change
+  torchBias: 22,           // px the torch centre leans in the facing direction
+  torchWarmAlpha: 0.14,    // warm-white wash over the lit circle
+  emissiveAlpha: 0.38,     // tiny lights above the darkness
+  grainFps: 8,
+  grainAlpha: 0.05,
+  vignetteAlpha: 0.55,     // texture fallback (canvas renderer)
+  vignetteRadius: 0.72,    // shader vignette (WebGL), normalised
+  vignetteStrength: 0.6,
+  hiddenRadius: 0.4,       // while hiding (docs/02 section 8)
+  hiddenStrength: 0.95,
+  dustCount: 22,
+  dustSpeed: 9,            // px per second drift
+  fanSpeed: 0.9,           // radians per second
+  curtainSway: 0.018,      // radians
+  sweepEvery: [7, 13],     // seconds between headlight sweeps
+  sweepSec: 1.6,
+  steamCount: 6,
+  rainSpeed: 140,          // px per second
+  glintPulseSec: 1.8,
+  labelGap: 90,            // two labels closer than this: only the nearest
+  labelFadeSec: 0.25,
+  roomCaptionSec: 2,
+  walkFps: 8,
+  searchTurnSec: 0.8,
+  glitchEvery: [2.5, 6],   // title letter glitch
+  glitchMs: 90,
+  handX: 20,               // phone glow in the player's hand, from the feet
+  handY: 86,
+  handXSneak: 22,
+  handYSneak: 60
 };
 
 // Scales an art image to a display height, keeping its aspect.

@@ -1,9 +1,9 @@
-// The world: greybox rooms, player, darkness. Renders state and forwards
-// input to systems; no game rules live here.
+// The world: rooms, characters, darkness and atmosphere. Renders state and
+// forwards input to systems; no game rules live here.
 
 import Phaser from 'phaser';
 import { BALANCE } from '../config/balance.js';
-import { COLORS, CSS, fitHeight, LAYOUT, ROOM_COLORS, UI } from '../config/constants.js';
+import { ART, COLORS, CSS, FONTS, fitHeight, LAYOUT, UI } from '../config/constants.js';
 import { ROOMS } from '../data/rooms.js';
 import { EVIDENCE, TOOLS, CARD_PIECES } from '../data/items.js';
 import { TEXTS } from '../data/texts.js';
@@ -27,6 +27,8 @@ import { createRng } from '../utils/rng.js';
 import { DarknessLayer } from '../render/DarknessLayer.js';
 import { FlickerController } from '../render/FlickerController.js';
 import { TintLayer } from '../render/TintLayer.js';
+import { RoomDecor } from '../render/RoomDecor.js';
+import { ART_ANCHOR, DOOR_ANCHOR } from '../render/art/roomArt.js';
 import { HollowEntity } from '../entities/HollowEntity.js';
 import { NaniGlimpse } from '../entities/NaniGlimpse.js';
 import { createPresence, createTemptation } from '../systems/presence.js';
@@ -38,8 +40,10 @@ const FLOOR = BALANCE.world.floorY;
 const P = BALANCE.player;
 const MAX_DT = 0.05;  // docs/02 section 6: clamp to avoid tunnelling
 
-const DEPTH = { room: 0, player: 5, dark: 10, tint: 10.5, outline: 11, vikram: 11, ghost: 11.5,
-  debug: 12, label: 13, flash: 14 };
+const DEPTH = { room: 0, props: 1, player: 5, dark: 10, warm: 10.2, tint: 10.5, emissive: 10.6, dust: 10.7,
+  outline: 11, vikram: 11, glint: 11.2, ghost: 11.5, debug: 12, vignette: 13.6, grain: 13.7, label: 13.8,
+  caption: 13.85, flash: 14 };
+const LABEL_RISE = 4;         // px a label drifts up as it fades in
 const VIKRAM_COLOR = 0xE58C79;
 const VIKRAM_W = 40;
 const VIKRAM_H = 130;
@@ -101,18 +105,18 @@ export class RoomScene extends Phaser.Scene {
     this.shapeSide = 1;
     this.lastDt = 0;
     this.flash = this.add.rectangle(W / 2, H / 2, W, H, 0xffffff, 0).setDepth(DEPTH.flash);
-    this.chaiSteam = this.add.text(0, 0, '~', textStyle({ size: 20, color: CSS.cream }))
-      .setOrigin(0.5).setDepth(DEPTH.ghost).setVisible(false);
-    this.tweens.add({ targets: this.chaiSteam, alpha: 0.25, duration: 800, yoyo: true, repeat: -1 });
     this.nani.cup.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.touchChai());
-    this.outlines = this.add.graphics().setDepth(DEPTH.outline);
+    this.decor = new RoomDecor(this, DEPTH);
+    this.animT = 0;
     // Extra vignette while hidden (docs/02 section 8).
-    this.hideVignette = this.add.rectangle(W / 2, H / 2, W - 140, H - 140)
-      .setStrokeStyle(140, 0x000000, 0.85).setDepth(DEPTH.outline).setVisible(false);
+    this.hideVignette = this.add.image(W / 2, H / 2, 'fx_vignette').setDisplaySize(W, H)
+      .setDepth(DEPTH.outline).setAlpha(0.95).setVisible(false);
     this.lampFlash = this.add.rectangle(W / 2, H / 2, W, H, COLORS.lamp, 0).setDepth(DEPTH.outline);
     this.debugGfx = this.add.graphics().setDepth(DEPTH.debug);
-    this.roomLabel = this.add.text(W / 2, 64, '',
-      textStyle({ size: 16, color: CSS.dim })).setOrigin(0.5).setDepth(DEPTH.label).setAlpha(0.6);
+    // The room name, shown small for 2 s on entering (docs/10 section 4).
+    this.caption = this.add.text(W / 2, 74, '', textStyle({ font: FONTS.memory, style: 'italic', size: 20,
+      color: CSS.cream })).setOrigin(0.5).setDepth(DEPTH.caption).setAlpha(0);
+    this.windowOpen = (id) => this.isWindowOpen(id);
     this.buildRoom();
     this.bindInput();
     this.bindEvents();
@@ -142,10 +146,17 @@ export class RoomScene extends Phaser.Scene {
 
   // --- building -----------------------------------------------------------
 
-  // Art replaces a placeholder when the file exists (docs/02 section 10).
+  // Code-drawn sheets keep their own size and frames; a real PNG is fitted
+  // to the docs/07 character height (docs/02 section 10).
   sprite(key, depth) {
     if (!this.textures.exists(key)) return null;
-    return fitHeight(this.add.image(0, FLOOR, key).setOrigin(0.5, 1).setDepth(depth), LAYOUT.spriteH);
+    const img = this.add.image(0, FLOOR, key).setOrigin(0.5, 1).setDepth(depth);
+    if (this.textures.get(key).has('idle')) return img.setFrame('idle');
+    return fitHeight(img, LAYOUT.spriteH);
+  }
+
+  setFrame(img, name) {
+    if (img.frame.name !== name && img.texture.has(name)) img.setFrame(name);
   }
 
   buildPlayer() {
@@ -178,20 +189,11 @@ export class RoomScene extends Phaser.Scene {
     this.roomLayer = layer;
     this.hotspotRects = new Map();
     this.overlays = new Map();
-    // With a background image the greybox shapes become invisible hit areas.
-    const art = this.textures.exists(room.bg);
-    this.roomArt = art;
-    const shown = art ? 0 : 1;
-
-    if (art) {
-      layer.add(this.add.image(W / 2, H / 2, room.bg).setDisplaySize(W, H));
-    } else {
-      layer.add(this.add.rectangle(W / 2, H / 2, W, H, ROOM_COLORS[roomId]));
-      layer.add(this.add.rectangle(W / 2, (FLOOR + H) / 2, W, H - FLOOR, 0x000000, 0.35));
-      layer.add(this.add.text(W / 2, 150, room.label.toUpperCase(),
-        textStyle({ size: 40, color: CSS.text })).setOrigin(0.5).setAlpha(0.25));
-    }
-    this.roomLabel.setText(room.label);
+    this.marks = [];            // interactables: { id, x, label, glint, alpha }
+    // The background is a real PNG or the code-drawn one (always present);
+    // hotspots and doors become invisible hit areas over it.
+    layer.add(this.add.image(W / 2, H / 2, room.bg).setDisplaySize(W, H));
+    this.showCaption(room.label);
     const overlay = (id, key) => {
       if (!this.textures.exists(key)) return;
       const img = this.add.image(W / 2, H / 2, key).setDisplaySize(W, H).setVisible(false);
@@ -204,38 +206,44 @@ export class RoomScene extends Phaser.Scene {
       overlay('H_RADIO', 'ov_radio_on');
     }
 
-    for (const spot of room.hideSpots) {
-      if (art) continue;
-      const r = this.add.rectangle(spot.x, FLOOR, LAYOUT.hideW, 120, 0x000000, 0.25)
-        .setOrigin(0.5, 1).setStrokeStyle(1, COLORS.line);
-      const t = this.add.text(spot.x, FLOOR - 128, spot.label, textStyle({ size: 16, color: CSS.dim }))
-        .setOrigin(0.5, 1);
-      layer.add([r, t]);
-    }
-
     for (const door of room.doors) {
       const h = FLOOR - LAYOUT.doorTopY;
-      const r = this.add.rectangle(door.x, FLOOR, LAYOUT.doorW, h, 0x000000, 0.45)
-        .setOrigin(0.5, 1).setStrokeStyle(2, COLORS.wall).setAlpha(art ? 0.001 : 1);
-      const name = door.to ? ROOMS[door.to].label : 'Front door';
-      const t = this.add.text(door.x, LAYOUT.doorTopY - 6, name, textStyle({ size: 16 }))
-        .setOrigin(0.5, 1).setAlpha(shown);
+      const r = this.add.rectangle(door.x, FLOOR, LAYOUT.doorW, h, COLORS.line, 0.001).setOrigin(0.5, 1);
       r.setInteractive({ useHandCursor: true });
       r.on('pointerdown', () => this.queue({ type: 'door', id: door.id, x: door.x }));
-      layer.add([r, t]);
+      layer.add(r);
+      this.addMark(door.id, door.x, DOOR_ANCHOR, door.to ? ROOMS[door.to].label : 'Front door');
     }
 
     for (const hs of room.hotspots) {
       const h = FLOOR - LAYOUT.hotspotTopY;
-      const r = this.add.rectangle(hs.x, FLOOR, hs.w, h, COLORS.lamp, 0.12)
-        .setOrigin(0.5, 1).setStrokeStyle(1, COLORS.lamp, 0.5).setAlpha(art ? 0.001 : 1);
-      const t = this.add.text(hs.x, LAYOUT.hotspotTopY + 6, hs.label,
-        textStyle({ size: 16, wrap: Math.max(hs.w + 20, 80) })).setOrigin(0.5, 0).setAlpha(shown);
+      const r = this.add.rectangle(hs.x, FLOOR, hs.w, h, COLORS.line, 0.001).setOrigin(0.5, 1);
       r.setInteractive({ useHandCursor: true });
       r.on('pointerdown', () => this.queue({ type: 'hotspot', id: hs.id, x: hs.x }));
-      layer.add([r, t]);
+      layer.add(r);
       this.hotspotRects.set(hs.id, r);
+      this.addMark(hs.id, hs.x, ART_ANCHOR[hs.id] ?? LAYOUT.hotspotTopY, hs.label);
     }
+    this.decor.build(roomId);
+  }
+
+  // A glint on the object and a label above it, both hidden until near.
+  addMark(id, x, anchorY, text) {
+    const label = this.add.text(x, anchorY - 12, text, textStyle({ size: 16, color: CSS.cream }))
+      .setOrigin(0.5, 1).setDepth(DEPTH.label).setAlpha(0)
+      .setStroke(CSS.void, 4).setShadow(0, 1, CSS.void, 4, false, true);
+    const glint = this.add.image(x, anchorY + 12, 'fx_glint').setDepth(DEPTH.glint)
+      .setBlendMode(Phaser.BlendModes.ADD).setAlpha(0);
+    this.marks.push({ id, x, label, glint, labelY: anchorY - 12, alpha: 0, phase: x * 0.013 });
+  }
+
+  showCaption(text) {
+    const c = this.caption;
+    if (!c) return;
+    this.tweens.killTweensOf(c);
+    c.setText(text).setAlpha(0).setY(78);
+    this.tweens.add({ targets: c, alpha: 0.85, y: 74, duration: 220, ease: 'Quart.easeOut' });
+    this.tweens.add({ targets: c, alpha: 0, delay: ART.roomCaptionSec * 1000, duration: 400, ease: 'Sine.easeInOut' });
   }
 
   // --- input --------------------------------------------------------------
@@ -262,7 +270,7 @@ export class RoomScene extends Phaser.Scene {
 
   bindEvents() {
     const on = (name, fn) => this.subs.push(bus.on(name, fn));
-    on('room:enter', () => { this.buildRoom(); this.hollow.hide(); });
+    on('room:enter', () => { this.clearMarks(); this.buildRoom(); this.hollow.hide(); });
     on('ui:torch', () => this.toggleTorch());
     on('ui:hide', () => this.toggleHide());
     on('nani:warn', () => this.lampFlicker());
@@ -271,6 +279,7 @@ export class RoomScene extends Phaser.Scene {
     on('hollow:fade', () => this.hollow.hide());
     on('beat:fire', ({ id }) => {
       if (id === 'TV_STATIC_SCARE') this.tvScare();
+      if (id === 'RADIO_TURNS_ON') this.decor.radioOn(BALANCE.beats.radioTuneSec);
       const radio = this.overlays?.get('H_RADIO');
       if (id === 'RADIO_TURNS_ON' && radio) {
         radio.setVisible(true);
@@ -325,6 +334,14 @@ export class RoomScene extends Phaser.Scene {
     this.systems.presence.touchChai(this.state);
   }
 
+  clearMarks() {
+    for (const m of this.marks || []) {
+      m.label.destroy();
+      m.glint.destroy();
+    }
+    this.marks = [];
+  }
+
   // --- ghosts ---------------------------------------------------------------
 
   glimpse({ id }) {
@@ -361,7 +378,7 @@ export class RoomScene extends Phaser.Scene {
     if (this.state.player.room !== 'LIVING') return;
     const tv = ROOMS.LIVING.hotspots.find((h) => h.id === 'H_TV');
     const face = this.hollow.face;
-    face.setPosition(tv.x, LAYOUT.hotspotTopY + 50).setVisible(true).setAlpha(1);
+    face.setPosition(tv.x, ART_ANCHOR.H_TV + 32).setVisible(true).setAlpha(1);
     if (this.state.settings.reduceFlash) this.hollow.darkenFace(true);
     else this.scareFlash();
     this.time.delayedCall(BALANCE.presence.js3Sec * 1000, () => {
@@ -490,8 +507,9 @@ export class RoomScene extends Phaser.Scene {
 
   doHotspot(id) {
     const result = this.systems.interaction.interact(this.state, id);
-    const rect = this.hotspotRects.get(id);
-    if (rect) this.tweens.add({ targets: rect, scaleX: 1.08, scaleY: 1.04, duration: 60, yoyo: true });
+    // A small pop on the glint confirms the tap (docs/07 section 5).
+    const mark = this.marks.find((m) => m.id === id);
+    if (mark) this.tweens.add({ targets: mark.glint, scale: 1.4, duration: 120, yoyo: true, ease: 'Quart.easeOut' });
     if (result?.text) bus.emit('ui:subtitle', { who: 'YOU', text: result.text, sec: UI.examineSec });
     this.runAction(result?.action);
   }
@@ -532,20 +550,56 @@ export class RoomScene extends Phaser.Scene {
   render() {
     const state = this.state;
     const p = state.player;
+    this.animT += this.lastDt;
+    const step = Math.floor(this.animT * ART.walkFps) % 4;
     const h = p.sneaking ? LAYOUT.playerSneakH : LAYOUT.playerH;
     if (this.playerRect.height !== h) this.playerRect.setSize(LAYOUT.playerW, h);
     this.playerRect.setPosition(p.x, FLOOR).setVisible(!p.hidden);
     this.playerLetter.setPosition(p.x, FLOOR - h / 2).setVisible(!p.hidden);
-    if (this.playerImg) this.playerImg.setPosition(p.x, FLOOR).setVisible(!p.hidden).setFlipX(p.facing < 0);
+    if (this.playerImg) {
+      this.playerImg.setPosition(p.x, FLOOR).setVisible(!p.hidden).setFlipX(p.facing < 0);
+      const pose = p.sneaking ? 'sneak' : 'walk';
+      this.setFrame(this.playerImg, p.moving ? pose + step : (p.sneaking ? 'sneak0' : 'idle'));
+    }
 
+    // The phone sits in the code-drawn sprite's hand.
+    const hp = this.handPos || (this.handPos = { x: 0, y: 0, visible: false });
+    hp.visible = !p.hidden && Boolean(this.playerImg) && this.textures.get('spr_player').has('idle');
+    hp.x = p.x + p.facing * (p.sneaking ? ART.handXSneak : ART.handX);
+    hp.y = FLOOR - (p.sneaking ? ART.handYSneak : ART.handY);
+
+    // The torch leans a little the way the player faces; the dim glow does not.
+    const preview = Boolean(this.registry.get('artPreview'));
+    const lightX = p.x + (state.torchOn ? p.facing * ART.torchBias : 0);
     const lightY = FLOOR - LAYOUT.lightY;
-    this.darkness.draw(p.x, lightY, state.torchOn);
+    this.darkness.draw(lightX, lightY, state.torchOn);
+    this.darkness.setVisible(!preview);
+    this.tint.setVisible(!preview);
+    this.decor.setPreview(preview);
+    this.decor.update(this.lastDt || 0.016, {
+      x: lightX, y: lightY, on: state.torchOn, radius: BALANCE.torch.radius + this.darkness.radiusJitter
+    }, {
+      windowOpen: this.windowOpen,
+      tvOn: checkWhen({ vmDone: 7 }, state),
+      steam: p.room === 'HALL' && !checkWhen({ vmDone: 1 }, state),
+      preview,
+      reduceFlash: state.settings.reduceFlash,
+      hand: this.handPos
+    });
     this.drawWindows();
-    this.drawVikram();
-    this.hideVignette.setVisible(p.hidden);
+    this.drawVikram(step);
+    const hiddenView = p.hidden && !preview;
+    this.hideVignette.setVisible(hiddenView && !this.decor.setHidden(hiddenView));
     this.drawGhosts();
-    this.drawOutlines();
+    this.drawHints();
     this.drawHitboxes();
+  }
+
+  isWindowOpen(id) {
+    const s = this.state;
+    const room = id.slice('H_WINDOW_'.length);
+    return (checkWhen({ vmCurrent: 3 }, s) && !s.windowsClosed.includes(room)) ||
+      (room === 'LIVING' && s.flags.livingWindowReopened);
   }
 
   drawGhosts() {
@@ -554,18 +608,14 @@ export class RoomScene extends Phaser.Scene {
     this.flicker.update(s, dt);
     this.tint.update(s.presence, dt);
     this.updateShape(dt);
-    // NG1: the steaming cup in the Hall until VM1 is done.
-    const chai = ROOMS.HALL.hotspots.find((h) => h.id === 'H_CHAI');
-    const ng1 = s.player.room === 'HALL' && !checkWhen({ vmDone: 1 }, s);
-    this.chaiSteam.setVisible(ng1).setPosition(chai.x, LAYOUT.hotspotTopY - 14);
-    // NG4: Nani's chai offer near the player.
+    // NG1's steam is drawn by RoomDecor. NG4: Nani's chai offer near the player.
     const offer = s.nani.offer;
     if (offer && offer.room === s.player.room) this.nani.showCup(offer.x, FLOOR);
     else this.nani.hideCup();
   }
 
   // Visible inside the torch circle, or within sightTorchOff even in the dark.
-  drawVikram() {
+  drawVikram(step) {
     const s = this.state;
     const v = s.vikram;
     const d = Math.abs(v.x - s.player.x);
@@ -575,55 +625,69 @@ export class RoomScene extends Phaser.Scene {
     const show = sameRoom && (seen || this.registry.get('debugShowVikram'));
     if (this.vikramImg) {
       this.vikramImg.setVisible(show).setPosition(v.x, FLOOR).setAlpha(seen ? 1 : 0.4).setFlipX(v.facing < 0);
+      let frame = v.moving ? 'walk' + step : 'idle';
+      if (v.state === 'CHASE') frame = 'chase' + (step % 2);
+      else if (v.state === 'SEARCH' && !v.moving) frame = 'search' + (Math.floor(this.animT / ART.searchTurnSec) % 2);
+      this.setFrame(this.vikramImg, frame);
       return;
     }
     this.vikramRect.setVisible(show).setPosition(v.x, FLOOR).setAlpha(seen ? 0.9 : 0.4);
     this.vikramLetter.setVisible(show).setPosition(v.x, FLOOR - VIKRAM_H / 2);
   }
 
-  // Open windows (VM3) and the TV after VM7 get a cold tint.
+  // Real PNG overlays (ov_*) for open windows and the TV, when they exist.
+  // The code-drawn versions are in RoomDecor.
   drawWindows() {
+    if (!this.overlays.size) return;
     const s = this.state;
-    for (const [id, rect] of this.hotspotRects) {
-      let cold = false;
-      if (id.startsWith('H_WINDOW_')) {
-        const room = id.slice('H_WINDOW_'.length);
-        cold = (checkWhen({ vmCurrent: 3 }, s) && !s.windowsClosed.includes(room)) ||
-          (room === 'LIVING' && s.flags.livingWindowReopened);
-      } else if (id === 'H_TV') {
-        cold = checkWhen({ vmDone: 7 }, s);
-      } else {
-        continue;
-      }
-      const ov = this.overlays.get(id);
-      if (ov) ov.setVisible(cold);
-      else if (!this.roomArt) rect.setFillStyle(cold ? COLORS.cold : COLORS.lamp, cold ? 0.3 : 0.12);
+    for (const [id, ov] of this.overlays) {
+      if (id.startsWith('H_WINDOW_')) ov.setVisible(this.isWindowOpen(id));
+      else if (id === 'H_TV') ov.setVisible(checkWhen({ vmDone: 7 }, s));
     }
   }
 
-  // Torch off: outlines within outlineDistOff always (so the dark is
-  // navigable). Torch on: hint outlines within outlineDistOn if the setting
-  // is on.
-  drawOutlines() {
-    const g = this.outlines;
-    g.clear();
-    const state = this.state;
+  // Glints within the hint distance, labels within interact range (docs/10
+  // section 4). Torch off: glints within outlineDistOff always, so the dark
+  // stays navigable (docs/03 section 8). Torch on: within outlineDistOn when
+  // the Hotspot hints setting is on.
+  drawHints() {
+    const s = this.state;
     const T = BALANCE.torch;
-    const dist = state.torchOn
-      ? (state.settings.hotspotHints ? T.outlineDistOn : 0)
-      : T.outlineDistOff;
-    if (!dist) return;
-    const room = ROOMS[state.player.room];
-    g.lineStyle(1, COLORS.cream, 0.35);
-    for (const hs of room.hotspots) {
-      if (Math.abs(hs.x - state.player.x) <= dist) {
-        g.strokeRect(hs.x - hs.w / 2, LAYOUT.hotspotTopY, hs.w, FLOOR - LAYOUT.hotspotTopY);
+    const px = s.player.x;
+    const debug = Boolean(this.registry.get('debugHitboxes'));
+    const hintDist = s.torchOn ? (s.settings.hotspotHints ? T.outlineDistOn : 0) : T.outlineDistOff;
+    const dt = this.lastDt || 0.016;
+    const t = this.animT;
+    const busy = s.player.hidden || s.player.locked || this.ended;
+
+    // Nearest first; skip any label within labelGap of one already shown.
+    let shown0 = null;
+    let shown1 = null;
+    let best0 = Infinity;
+    for (const m of this.marks) {
+      const d = Math.abs(m.x - px);
+      if (d <= P.interactRange && d < best0) { best0 = d; shown0 = m; }
+    }
+    if (shown0) {
+      let best1 = Infinity;
+      for (const m of this.marks) {
+        const d = Math.abs(m.x - px);
+        if (m !== shown0 && d <= P.interactRange && Math.abs(m.x - shown0.x) >= ART.labelGap && d < best1) {
+          best1 = d;
+          shown1 = m;
+        }
       }
     }
-    for (const door of room.doors) {
-      if (Math.abs(door.x - state.player.x) <= dist) {
-        g.strokeRect(door.x - LAYOUT.doorW / 2, LAYOUT.doorTopY, LAYOUT.doorW, FLOOR - LAYOUT.doorTopY);
-      }
+
+    const step = dt / ART.labelFadeSec;
+    for (const m of this.marks) {
+      const want = debug || (!busy && (m === shown0 || m === shown1)) ? 1 : 0;
+      m.alpha = want > m.alpha ? Math.min(1, m.alpha + step) : Math.max(0, m.alpha - step);
+      m.label.setAlpha(m.alpha).setY(m.labelY + (1 - m.alpha) * LABEL_RISE);
+      const d = Math.abs(m.x - px);
+      const pulse = 0.5 + 0.5 * Math.sin((t / ART.glintPulseSec) * Math.PI * 2 + m.phase);
+      const near = !busy && hintDist > 0 && d <= hintDist;
+      m.glint.setAlpha(near ? (0.25 + 0.45 * pulse) * (1 - m.alpha * 0.6) : 0).setScale(0.8 + 0.2 * pulse);
     }
   }
 
@@ -632,6 +696,9 @@ export class RoomScene extends Phaser.Scene {
     g.clear();
     if (!this.registry.get('debugHitboxes')) return;
     const room = ROOMS[this.state.player.room];
+    g.fillStyle(COLORS.steelDark, 0.25);
+    for (const hs of room.hotspots) g.fillRect(hs.x - hs.w / 2, LAYOUT.hotspotTopY, hs.w, FLOOR - LAYOUT.hotspotTopY);
+    for (const spot of room.hideSpots) g.fillRect(spot.x - LAYOUT.hideW / 2, FLOOR - 120, LAYOUT.hideW, 120);
     g.lineStyle(1, 0xff5555, 0.9);
     for (const hs of room.hotspots) {
       g.strokeRect(hs.x - hs.w / 2, LAYOUT.hotspotTopY, hs.w, FLOOR - LAYOUT.hotspotTopY);

@@ -1,7 +1,7 @@
 // Title: name, tagline, content notes, endings-found dots, settings, BEGIN.
 
 import Phaser from 'phaser';
-import { COLORS, CSS, ENDING_IDS, FONTS, SUBTITLE_SIZES } from '../config/constants.js';
+import { ART, COLORS, CSS, ENDING_IDS, FONTS, SUBTITLE_SIZES } from '../config/constants.js';
 import { TEXTS } from '../data/texts.js';
 import { Button } from '../ui/Button.js';
 import { textStyle } from '../ui/text.js';
@@ -12,6 +12,8 @@ import { loadEndings, saveSettings } from '../utils/storage.js';
 const W = 960;
 const H = 540;
 const SHIMMER_MS = 90;
+const TITLE_Y = 140;
+const TITLE_SPACING = 14;
 
 const TOGGLES = [
   { key: 'assist', label: 'Assist mode' },
@@ -40,12 +42,15 @@ export class TitleScene extends Phaser.Scene {
     this.shimmerTimer = this.time.addEvent({ delay: SHIMMER_MS, loop: true,
       callback: () => this.drawShimmer() });
 
-    this.add.text(W / 2, 140, TEXTS.title.name,
-      textStyle({ font: FONTS.memory, size: 76, color: CSS.cream, letterSpacing: 14 }))
-      .setOrigin(0.5);
-    this.add.text(W / 2, 205, TEXTS.title.tagline,
+    // A window onto the night behind the title, half lost in the dark.
+    this.add.image(W / 2, 214, 'title_window').setAlpha(0.26);
+
+    this.buildTitle();
+    // The one orchestrated moment: the tagline arrives after the name.
+    const tagline = this.add.text(W / 2, 205, TEXTS.title.tagline,
       textStyle({ font: FONTS.memory, style: 'italic', size: 20, color: CSS.dim }))
-      .setOrigin(0.5);
+      .setOrigin(0.5).setAlpha(0);
+    this.tweens.add({ targets: tagline, alpha: 1, delay: 500, duration: 1200, ease: 'Sine.easeOut' });
 
     TEXTS.title.notes.forEach((line, i) => {
       this.add.text(W / 2, 262 + i * 24, line, textStyle({ size: 16, color: CSS.dim }))
@@ -60,8 +65,33 @@ export class TitleScene extends Phaser.Scene {
     this.buildSettingsPanel();
   }
 
+  // "UNHEARD" as separate letters so one can glitch now and then.
+  buildTitle() {
+    const style = textStyle({ font: FONTS.memory, size: 76, color: CSS.cream });
+    const letters = TEXTS.title.name.split('').map((ch) => this.add.text(0, TITLE_Y, ch, style).setOrigin(0, 0.5));
+    const total = letters.reduce((sum, t) => sum + t.width, 0) + TITLE_SPACING * (letters.length - 1);
+    let x = W / 2 - total / 2;
+    for (const t of letters) {
+      t.setX(x);
+      t.homeX = x;
+      x += t.width + TITLE_SPACING;
+    }
+    this.letters = letters;
+    this.reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.nextGlitch = this.rng.range(...ART.glitchEvery);
+  }
+
   update(_t, deltaMs) {
-    this.registry.get('audio')?.update(null, deltaMs / 1000, false);
+    const dt = deltaMs / 1000;
+    this.registry.get('audio')?.update(null, dt, false);
+    if (this.reduceMotion || !this.letters) return;
+    this.nextGlitch -= dt;
+    if (this.nextGlitch > 0) return;
+    this.nextGlitch = this.rng.range(...ART.glitchEvery);
+    // One letter slips sideways and goes teal for a moment, like bad signal.
+    const t = this.letters[this.rng.int(0, this.letters.length - 1)];
+    t.setX(t.homeX + this.rng.range(-4, 4)).setColor(CSS.cold).setAlpha(0.75);
+    this.time.delayedCall(ART.glitchMs, () => t.setX(t.homeX).setColor(CSS.cream).setAlpha(1));
   }
 
   drawShimmer() {

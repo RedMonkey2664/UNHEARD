@@ -1,17 +1,19 @@
 // Bottom-centre subtitle line over a soft dark strip (docs/07 section 1).
 // Speaker colour from docs/05 section 1. Max 2 lines.
 
-import { SPEAKER_CSS, UI } from '../config/constants.js';
+import { COLORS, SPEAKER_CSS, UI } from '../config/constants.js';
 import { textStyle } from '../ui/text.js';
 
 const X = 480;
 const Y = 462;
-const PAD = 10;
+const PAD = 12;
+const RADIUS = 10;
 
 export class Subtitles {
   constructor(scene, depth) {
     this.scene = scene;
-    this.strip = scene.add.rectangle(X, Y, 10, 10, 0x000000, 0.7).setDepth(depth).setVisible(false);
+    // A soft rounded strip, 70 percent dark (docs/07 section 1).
+    this.strip = scene.add.graphics().setDepth(depth).setVisible(false);
     this.text = scene.add.text(X, Y, '', textStyle({ wrap: UI.subtitleWrap }))
       .setOrigin(0.5).setDepth(depth).setVisible(false);
     this.timer = null;
@@ -29,7 +31,10 @@ export class Subtitles {
     if (who === 'HOLLOW') {
       this.scene.tweens.add({ targets: this.text, x: X + 1.5, duration: 45, yoyo: true, repeat: -1 });
     }
-    this.strip.setSize(this.text.width + PAD * 2, this.text.height + PAD).setVisible(true);
+    const w = this.text.width + PAD * 2;
+    const h = this.text.height + PAD;
+    this.strip.clear().fillStyle(COLORS.void, 0.7).fillRoundedRect(X - w / 2, Y - h / 2, w, h, RADIUS)
+      .lineStyle(1, COLORS.line, 0.6).strokeRoundedRect(X - w / 2, Y - h / 2, w, h, RADIUS).setVisible(true);
     if (this.timer) this.timer.remove();
     this.timer = null;
     // sec null: stays until replaced or hidden (voicemail lines).

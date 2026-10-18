@@ -145,6 +145,9 @@ export class DebugScene extends Phaser.Scene {
     this.hitboxButton = button(view, 'Show hitboxes', () => {
       this.registry.set('debugHitboxes', !this.registry.get('debugHitboxes'));
     });
+    this.previewButton = button(view, 'Art preview', () => {
+      this.registry.set('artPreview', !this.registry.get('artPreview'));
+    });
     this.vikramButton = button(view, 'Show Vikram always', () => {
       this.registry.set('debugShowVikram', !this.registry.get('debugShowVikram'));
     });
@@ -284,6 +287,7 @@ export class DebugScene extends Phaser.Scene {
     this.scaleButtons.forEach((b, i) => b.classList.toggle('on', [1, 3][i] === scale));
     this.hitboxButton.classList.toggle('on', Boolean(this.registry.get('debugHitboxes')));
     this.vikramButton.classList.toggle('on', Boolean(this.registry.get('debugShowVikram')));
+    this.previewButton.classList.toggle('on', Boolean(this.registry.get('artPreview')));
     this.assistButton.classList.toggle('on', s.settings.assist);
     this.prologueButton.classList.toggle('on', Boolean(this.registry.get('skipPrologue')));
     this.godButton.classList.toggle('on', s.debug.godMode);

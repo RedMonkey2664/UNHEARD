@@ -22,7 +22,7 @@ import { nearestHideSpot } from '../systems/hideSystem.js';
 import { Button } from '../ui/Button.js';
 import { createRng } from '../utils/rng.js';
 import { textStyle } from '../ui/text.js';
-import { SPEAKER_CSS } from '../config/constants.js';
+import { COLORS, SPEAKER_CSS } from '../config/constants.js';
 
 // Beats shown as a toast; the rest are SFX captions.
 const TOAST_BEATS = ['HANDWRITING_LATER', 'WARM_WIRE'];
@@ -76,8 +76,9 @@ export class UIScene extends Phaser.Scene {
     const K = Phaser.Input.Keyboard.KeyCodes;
     const kb = this.input.keyboard;
     if (kb) {
-      kb.addKey(K.P).on('down', () => this.togglePhone());
-      kb.addKey(K.TAB).on('down', () => this.togglePhone());
+      // Keyboard toggles are instant: repeated key actions should not animate.
+      kb.addKey(K.P).on('down', () => this.togglePhone(true));
+      kb.addKey(K.TAB).on('down', () => this.togglePhone(true));
       kb.addKey(K.SPACE).on('down', () => this.sys_.flow.togglePause(this.state()));
     }
 
@@ -157,8 +158,8 @@ export class UIScene extends Phaser.Scene {
 
   // --- phone --------------------------------------------------------------
 
-  togglePhone() {
-    this.phone.toggle();
+  togglePhone(instant = false) {
+    this.phone.toggle(instant);
     if (this.phone.isOpen()) this.hud.setPhoneDot(false);
   }
 
@@ -258,12 +259,14 @@ export class UIScene extends Phaser.Scene {
   temptationRow(content, x0, y, w) {
     const b = new Button(this, x0 + w / 2, y + 18, TEXTS.ui.temptation,
       () => this.sys_.temptation.press(this.state()), { width: w - 16, height: 32, size: 16 });
-    b.bg.setFillStyle(0x0E3B38, 1).setStrokeStyle(1, 0x4FD1C5);
+    b.setColors({ fill: COLORS.hollowDeep, stroke: COLORS.cold, text: SPEAKER_CSS.HOLLOW });
     b.label.setColor(SPEAKER_CSS.HOLLOW);
     const sub = this.add.text(x0 + w / 2, y + 44, TEXTS.ui.temptationSub,
       textStyle({ size: 16, color: SPEAKER_CSS.HOLLOW })).setOrigin(0.5);
-    content.add([b.bg, b.label, sub]);
-    this.tweens.add({ targets: [b.bg, b.label], alpha: 0.55, duration: 1400, yoyo: true, repeat: -1 });
+    content.add([...b.parts(), sub]);
+    // A slow pulse: it wants to be pressed.
+    this.tweens.add({ targets: [b.skin, b.label], alpha: 0.55, duration: 1400, yoyo: true, repeat: -1,
+      ease: 'Sine.easeInOut' });
   }
 
   // Tray order is shuffled but never already in the right order.
@@ -316,8 +319,7 @@ export class UIScene extends Phaser.Scene {
     if (!show) return;
     this.hideButton.setText(s.player.hidden ? TEXTS.ui.comeOut : TEXTS.ui.hide);
     const x = Phaser.Math.Clamp(s.player.x, 80, 880);
-    this.hideButton.bg.setPosition(x, 250);
-    this.hideButton.label.setPosition(x, 250);
+    this.hideButton.setPosition(x, 250);
   }
 
   vibrate(ms) {
