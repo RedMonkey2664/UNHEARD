@@ -210,6 +210,7 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-18  Audio: scripts/make-audio.mjs synthesises 64 WAV files (sfx, ambience, music, voicemail line beds, damaged previews, the tape, wordless Hollow whispers); phone-line audio at 8 kHz, the rest at 22.05 kHz; 6.3 MB total.
   2026-10-18  Audio: spoken lines (Nani, Vikram barks, Mom, police, operator, you_later, Nani's chai lines) are not generated; they stay as subtitles until recordings are added. A real .ogg/.mp3 with the same key is preferred over the .wav.
   2026-10-18  Audio: BootScene shows a thin loading bar while the sound loads.
+  2026-10-18  Audio: a low eerie bed (music_eerie_loop, balance.audio.eerieDb -22) plays under the title and the whole game, ducks under voices, and gives way to the memory music in memories.
 
 ## Changelog
 

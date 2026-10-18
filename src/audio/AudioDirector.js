@@ -212,10 +212,12 @@ export class AudioDirector {
 
   // --- frame (called by RoomScene, and with inRoom false elsewhere) --------
 
-  update(state, dt, inRoom) {
+  // title: the title screen keeps the eerie bed playing on its own.
+  update(state, dt, inRoom, title = false) {
     this.inRoom = inRoom;
     const ducked = this.voiceCount > 0;
     const sfxVol = this.channelGain('sfx');
+    const eerie = dbToGain(A.eerieDb) * (ducked ? A.duckMusic : 1) * sfxVol;
 
     if (inRoom && state && !this.memory) {
       const amb = ambienceGains(state.presence, ducked);
@@ -224,6 +226,7 @@ export class AudioDirector {
       this.setLoop('amb_cold_loop', amb.cold * muffle * sfxVol, 'ambience');
       this.setLoop('music_dread_loop', dreadGain(state.act, ducked) * sfxVol, 'music');
       this.setLoop('music_memory_loop', 0, 'music');
+      this.setLoop('music_eerie_loop', eerie, 'music');
       this.setLoop('sfx_heartbeat_loop', heartbeatGain(state.noise) * sfxVol);
       const rain = checkWhen({ vmCurrent: 3 }, state) && state.windowsClosed.length < 3;
       this.setLoop('sfx_rain_loop', rain ? dbToGain(A.rainDb) * sfxVol : 0);
@@ -240,9 +243,13 @@ export class AudioDirector {
       this.setLoop('music_memory_loop', dbToGain(A.musicDb) * sfxVol, 'music');
     } else {
       this.stopLoops();
+      if (title) this.setLoop('music_eerie_loop', eerie, 'music');
     }
 
     for (const l of Object.values(this.loops)) {
+      // A loop started before the first tap may not have played (browsers
+      // keep audio locked until then): start it once it is wanted.
+      if (l.target > 0 && !l.snd.isPlaying && !this.game.sound.locked) l.snd.play();
       l.current = approach(l.current, l.target, dt);
       l.snd.setVolume(l.current);
     }

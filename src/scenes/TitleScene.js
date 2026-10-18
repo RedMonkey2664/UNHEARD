@@ -83,7 +83,7 @@ export class TitleScene extends Phaser.Scene {
 
   update(_t, deltaMs) {
     const dt = deltaMs / 1000;
-    this.registry.get('audio')?.update(null, dt, false);
+    this.registry.get('audio')?.update(null, dt, false, true);
     if (this.reduceMotion || !this.letters) return;
     this.nextGlitch -= dt;
     if (this.nextGlitch > 0) return;

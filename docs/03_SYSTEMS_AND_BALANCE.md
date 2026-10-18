@@ -181,6 +181,7 @@ export const BALANCE = {
     whisperDbAt100: -8,
     ambienceDb: -24,
     musicDb: -20,
+    eerieDb: -22,                  // low eerie bed under the whole game and the title
     stingerDb: -6,
     stingerDbReduced: -12,         // with Reduce flash
     duckAmbience: 0.4,             // multipliers while a voice plays

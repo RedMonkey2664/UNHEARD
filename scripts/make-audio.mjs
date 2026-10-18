@@ -481,6 +481,44 @@ function harmonium(b, sr, start, dur, f, gain) {
   write('music', 'music_dread_loop', loopify(b, HI, 0.6), HI, { peakDb: -6, loop: true });
 }
 
+// The eerie bed: a dissonant pad that breathes, a sub hum, and faint ghostly
+// tones like a music box in another flat. Low and slow; it sits under
+// everything.
+{
+  const sec = 34;
+  const b = make(sec, HI);
+  add(b, HI, 0, sec, (t) => Math.sin(TAU * 55 * t) * (0.8 + 0.2 * Math.sin(TAU * t / 17)), 0.35);  // sub hum
+  // Pad: A2 against B-flat 2 (a minor second), slowly filtered open and shut.
+  const pad = make(sec, HI);
+  for (const [f, g] of [[110, 1], [116.54, 0.8], [164.81, 0.5], [220.4, 0.35]]) {
+    add(pad, HI, 0, sec, (t) => {
+      let v = 0;
+      for (let h = 1; h <= 6; h++) v += Math.sin(TAU * f * h * t + h) / h;
+      return v;
+    }, g);
+  }
+  // A two-pole lowpass whose cutoff drifts (state kept, so no zipper clicks).
+  let y1 = 0;
+  let y2 = 0;
+  for (let i = 0; i < pad.length; i++) {
+    const t = i / HI;
+    const fc = 320 + 380 * (0.5 + 0.5 * Math.sin(TAU * t / 17));
+    const k = 1 - Math.exp(-TAU * fc / HI);
+    y1 += k * (pad[i] - y1);
+    y2 += k * (y1 - y2);
+    b[i] += y2 * 0.18 * (0.75 + 0.25 * Math.sin(TAU * t / 8.5));
+  }
+  // Breath: a filtered swell every 8.5 s.
+  const bp = biquad('bp', 420, 1.2, HI);
+  add(b, HI, 0, sec, (t) => bp(white()) * Math.pow(Math.max(0, Math.sin(TAU * t / 8.5)), 3), 0.5);
+  // Ghost tones: sparse, high, a little out of tune.
+  [[2.1, 880], [6.8, 932.3], [11.5, 1318.5], [15.2, 880], [19.9, 1244.5], [24.6, 932.3], [29.3, 1174.7]]
+    .forEach(([s0, f]) => add(b, HI, s0, 4, (t) => Math.sin(TAU * f * t * (1 + 0.003 * Math.sin(TAU * 4.5 * t))) *
+      Math.min(1, t / 0.4) * Math.exp(-t * 0.9), 0.05));
+  filter(b, 'lp', 3500, 0.7, HI);
+  write('music', 'music_eerie_loop', loopify(b, HI, 2.0), HI, { peakDb: -3, loop: true });
+}
+
 // --- voicemail beds (phone line, 8 kHz) ------------------------------------------
 // The voice itself is in the subtitles; these carry the line and the scene.
 

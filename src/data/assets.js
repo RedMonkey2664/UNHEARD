@@ -89,7 +89,8 @@ export const AUDIO = [
   audio('amb', 'amb_flat_loop', 0),
   audio('amb', 'amb_cold_loop', 0),
   audio('music', 'music_memory_loop', 0),
-  audio('music', 'music_dread_loop', 0)
+  audio('music', 'music_dread_loop', 0),
+  audio('music', 'music_eerie_loop', 0)
 ];
 
 // Loaded with the FontFace API, and only if the file exists (no 404s).
