@@ -13,6 +13,52 @@ export const TEXTS = {
     gate: 'Tap to begin. Wear headphones.'
   },
 
+  // How to play: shown after BEGIN and from the title's "How to play" button.
+  // Each row is a short key (what to press / what it is) and what it does.
+  howTo: {
+    title: 'How to play',
+    pages: [
+      { heading: 'Your goal',
+        rows: [
+          { k: '1', d: "Nani's phone has 7 broken voicemails. Each one needs a fix from the flat." },
+          { k: '2', d: 'Look around the four rooms for the clue, fix the voicemail, then play it.' },
+          { k: '3', d: "When all 7 are heard, open Nani's steel locker in the kitchen." },
+          { k: '4', d: 'Call 112 on the phone and stay hidden until the police arrive.' }
+        ] },
+      { heading: 'Controls',
+        touch: [
+          { k: 'Tap the floor', d: 'Walk there.' },
+          { k: 'Tap an object', d: 'Walk to it and use it (windows, drawers, the radio...).' },
+          { k: 'Torch button', d: 'Light. Uses battery, and he can see it.' },
+          { k: 'Footsteps button', d: 'Sneak: slower, but much quieter.' },
+          { k: 'Phone button', d: 'Voicemails, messages, notes and the 112 call.' },
+          { k: 'HIDE', d: 'Appears when you stand by a hiding place.' }
+        ],
+        keys: [
+          { k: 'A / D or arrows', d: 'Walk. You can also click the floor.' },
+          { k: 'E', d: 'Use the nearest object or door (or click it).' },
+          { k: 'F', d: 'Torch. Uses battery, and he can see it.' },
+          { k: 'Shift or C', d: 'Sneak: slower, but much quieter.' },
+          { k: 'H', d: 'Hide, when you stand by a hiding place.' },
+          { k: 'P or Tab', d: 'Phone: voicemails, messages, notes, 112.' },
+          { k: 'Space', d: 'Pause a voicemail that is playing.' }
+        ] },
+      { heading: 'Stay alive',
+        rows: [
+          { k: 'Vikram', d: 'After the 2nd voicemail he lets himself in. He wants the phone.' },
+          { k: 'Lamp flicker', d: 'He is about to walk into your room. Torch off, then hide.' },
+          { k: 'Noise bar', d: 'Keep it low when he is near. Walking and wrong answers are loud.' },
+          { k: 'Battery', d: 'One battery for the torch, the voicemails and the call.' },
+          { k: 'Teal voice', d: 'It lies. Never do what it says, and never skip a memory.' }
+        ] }
+    ],
+    back: 'BACK',
+    next: 'NEXT',
+    start: 'START',
+    done: 'DONE',
+    open: 'How to play'
+  },
+
   prologue: [
     'The funeral ended at six.',
     "Mom left for your aunt's. You said you'd lock up.",

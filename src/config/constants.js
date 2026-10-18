@@ -123,6 +123,7 @@ export const PHONE_LAYOUT = {
 // Greybox geometry (render only; gameplay numbers are in balance.js).
 export const LAYOUT = {
   hotspotTopY: 280,        // hotspot hit area top (docs/04 section 3 notes)
+  hotspotArtPad: 10,       // taller objects: the hit area reaches this far above the art
   doorTopY: 240,
   doorW: 70,
   hideW: 90,
@@ -144,8 +145,8 @@ export const ART = {
   vignetteAlpha: 0.55,     // texture fallback (canvas renderer)
   vignetteRadius: 0.72,    // shader vignette (WebGL), normalised
   vignetteStrength: 0.6,
-  hiddenRadius: 0.4,       // while hiding (docs/02 section 8)
-  hiddenStrength: 0.95,
+  hiddenRadius: 0.55,      // while hiding (docs/02 section 8)
+  hiddenStrength: 0.75,
   dustCount: 22,
   dustSpeed: 9,            // px per second drift
   fanSpeed: 0.9,           // radians per second

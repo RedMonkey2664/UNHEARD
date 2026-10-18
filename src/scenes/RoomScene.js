@@ -48,6 +48,13 @@ const VIKRAM_COLOR = 0xE58C79;
 const VIKRAM_W = 40;
 const VIKRAM_H = 130;
 
+// Tall wall objects (windows, clock, calendar, coat) are drawn above the
+// standard hit area; a tap on the art itself must still reach them.
+function hotspotTop(hs) {
+  const art = ART_ANCHOR[hs.id] ?? LAYOUT.hotspotTopY;
+  return Math.min(LAYOUT.hotspotTopY, art - LAYOUT.hotspotArtPad);
+}
+
 export class RoomScene extends Phaser.Scene {
   constructor() {
     super('Room');
@@ -216,7 +223,7 @@ export class RoomScene extends Phaser.Scene {
     }
 
     for (const hs of room.hotspots) {
-      const h = FLOOR - LAYOUT.hotspotTopY;
+      const h = FLOOR - hotspotTop(hs);
       const r = this.add.rectangle(hs.x, FLOOR, hs.w, h, COLORS.line, 0.001).setOrigin(0.5, 1);
       r.setInteractive({ useHandCursor: true });
       r.on('pointerdown', () => this.queue({ type: 'hotspot', id: hs.id, x: hs.x }));
@@ -589,7 +596,10 @@ export class RoomScene extends Phaser.Scene {
     this.drawWindows();
     this.drawVikram(step);
     const hiddenView = p.hidden && !preview;
-    this.hideVignette.setVisible(hiddenView && !this.decor.setHidden(hiddenView));
+    // setHidden must run every frame (not short-circuited) so coming out
+    // restores the normal vignette.
+    const shaderDrawn = this.decor.setHidden(hiddenView);
+    this.hideVignette.setVisible(hiddenView && !shaderDrawn);
     this.drawGhosts();
     this.drawHints();
     this.drawHitboxes();
@@ -697,11 +707,11 @@ export class RoomScene extends Phaser.Scene {
     if (!this.registry.get('debugHitboxes')) return;
     const room = ROOMS[this.state.player.room];
     g.fillStyle(COLORS.steelDark, 0.25);
-    for (const hs of room.hotspots) g.fillRect(hs.x - hs.w / 2, LAYOUT.hotspotTopY, hs.w, FLOOR - LAYOUT.hotspotTopY);
+    for (const hs of room.hotspots) g.fillRect(hs.x - hs.w / 2, hotspotTop(hs), hs.w, FLOOR - hotspotTop(hs));
     for (const spot of room.hideSpots) g.fillRect(spot.x - LAYOUT.hideW / 2, FLOOR - 120, LAYOUT.hideW, 120);
     g.lineStyle(1, 0xff5555, 0.9);
     for (const hs of room.hotspots) {
-      g.strokeRect(hs.x - hs.w / 2, LAYOUT.hotspotTopY, hs.w, FLOOR - LAYOUT.hotspotTopY);
+      g.strokeRect(hs.x - hs.w / 2, hotspotTop(hs), hs.w, FLOOR - hotspotTop(hs));
     }
     g.lineStyle(1, 0x55aaff, 0.9);
     for (const door of room.doors) {

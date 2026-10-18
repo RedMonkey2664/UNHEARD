@@ -7,6 +7,7 @@ import { BOOT, COLORS } from './config/constants.js';
 import { FONT_FILES } from './data/assets.js';
 import { BootScene } from './scenes/BootScene.js';
 import { HeadphoneGateScene } from './scenes/HeadphoneGateScene.js';
+import { HowToPlayScene } from './scenes/HowToPlayScene.js';
 import { RoomScene } from './scenes/RoomScene.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { UIScene } from './scenes/UIScene.js';
@@ -27,7 +28,7 @@ async function start() {
   // Phones start with large subtitles until the player chooses otherwise.
   if (DEVICE.touch && !hasSavedSettings()) settings.subtitleSize = 'L';
 
-  const scenes = [BootScene, TitleScene, HeadphoneGateScene, RoomScene, UIScene,
+  const scenes = [BootScene, TitleScene, HowToPlayScene, HeadphoneGateScene, RoomScene, UIScene,
     MemoryScene, PrologueScene, EndingScene];
   // Dynamic import keeps the debug panel out of production bundles.
   if (import.meta.env.DEV) {

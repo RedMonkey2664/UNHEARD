@@ -1,4 +1,5 @@
-// Title: name, tagline, content notes, endings-found dots, settings, BEGIN.
+// Title: name, tagline, content notes, endings-found dots, settings, how to
+// play, BEGIN (which goes through How to play first).
 
 import Phaser from 'phaser';
 import { ART, COLORS, CSS, ENDING_IDS, FONTS, SUBTITLE_SIZES } from '../config/constants.js';
@@ -61,6 +62,7 @@ export class TitleScene extends Phaser.Scene {
 
     new Button(this, W / 2, 440, 'BEGIN', () => this.begin(), { width: 220, height: 56, size: 22 });
     new Button(this, W - 90, 44, 'Settings', () => this.openSettings(), { width: 140, height: 44 });
+    new Button(this, 100, 44, TEXTS.howTo.open, () => this.howToPlay(), { width: 160, height: 44 });
 
     this.buildSettingsPanel();
   }
@@ -119,7 +121,12 @@ export class TitleScene extends Phaser.Scene {
 
   begin() {
     if (this.panel.visible) return;
-    this.scene.start('HeadphoneGate');
+    this.scene.start('HowToPlay', { mode: 'start' });
+  }
+
+  howToPlay() {
+    if (this.panel.visible) return;
+    this.scene.start('HowToPlay', { mode: 'view' });
   }
 
   // --- settings -----------------------------------------------------------
