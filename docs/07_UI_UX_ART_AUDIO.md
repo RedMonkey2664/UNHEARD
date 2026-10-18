@@ -248,8 +248,8 @@ them. data/assets.js lists keys with an array of urls.
   you_later                           young voice: "Nani, later. I am studying."
   op_1                                operator: "Police are on their way..."
   mom_1 mom_2 mom_3                   Mom lines (docs/06 endings)
-  police_1 police_2                   "Police! Darwaza kholiye!" and "Aap
-                                      theek hain?"
+  police_1 police_2                   "Police! Open the door!" and "Are
+                                      you all right?"
   Vikram barks: vik_entering vik_p1..p5 vik_i1..i3 vik_s1..s3 vik_c1..c3
                 vik_caught vik_h1..h4 vik_a1..a2  (docs/05 texts.barks)
   Hollow: hol_1 .. hol_8              whispers (docs/05 texts.hollow)

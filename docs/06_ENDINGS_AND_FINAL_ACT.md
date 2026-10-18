@@ -9,11 +9,11 @@ Requirement to open the locker: completed >= 7 and the code 0614.
 ### 1.2 The tape moment (scripted, 8 s, player locked, Vikram frozen)
   - Click of a tape recorder. Hiss.
   - Tape audio (tinny, from the recorder), subtitles:
-      VIKRAM: "Sign kar do, Maasi. Warna... accha nahi hoga."
-      NANI:   "Mere jeete ji nahi, Vikram."
+      VIKRAM: "Sign it, Auntie. Or... it won't end well."
+      NANI:   "Not while I am alive, Vikram."
   - The recorder is added to inventory as E8.
   - Cut. From the Hall, Vikram's voice, no longer soft:
-      VIKRAM: "Locker khola na? Hmm?"
+      VIKRAM: "You opened the locker, didn't you? Hmm?"
   - Act 5 begins. Objective: "Call 112. Stay hidden until they arrive."
   - A CALL button appears on the phone and as a small button on the HUD.
 
@@ -124,31 +124,31 @@ Conditions: police_arrived and Presence <= niceEndingMaxPresence (59).
 Beats:
  1. (6 s) CORNER. Footsteps stop right beside you. A hide-spot door opens a
     crack, or he stands in front of you. Torch is off.
-       VIKRAM: "Bas ek phone hi toh hai, beta."
+       VIKRAM: "It's only a phone, kiddo."
  2. (8 s) COLD. Your breath fogs. Every bulb in the flat dies, one by one.
     Ambience cuts out. [every light in the flat dies, one by one]
-       VIKRAM: "Yeh kya..."
+       VIKRAM: "What is this..."
  3. (8 s) FLAME. A soft whump: the gas burners in the kitchen light by
     themselves. Blue light creeps along the floor. A smell of cardamom.
     Vikram looks at something behind you. We never see it.
-       VIKRAM: "Maasi...?"
-       VIKRAM: "Maasi, main... main sirf..."
+       VIKRAM: "Auntie...?"
+       VIKRAM: "Auntie, I... I only..."
  4. (8 s) FALL. Keys rattle, a door slams, a long fall down the stairs,
     then silence. [a long fall on the stairs. Then silence.]
  5. (8 s) The lamps return, soft and warm. Pounding on the door. Sirens
     outside.
-       POLICE: "Police! Darwaza kholiye!"
+       POLICE: "Police! Open the door!"
  6. (8 s) Text card: "2:40 AM". Police at the door, voice softer.
-       POLICE: "Aap theek hain?"
-       MOM:    "Beta! Beta, tu theek hai?"
-       MOM:    "Tune kuch khaya?"   (the player shakes their head: SFX)
-       MOM:    "Chal."
+       POLICE: "Are you all right?"
+       MOM:    "Sweetheart! Sweetheart, are you okay?"
+       MOM:    "Have you eaten anything?"   (the player shakes their head: SFX)
+       MOM:    "Come."
  7. (14 s) The phone buzzes on the hall table. Visual 'phone': "Voicemail 8,
     7:58 PM, Nani". It plays automatically (no battery cost). Voicemail 8 plays
     in clear audio with subtitles from docs/05 (VM8 lines).
  8. (18 s) The kitchen table. Two steel plates, two cups. Visual: warm still
     of the table, steam from the second cup.
-       MOM: "Maine toh ek hi plate nikaali thi..."
+       MOM: "I only set out one plate..."
     She looks at the second cup. Says nothing. Sits. You sit. You take a
     bite. The steam from the second cup rises, curls, and stops.
  9. (6 s) Centre text: "You ate. That was all she wanted."
@@ -168,23 +168,23 @@ Conditions: police_arrived and Presence above niceEndingMaxPresence (60 to 99).
 
 Beats:
  1. (6 s) CORNER, as in Ending 1, beat 1, but VIKRAM says:
-       VIKRAM: "Phone do, beta."
+       VIKRAM: "Give me the phone, kiddo."
  2. (8 s) The lights flicker. Teal bleeds into the room. No Nani. A whisper
-    underneath: HOLLOW: "Later, beta... later, beta." Vikram's hand closes on the
+    underneath: HOLLOW: "Later, dear... later, dear." Vikram's hand closes on the
     phone. You do not let go.
- 3. (6 s) POLICE (outside): "Police! Darwaza kholiye!" The door bursts. The
+ 3. (6 s) POLICE (outside): "Police! Open the door!" The door bursts. The
     phone slips and cracks on the tiles. [a crack of glass]
-       VIKRAM: "Yeh sab galat samajh rahe hain..."
+       VIKRAM: "This is all a misunderstanding..."
  4. (8 s) Text card: "2:40 AM". Mom's voice at the door:
-       MOM: "Beta! Beta, tu theek hai?"
-       MOM: "Tune kuch khaya?"
+       MOM: "Sweetheart! Sweetheart, are you okay?"
+       MOM: "Have you eaten anything?"
  5. (16 s) The cracked phone on the table, flickering. Voicemail 8 plays, but
     only in pieces. Static eats most of it. Subtitles show gaps:
-       NANI: "Beta... kuch nahi, bas ya—"
-       NANI: "...theek se kha—"
-       NANI: "...bas it—"
+       NANI: "Dear... it's nothing, I was just thin—"
+       NANI: "...eat prop—"
+       NANI: "...that is a—"
     The screen then shows the sentence with blanks and holds:
-       "Beta, ____ ____, bas ____ ____."
+       "Dear, ____ ____, okay? That is ____ ____."
  6. (12 s) The kitchen. One plate. The chair across is empty.
        Centre text: "You will never know exactly how she said it."
        Centre text: "You only know what she meant."
@@ -198,8 +198,8 @@ Conditions: cause 'caught' or 'dead_air'.
 
 Beats (cause 'caught'):
  1. (5 s) Footsteps stop in front of you. Silence.
-       VIKRAM: "Bas ek phone hi toh hai."
-    If tapeTaken: add VIKRAM: "Aur tape bhi."
+       VIKRAM: "It's only a phone."
+    If tapeTaken: add VIKRAM: "And the tape."
  2. (8 s) Visual 'phone': the phone leaves your hand. The voicemail icon, the
     battery bar. The icon dies like a lamp running out of oil.
  3. (5 s) Footsteps leaving. A key. A door. A TV murmuring somewhere. Black.
@@ -208,7 +208,7 @@ Beats (cause 'caught'):
 
 Variant, cause 'dead_air':
  1. (6 s) The phone screen goes black. In the dark: [a key turns in a lock]
-       VIKRAM: "Beta? Andhera kyun hai yahan?"
+       VIKRAM: "Kiddo? Why is it so dark in here?"
  2. Continue from beat 3 above.
 
 ## 7. Ending 4: LATER (horror bad), about 45 s
@@ -225,10 +225,10 @@ Beats (cause 'temptation'):
     out of the static wearing Nani's face. Not quite right. It tilts its head.
     Visual: a still of a dark room, a thin shape, a pale face.
  3. (6 s) From the kitchen, warm and wrong:
-       HOLLOW: "Beta, beta... khana kha le."
+       HOLLOW: "Dear, dear... come and eat."
  4. (3 s) YOU (grey, small): "Coming."
  5. (6 s) The phone buzzes. Full-screen text message, held on screen:
-       Mummy: "Reached Mausi's. Won't be back till tomorrow. Eat something."
+       Mom: "Reached your aunt's. Won't be back till tomorrow. Eat something."
  6. (8 s) Black. Footsteps on the stairs. Slow. They stop outside the door.
     It is not Mom. It is not Vikram. Silence.
  7. (6 s) Centre text: "Nani never asked you to stay. Something else did."

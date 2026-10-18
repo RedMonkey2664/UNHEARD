@@ -36,10 +36,10 @@ The stage prompts in docs/08 are written to avoid that.
 
   Nani        the player's grandmother (mother's mother). Dead. Ghost helper.
   Vikram      Mom's cousin. Nani's nephew (she calls him by name, he calls her
-              Maasi). The human villain. Has a key to the flat.
+              Auntie). The human villain. Has a key to the flat.
   The Hollow  a ghost in the voicemail static. Imitates Nani badly. Wants you
               to rush, stay, and stop listening.
-  Mom         called "Mummy". Away at Mausi's. Only appears as text messages
+  Mom         Away at your aunt's. Only appears as text messages
               and (in the good ending) in person.
   VM          voicemail. VM1 to VM7 are puzzles. VM8 is the last one, played
               only in an ending.
@@ -64,8 +64,8 @@ The stage prompts in docs/08 are written to avoid that.
   6. Pressing PLAY #8 NOW ends the run immediately with the "Later" ending.
   7. Four endings (see below).
   8. Maximum 3 jump scares.
-  9. Subtitles are always on. Voice is Hinglish.
- 10. Protagonist is gender-neutral. Nani says "beta" at most once per
+  9. Subtitles are always on. The script is English only.
+ 10. Protagonist is gender-neutral. Nani says "dear" at most once per
      voicemail. The Hollow overuses it. This is the fair-play tell.
 
 ## The four endings
@@ -82,7 +82,7 @@ that gap. It is derived, so it costs almost no extra work.
 ## Stretch goals (only when the user asks)
 
   - Season-clue ordering puzzle for the voicemails (smudged dates).
-  - Hindi / English subtitle toggle.
+  - A second subtitle language.
   - Phone haptics on mobile when Vikram investigates.
   - A fill-in-the-blank mini-moment in the STATIC ending.
   - Peek-slit view while hiding.
@@ -109,7 +109,7 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-17  Ending cause name is 'presence_doom' everywhere; seen-hiding lives in vikram.seenHiding.
   2026-10-17  Ending resolver: EAT_PROPERLY iff presence <= final.niceEndingMaxPresence (59).
   2026-10-17  JS2 full scare only on the first manifestation; later ones are sound and shape only.
-  2026-10-17  Hollow whispers H1-H8 (and the STATIC ending Hollow line) say "beta" at least twice.
+  2026-10-17  Hollow whispers H1-H8 (and the STATIC ending Hollow line) say "beta" at least twice (now "dear", see the English-only entry).
   2026-10-17  VM7 is played in Act 3; Act 4 is the locker walk. docs/01 pacing and docs/03 s14 fixed.
   2026-10-17  SEARCH: searchTime is look-around only; hide-spot checks within the radius follow; Hunt ignores the radius.
   2026-10-17  Battery 0 before Vikram has entered or while AWAY: he re-enters with a door slam within huntReenterSec; dead-air 25 s applies.
@@ -212,6 +212,7 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-18  Audio: BootScene shows a thin loading bar while the sound loads.
   2026-10-18  Audio: a low eerie bed (music_eerie_loop, balance.audio.eerieDb -22) plays under the title and the whole game, ducks under voices, and gives way to the memory music in memories.
   2026-10-18  Easier tuning (user request): torch drain 0.06, wrong fix 3, dead air 35 s; noise rises walk 11 / sneak 4 / torch 4 / voicemail 7 / puzzle 5, spikes 6/10/8/6, hide found at 50; Vikram sight 440, seen-hiding 210, acts away 40/25/15 and speed 100/112/125/145; Presence wrong fix 7, replay 8, skip 15, idle 1 per 10 s, call fail 4; Nani's warning 3.5 s; hints at 60/120 s; police ETA 60 s. Investigate threshold stays 60. Tests now read their numbers from balance.js.
+  2026-10-18  English-only script (user request): every spoken and written line is English. Lines use one "text" field (no hi/en). Nani and the Hollow say "dear" where they said "beta" (Hollow still twice or more per line); Vikram says "kiddo" and calls Nani "Auntie"; Mummy is Mom, chai is tea, chappals are slippers. Umbrella tag reads "Kitchen - Bedroom - Living room"; notebook page 1 reads "4 whistles"; card scrap C is "dear.".
 
 ## Changelog
 

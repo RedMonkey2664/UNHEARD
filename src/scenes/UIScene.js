@@ -123,7 +123,7 @@ export class UIScene extends Phaser.Scene {
     on('beat:fire', ({ id }) => this.beat(id));
     on('tape:start', () => {
       this.phone.close();
-      TAPE_MOMENT.forEach((l) => this.time.delayedCall(l.at * 1000, () => this.subtitle(l.who, l.hi, 3)));
+      TAPE_MOMENT.forEach((l) => this.time.delayedCall(l.at * 1000, () => this.subtitle(l.who, l.text, 3)));
     });
     on('call:connecting', () => this.subtitle('YOU', CALL_TEXT.whisper, BALANCE.final.callConnectSec));
     on('call:connected', () => this.subtitle('POLICE', CALL_TEXT.operator, 4));
@@ -340,7 +340,7 @@ export class UIScene extends Phaser.Scene {
     for (let i = 0; i < lines.length; i++) if (lines[i].t <= s.phone.playPos) idx = i;
     if (idx !== this.lineIndex && idx >= 0) {
       this.lineIndex = idx;
-      this.subtitle(lines[idx].who, lines[idx].hi, null);
+      this.subtitle(lines[idx].who, lines[idx].text, null);
     }
   }
 }

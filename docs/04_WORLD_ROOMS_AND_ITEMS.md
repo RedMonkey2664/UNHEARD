@@ -69,13 +69,13 @@ export const ROOMS = {
     hideSpots: [],
     hotspots: [
       { id: 'H_UMBRELLA', x: 230, w: 70, label: 'Umbrella', variants: [
-        { examine: "Nani's black umbrella. A paper tag is tied to the handle: 'Rasoi - Kamra - Baithak'.",
+        { examine: "Nani's black umbrella. A paper tag is tied to the handle: 'Kitchen - Bedroom - Living room'.",
           action: { setFlag: 'readUmbrellaTag' } } ] },
       { id: 'H_CLOCK', x: 330, w: 50, label: 'Wall clock', variants: [
         { examine: 'The wall clock stopped at 11:42. Nobody changed the battery.' } ] },
-      { id: 'H_CHAI', x: 520, w: 60, label: 'Cup of chai', variants: [
+      { id: 'H_CHAI', x: 520, w: 60, label: 'Cup of tea', variants: [
         { when: { vmDone: 1 }, examine: 'The cup is empty now.' },
-        { examine: 'A steel cup of chai. Still warm. Nobody else is home.',
+        { examine: 'A steel cup of tea. Still warm. Nobody else is home.',
           action: { glimpse: 'NG1' } } ] },
       { id: 'H_COAT', x: 600, w: 70, label: 'Grey coat', variants: [
         { when: { vmDone: 6, notHasEvidence: 'E6' },
@@ -83,8 +83,8 @@ export const ROOMS = {
           action: { giveEvidence: 'E6' } },
         { when: { hasEvidence: 'E6' }, examine: 'Her coat. The pockets are empty now.' },
         { examine: "Nani's grey coat. Tissues and a peppermint." } ] },
-      { id: 'H_SHOES', x: 790, w: 70, label: 'Chappals', variants: [
-        { examine: "Her chappals, side by side. Neat, as if she had just stepped out." } ] }
+      { id: 'H_SHOES', x: 790, w: 70, label: 'Slippers', variants: [
+        { examine: "Her slippers, side by side. Neat, as if she had just stepped out." } ] }
     ]
   },
 
@@ -142,10 +142,10 @@ export const ROOMS = {
         { examine: 'Latched shut.' } ] },
       { id: 'H_NOTEBOOK', x: 300, w: 60, label: 'Recipe notebook', variants: [
         { when: { vmDone: 4, notHasEvidence: 'E4' },
-          examine: "Page 2 is different now. A column of numbers, one row circled in her pencil: 0 6 1 4. Beside it: 'almari'.",
+          examine: "Page 2 is different now. A column of numbers, one row circled in her pencil: 0 6 1 4. Beside it: 'locker'.",
           action: { giveEvidence: 'E4' } },
         { when: { hasEvidence: 'E4' }, examine: "Her notebook. The locker code is 0614." },
-        { examine: "Nani's recipe notebook. Page 1: 'Dal - namak andaaz se. 4 siti. Gas band.'",
+        { examine: "Nani's recipe notebook. Page 1: 'Dal - salt by feel. 4 whistles. Gas off.'",
           action: { setFlag: 'readNotebookPage1' } } ] },
       { id: 'H_COOKER', x: 420, w: 80, label: 'Pressure cooker', variants: [
         { when: { vmCurrent: 4 },
@@ -207,7 +207,7 @@ export const ROOMS = {
         { examine: 'Her bed. Made, with hospital-corner precision.' } ] },
       { id: 'H_DRESSER', x: 620, w: 70, label: 'Dresser', variants: [
         { when: { notHasCardPiece: 'CARD_C', notFlag: 'cardAssembled' },
-          examine: "Between her bangles: a last scrap of the card. 'beta.'",
+          examine: "Between her bangles: a last scrap of the card. 'dear.'",
           action: { giveCardPiece: 'CARD_C' } },
         { examine: 'Bangles, a comb, a bottle of coconut oil.' } ] }
     ]
@@ -237,7 +237,7 @@ export const TOOLS = {
 export const CARD_PIECES = {
   CARD_A: { name: "Card scrap: 'Happy'",     icon: 'it_card_a' },
   CARD_B: { name: "Card scrap: 'Birthday,'", icon: 'it_card_b' },
-  CARD_C: { name: "Card scrap: 'beta.'",     icon: 'it_card_c' }
+  CARD_C: { name: "Card scrap: 'dear.'",     icon: 'it_card_c' }
 };
 
 export const EVIDENCE = {
@@ -273,7 +273,7 @@ Evidence counting for the epilogue (see docs/06):
   Pieces: CARD_A (desk), CARD_B (bed), CARD_C (dresser). Collect all three.
   Then at the desk: UI shows three pieces shuffled in a tray and three slots.
   Player taps pieces into slots left to right. Correct order A, B, C
-  ("Happy" "Birthday," "beta.").
+  ("Happy" "Birthday," "dear.").
   Wrong order on the third placement: wrong-fix penalty, pieces return to tray.
   On success: flag cardAssembled, VM2 fixed, pieces removed. Then the desk
   hotspot yields E2 (the deed).
@@ -281,7 +281,7 @@ Evidence counting for the epilogue (see docs/06):
   handwriting: "later". Toast: "On the back, in your handwriting: 'later'."
 
 ### VM3 WINDOWS (Kitchen, Bedroom, Living room; clue in the Hall)
-  Clue: umbrella tag "Rasoi - Kamra - Baithak" = Kitchen, Bedroom, Living.
+  Clue: umbrella tag "Kitchen - Bedroom - Living room".
   When VM3 becomes current, the three windows swing open with rain audio.
   Tap each window to close it. The order is recorded in windowsClosed.
   After the third window: if order is [KITCHEN, BEDROOM, LIVING] -> fixed.
@@ -295,7 +295,7 @@ Evidence counting for the epilogue (see docs/06):
   "Closed." and does not record it again.
 
 ### VM4 COOKER (Kitchen)
-  Clue: notebook page 1 ("4 siti").
+  Clue: notebook page 1 ("4 whistles").
   UI: a counter 0 to 9 with plus and minus, CONFIRM.
   Correct: 4. Wrong: standard penalty.
   After fix (beat): four whistles blow in the kitchen, but the cooker is cold.
@@ -304,8 +304,8 @@ Evidence counting for the epilogue (see docs/06):
 ### VM5 NOTE (Bedroom nightstand; tool from the Living room drawer)
   Needs GLASSES. Tapping the note with GLASSES in inventory opens the note
   reader: the text is shown in large handwriting:
-     "Beta, if something happens to me, don't trust V.
-      The tape is in the almari. Code is where I keep my dal.
+     "Dear, if something happens to me, don't trust V.
+      The tape is in the locker. The code is where I keep my dal.
       - Nani"
   Reading it sets E5 and fixes VM5.
   NOTE without GLASSES: "Too small to read." (no penalty).
@@ -336,7 +336,7 @@ Evidence counting for the epilogue (see docs/06):
 
 Nani (never harmful):
   NG1  Hall, x = 520. The steel cup of chai, steaming. Present from the start
-       until VM1 is done. Tapping it plays "Chai pee lo." No Presence change.
+       until VM1 is done. Tapping it plays "Drink your tea." No Presence change.
   NG2  Presence >= 30 (first crossing). In the room the player is in: a thin
        figure standing in the doorway at the far side, nani.ng2Sec (8 s), then gone.
        Not tappable.
@@ -344,8 +344,8 @@ Nani (never harmful):
        late. Cosmetic. Only if the player is in the Living room within nani.ng3WindowSec (30 s),
        otherwise skip.
   NG4  Presence >= 45 and touches used < 3: a steel cup of chai fades in nani.ng4Dist
-       (120 px) from the player. Tapping it: Presence -10, plays "Dheere. Dheere,
-       beta.", touches used + 1. If ignored for nani.ng4FadeSec (12 s) it fades.
+       (120 px) from the player. Tapping it: Presence -10, plays "Slowly. Slowly,
+       dear.", touches used + 1. If ignored for nani.ng4FadeSec (12 s) it fades.
   NG5  Lamp warning (not a glimpse): see docs/03 (only if Presence < 60).
 
 The Hollow:

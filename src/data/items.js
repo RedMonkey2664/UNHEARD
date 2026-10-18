@@ -10,7 +10,7 @@ export const TOOLS = {
 export const CARD_PIECES = {
   CARD_A: { name: "Card scrap: 'Happy'",     icon: 'it_card_a' },
   CARD_B: { name: "Card scrap: 'Birthday,'", icon: 'it_card_b' },
-  CARD_C: { name: "Card scrap: 'beta.'",     icon: 'it_card_c' }
+  CARD_C: { name: "Card scrap: 'dear.'",     icon: 'it_card_c' }
 };
 
 export const EVIDENCE = {

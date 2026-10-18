@@ -25,7 +25,7 @@ It is three games braided together:
 
 ## 3. Audience, tone, content notes
 
-  Audience: Indian college students and young adults. Hinglish voice.
+  Audience: Indian college students and young adults. English script.
   Tone: warm domestic textures (steel plates, chai, ceiling fan, marigold
   calendar) slowly turning cold and teal. Sad first, scary second.
   Content notes shown on the title screen:
@@ -40,7 +40,7 @@ It is three games braided together:
 ### Backstory (what really happened)
 
 Nani, an old woman, lived alone in a rented-then-owned flat. Her nephew
-Vikram Mehra (Mom's cousin, whom she calls by name and who calls her Maasi)
+Vikram Mehra (Mom's cousin, whom she calls by name and who calls her Auntie)
 wanted her to sign the flat over to him. She refused. Over five months she
 left the player a series of voicemails, every one a small act of love, and
 each one the player answered with "later". Seven are on her phone.
@@ -56,7 +56,7 @@ Chronology of the voicemails (the player hears them in this order):
                     visited with papers.
   VM7  The Silent One 11:42 PM, the night she fell. Her phone was dialling the
                     player. 11 seconds: TV noise, breathing, a key in the
-                    lock, "Vikram? Itni raat ko?", a thud. The player saw the
+                    lock, "Vikram? At this hour?", a thud. The player saw the
                     name on the screen and thought "later".
   VM8  Eat Properly 7:58 PM the same evening, hours before. The last time she
                     ever spoke to the player. Unplayed. 8 seconds.
@@ -67,7 +67,7 @@ recorder before anyone hears the tape.
 
 ### The night of the game
 
-The funeral ended at six. Mom went to Aunt's place (Mausi's) for the night
+The funeral ended at six. Mom went to your aunt's place for the night
 and texted that she will not be back until tomorrow. You said you would lock
 up Nani's flat. It is about 9:40 PM. You find her phone with 7 unplayed
 voicemails and a battery that will not last.
@@ -91,27 +91,27 @@ voicemails and a battery that will not last.
   only in memory scenes as short English text. Never speaks aloud.
 
 ### Nani (the heart)
-  Gentle, humble, apologetic ("Sorry, I talk too much"). Hinglish.
-  Rule: she says "beta" AT MOST ONCE per voicemail.
+  Gentle, humble, apologetic ("Sorry, I talk too much").
+  Rule: she says "dear" AT MOST ONCE per voicemail.
   As a ghost she is helpful and never attacks. She appears as a warm steel
   cup of chai, a figure at the end of a corridor, a lamp that flickers to
   warn you, a reflection a second late.
 
 ### Vikram Mehra (the thriller)
   Mom's cousin. Charming, soft-voiced, family man in public. Calls the
-  player "beta". Walks the flat calmly while pretending to be helpful
-  ("Mummy ne phone mangwaya hai"). Never shouts until the final act.
+  player "kiddo". Walks the flat calmly while pretending to be helpful
+  ("Your mother asked me to bring it"). Never shouts until the final act.
   Is predictable: fixed patrol, fixed rhythm, learnable.
 
 ### The Hollow (the horror)
   A ghost in the static between voicemails. It copies Nani's voice but gets
-  the rhythm and the words slightly wrong. It overuses "beta". It wants you
+  the rhythm and the words slightly wrong. It overuses "dear". It wants you
   to rush ("play the last one first"), to stay ("it's warm here") and to stop
   listening. It feeds on the word "later".
-  Tells: says "beta" multiple times per line. Teal subtitle colour. Slightly
+  Tells: says "dear" multiple times per line. Teal subtitle colour. Slightly
   wrong cadence. Appears only in sound until Presence is high.
 
-### Mom (Mummy)
+### Mom
   Only as text messages and, in the good ending, a voice at the door.
   She trusts Vikram completely.
 
@@ -187,17 +187,17 @@ Hard constraints (the rules the player feels):
   VM1  sweet, small guilt ("later")
   VM2  embarrassment, cut call
   VM3  protectiveness, a stranger's voice in the rain
-  VM4  tenderness, "andaaz se"
+  VM4  tenderness, "by feel"
   VM5  the guilt peak: "Sorry, I talk too much" (costs the most battery)
   VM6  dread, the first clear threat
   VM7  devastation: "Later never came."
-  VM8  release: "Eat properly, beta."
+  VM8  release: "Eat properly, okay?"
 
 ## 11. Fair-play rules for clues (the designer must obey these)
 
   1. Every fix has a clue the player can find in the same session without
      leaving the four rooms.
-  2. The Hollow's tell (overusing "beta") is audible from the first whisper.
+  2. The Hollow's tell (overusing "dear") is audible from the first whisper.
   3. Mom's first text ("Won't be back till tomorrow") is the clue that makes
      the LATER ending land. It must be shown on screen for at least 6 seconds
      and stay readable in the phone MESSAGES tab.
@@ -215,4 +215,4 @@ The first run should take about 20 minutes. A confident second run about 14.
 
 Multiplayer, save/load, inventory screens beyond the phone NOTES tab,
 branching dialogue, procedurally generated rooms, voice input, localisation
-beyond Hinglish.
+beyond English.

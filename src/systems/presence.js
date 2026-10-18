@@ -94,7 +94,7 @@ export function createPresence(bus, { noise, rng }) {
     if (now < ps.nextWhisperAt) return;
     ps.nextWhisperAt = now + rng.range(...PR.whisperEvery);
     const line = rng.pick(TEXTS.hollow);
-    bus.emit('hollow:whisper', { id: line.id, text: line.hi });
+    bus.emit('hollow:whisper', { id: line.id, text: line.text });
     // A whisper during a search near your hide spot gives you away.
     const v = state.vikram;
     const p = state.player;
@@ -196,7 +196,7 @@ export function createTemptation(bus) {
       if (state.flags.temptationShown) return;
       state.flags.temptationShown = true;
       const h2 = TEXTS.hollow.find((h) => h.id === 'H2');
-      bus.emit('hollow:whisper', { id: h2.id, text: h2.hi });
+      bus.emit('hollow:whisper', { id: h2.id, text: h2.text });
       bus.emit('temptation:shown', {});
     },
 

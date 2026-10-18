@@ -1,14 +1,13 @@
 # 05 - Script and narrative
 
-Everything the player reads or hears. Voice is Hinglish. Each spoken line has
-"hi" (what is spoken and shown in subtitles) and "en" (English meaning, for
-whoever records the voices and for a future translation toggle).
+Everything the player reads or hears. The whole script is in English. Each
+spoken line has "text" (what is spoken and shown in subtitles).
 
 Voice casting guide (for the person recording):
   Nani    warm, a little breathy, never rushed, apologetic. Older woman.
   Vikram  soft, friendly, patient. Turns cold only in the hunt.
   Hollow  the same voice as Nani but wrong: slightly too slow, odd stress,
-          says "beta" too many times, a faint second voice underneath.
+          says "dear" too many times, a faint second voice underneath.
 
 ## 1. Subtitle speakers and colours
 
@@ -33,16 +32,16 @@ export const VOICEMAILS = {
     hint2: 'Her calendar has a number circled twice.',
     audio: 'vm1',
     lines: [
-      { t: 0.0,  who: 'SFX',  hi: '[a steel cup set down on a table]', en: '' },
-      { t: 1.0,  who: 'NANI', hi: 'Hello? Main hoon, Nani.', en: "Hello? It's me, Nani." },
-      { t: 3.5,  who: 'NANI', hi: 'Padhai kaisi chal rahi hai?', en: 'How is studying going?' },
-      { t: 6.0,  who: 'NANI', hi: 'Maine darwaze ke bahar chai rakhi thi. Thandi ho gayi hogi.', en: 'I left chai outside your door. It must have gone cold.' },
-      { t: 10.0, who: 'NANI', hi: 'Chalo, tum busy ho. Main baad mein phone karungi.', en: "Never mind, you're busy. I'll call later." },
-      { t: 12.5, who: 'NANI', hi: 'Beta, kuch kha lena.', en: 'Beta, eat something.' }
+      { t: 0.0,  who: 'SFX',  text: '[a steel cup set down on a table]' },
+      { t: 1.0,  who: 'NANI', text: "Hello? It's me, Nani." },
+      { t: 3.5,  who: 'NANI', text: 'How is studying going?' },
+      { t: 6.0,  who: 'NANI', text: 'I left some tea outside your door. It must have gone cold.' },
+      { t: 10.0, who: 'NANI', text: "Never mind, you're busy. I'll call later." },
+      { t: 12.5, who: 'NANI', text: 'Eat something, dear.' }
     ],
     memory: [
       'Exam week. I had a door and a deadline.',
-      'She stood outside for ten minutes with a steel cup of chai. I could see her shadow under the door.',
+      'She stood outside for ten minutes with a steel cup of tea. I could see her shadow under the door.',
       "I said: 'Nani, later. I'm studying.'",
       'She said okay. She always said okay.'
     ],
@@ -57,11 +56,11 @@ export const VOICEMAILS = {
     hint2: 'Three scraps: the desk, the bed, the dresser.',
     audio: 'vm2',
     lines: [
-      { t: 0.0,  who: 'NANI', hi: 'Happy birthday to you... happy birthday to you...', en: 'Happy birthday to you... (off-key singing)' },
-      { t: 5.0,  who: 'SFX',  hi: '[a beep. The call cuts out.]', en: '' },
-      { t: 6.0,  who: 'NANI', hi: 'Arre, phone kat gaya?', en: 'Oh, did the call drop?' },
-      { t: 8.0,  who: 'NANI', hi: 'Chalo. Beta, card ke andar kuch rakha hai tumhare liye.', en: 'Anyway. Beta, I put something inside your card.' },
-      { t: 10.5, who: 'NANI', hi: 'Sambhal ke rakhna. Kisi ko mat dikhana.', en: 'Keep it safe. Do not show anyone.' }
+      { t: 0.0,  who: 'NANI', text: 'Happy birthday to you... happy birthday to you... (off-key)' },
+      { t: 5.0,  who: 'SFX',  text: '[a beep. The call cuts out.]' },
+      { t: 6.0,  who: 'NANI', text: 'Oh, did the call drop?' },
+      { t: 8.0,  who: 'NANI', text: 'Anyway. I put something inside your card, dear.' },
+      { t: 10.5, who: 'NANI', text: "Keep it safe. Don't show anyone." }
     ],
     memory: [
       'My birthday. Friends, loud music, a cake I did not even like.',
@@ -80,16 +79,16 @@ export const VOICEMAILS = {
     hint2: 'Her umbrella has a tag tied to it.',
     audio: 'vm3',
     lines: [
-      { t: 0.0,  who: 'SFX',    hi: '[heavy rain, traffic, a metro announcement far away]', en: '' },
-      { t: 2.0,  who: 'NANI',   hi: 'Beta, barish bahut tez hai. Chhatri tumhe de di, theek hi hua.', en: 'Beta, the rain is heavy. Good that I gave you the umbrella.' },
-      { t: 6.0,  who: 'NANI',   hi: 'Ghar pahunch ke phone karungi.', en: "I'll call when I reach home." },
-      { t: 8.5,  who: 'VIKRAM', hi: 'Maasi, bas ek sign. Ek sign kar do, phir kuch nahi maangunga.', en: "Maasi, just one signature. Sign once and I'll never ask again." },
-      { t: 12.0, who: 'NANI',   hi: 'Nahi, Vikram. Kabhi nahi.', en: 'No, Vikram. Never.' },
-      { t: 14.0, who: 'SFX',    hi: '[rain]', en: '' }
+      { t: 0.0,  who: 'SFX',    text: '[heavy rain, traffic, a metro announcement far away]' },
+      { t: 2.0,  who: 'NANI',   text: "The rain is so heavy, dear. Good thing I gave you the umbrella." },
+      { t: 6.0,  who: 'NANI',   text: "I'll call when I get home." },
+      { t: 8.5,  who: 'VIKRAM', text: "Auntie, just one signature. Sign once and I'll never ask again." },
+      { t: 12.0, who: 'NANI',   text: 'No, Vikram. Never.' },
+      { t: 14.0, who: 'SFX',    text: '[rain]' }
     ],
     memory: [
       'Monsoon. She came to the metro station just to hand me an umbrella.',
-      "I said she would get wet. She said, 'Main toh purani hoon. Paani se kuch nahi hota.'",
+      "I said she would get wet. She said, 'I'm old. A little water won't hurt me.'",
       'She walked home in the rain. She caught a fever. She never told me.',
       'There was someone with her. I never asked who.'
     ],
@@ -104,15 +103,15 @@ export const VOICEMAILS = {
     hint2: 'Her notebook says how many.',
     audio: 'vm4',
     lines: [
-      { t: 0.0,  who: 'SFX',  hi: '[a pressure cooker hissing, a radio playing low]', en: '' },
-      { t: 1.5,  who: 'NANI', hi: 'Dal mein namak? Andaaz se, beta.', en: 'Salt in the dal? By feel, beta.' },
-      { t: 4.5,  who: 'NANI', hi: 'Naap ke daalne se swaad nahi aata.', en: 'Measuring never gives the taste.' },
-      { t: 7.0,  who: 'NANI', hi: 'Chaar siti. Chaar siti aur gas band.', en: 'Four whistles. Four whistles, then gas off.' },
-      { t: 10.0, who: 'NANI', hi: 'Aur copy mein sab likha hai. Kabhi bhool jao toh dekh lena. Poora hisaab wahin hai.', en: 'And everything is in the notebook. If you forget, look. The whole account is there.' }
+      { t: 0.0,  who: 'SFX',  text: '[a pressure cooker hissing, a radio playing low]' },
+      { t: 1.5,  who: 'NANI', text: 'How much salt in the dal? By feel, dear.' },
+      { t: 4.5,  who: 'NANI', text: 'Measuring never gives the taste.' },
+      { t: 7.0,  who: 'NANI', text: 'Four whistles. Four whistles, then turn off the gas.' },
+      { t: 10.0, who: 'NANI', text: 'And everything is in the notebook. If you forget, look. The whole account is there.' }
     ],
     memory: [
       'Sundays in her kitchen. Steel plates, steam, the radio low.',
-      "I asked for the recipe. She said: 'Andaaz se.'",
+      "I asked for the recipe. She said: 'By feel.'",
       'I wrote nothing down. She wrote everything.',
       'The cooker whistled four times. That is the only measurement I remember.'
     ],
@@ -128,12 +127,12 @@ export const VOICEMAILS = {
     hint2: "You'll need her glasses to read it.",
     audio: 'vm5',
     lines: [
-      { t: 0.0,  who: 'SFX',  hi: '[a quiet room. Her breathing]', en: '' },
-      { t: 2.0,  who: 'NANI', hi: 'Sorry... main bahut bolti hoon na.', en: "Sorry... I talk too much, don't I." },
-      { t: 6.0,  who: 'NANI', hi: 'Tumhari baat sahi thi. Main purane zamane ki hoon.', en: 'You were right. I belong to another era.' },
-      { t: 11.0, who: 'NANI', hi: 'Ek baat likh ke rakhi hai. Kehni nahi aati mujhse.', en: "I've written something down. I can't say it aloud." },
-      { t: 15.0, who: 'NANI', hi: 'Padh lena... jab time ho.', en: 'Read it... when you have time.' },
-      { t: 18.0, who: 'NANI', hi: 'Beta, bura mat maanna.', en: "Beta, don't take it to heart." }
+      { t: 0.0,  who: 'SFX',  text: '[a quiet room. Her breathing]' },
+      { t: 2.0,  who: 'NANI', text: "Sorry... I talk too much, don't I." },
+      { t: 6.0,  who: 'NANI', text: "You were right. I'm from another time." },
+      { t: 11.0, who: 'NANI', text: "I've written something down. I can't say it out loud." },
+      { t: 15.0, who: 'NANI', text: 'Read it... when you have time.' },
+      { t: 18.0, who: 'NANI', text: "Don't take it to heart, dear." }
     ],
     memory: [
       'The argument. It was about nothing: a phone, a visit, a tone.',
@@ -152,10 +151,10 @@ export const VOICEMAILS = {
     hint2: 'Earphones. Use them from the phone.',
     audio: 'vm6',
     lines: [
-      { t: 0.0,  who: 'SFX',  hi: '[a hospital monitor beeping slowly]', en: '' },
-      { t: 1.0,  who: 'NANI', hi: 'Beta... Mummy ko mat batana ki maine phone kiya.', en: "Beta... don't tell Mummy I called." },
-      { t: 5.0,  who: 'NANI', hi: 'Vikram aaya tha. Papers lekar. Theek se baat nahi kar raha tha.', en: "Vikram came. With papers. He wasn't speaking properly." },
-      { t: 9.5,  who: 'NANI', hi: 'Main theek hoon. Tum padhai karo.', en: "I'm fine. You focus on studying." }
+      { t: 0.0,  who: 'SFX',  text: '[a hospital monitor beeping slowly]' },
+      { t: 1.0,  who: 'NANI', text: "Dear... don't tell your mother I called." },
+      { t: 5.0,  who: 'NANI', text: "Vikram came. With papers. He wasn't talking right." },
+      { t: 9.5,  who: 'NANI', text: "I'm fine. You focus on your studies." }
     ],
     memory: [
       'The hospital. The week before. Her voice was thinner than I remembered.',
@@ -174,11 +173,11 @@ export const VOICEMAILS = {
     hint1: '', hint2: '',
     audio: 'vm7',
     lines: [
-      { t: 0.0, who: 'SFX',    hi: '[a TV serial murmuring. Slow breathing]', en: '' },
-      { t: 4.0, who: 'SFX',    hi: '[a key turns in a lock. A door opens]', en: '' },
-      { t: 6.0, who: 'NANI',   hi: 'Vikram? Itni raat ko?', en: 'Vikram? At this hour?' },
-      { t: 8.0, who: 'VIKRAM', hi: 'Maasi, bas ek baar...', en: 'Maasi, just once...' },
-      { t: 9.5, who: 'SFX',    hi: '[a sharp sound. The TV keeps playing]', en: '' }
+      { t: 0.0, who: 'SFX',    text: '[a TV serial murmuring. Slow breathing]' },
+      { t: 4.0, who: 'SFX',    text: '[a key turns in a lock. A door opens]' },
+      { t: 6.0, who: 'NANI',   text: 'Vikram? At this hour?' },
+      { t: 8.0, who: 'VIKRAM', text: 'Auntie, just this once...' },
+      { t: 9.5, who: 'SFX',    text: '[a sharp sound. The TV keeps playing]' }
     ],
     memory: [
       '11:42 PM. Her name on my screen.',
@@ -194,9 +193,9 @@ export const VOICEMAILS = {
     audio: 'vm8',
     note: 'Played only inside an ending. It was left hours before the fall: the last time she ever spoke to you.',
     lines: [
-      { t: 0.0, who: 'NANI', hi: 'Beta... kuch nahi, bas yaad aaya.', en: 'Beta... nothing, I just remembered you.' },
-      { t: 3.5, who: 'NANI', hi: 'Theek se khaana, okay? Eat properly.', en: 'Eat properly, okay? Eat properly.' },
-      { t: 6.5, who: 'NANI', hi: 'Bas itna hi kehna tha.', en: 'That is all I wanted to say.' }
+      { t: 0.0, who: 'NANI', text: "Dear... it's nothing, I was just thinking of you." },
+      { t: 3.5, who: 'NANI', text: 'Eat properly, okay? Eat properly.' },
+      { t: 6.5, who: 'NANI', text: 'That is all I wanted to say.' }
     ]
   }
 };
@@ -248,7 +247,7 @@ export const TEXTS = {
 
   prologue: [
     'The funeral ended at six.',
-    "Mummy left for Mausi's. You said you'd lock up.",
+    "Mom left for your aunt's. You said you'd lock up.",
     "Nani's flat smells of cardamom and old paper.",
     'You have her phone. Seven voicemails. You never played them.',
     'It is fully charged. Not for long.'
@@ -272,8 +271,8 @@ export const TEXTS = {
   },
 
   messages: {
-    mom1: { from: 'Mummy', text: "Reached Mausi's. Won't be back till tomorrow. Eat something." },
-    mom2: { from: 'Mummy', text: "Vikram bhaiya called. He'll look in on you tonight. He's been such a help. Be nice to him." }
+    mom1: { from: 'Mom', text: "Reached your aunt's. Won't be back till tomorrow. Eat something." },
+    mom2: { from: 'Mom', text: "Uncle Vikram called. He'll look in on you tonight. He's been such a help. Be nice to him." }
   },
 
   toasts: {
@@ -290,44 +289,44 @@ export const TEXTS = {
   },
 
   barks: {   // Vikram. Each has a cooldown of vikram.barkCooldown seconds.
-    entering:    [ 'Beta? Main hoon. Vikram.' ],
-    patrol:      [ 'Beta? Sab theek? Nani ka phone dekha kya?',
-                   'Yahin kahin rakha hoga...',
-                   'Mummy ne mangwaya hai. Bas ek baar de do.',
-                   'Itna andhera kyun hai yahan?',
+    entering:    [ "Hello? It's me. Vikram." ],
+    patrol:      [ "Everything okay, kiddo? Have you seen Nani's phone?",
+                   'It must be around here somewhere...',
+                   'Your mother asked me to bring it. Just hand it over.',
+                   'Why is it so dark in here?',
                    '(humming a song, slightly too cheerful)' ],
-    investigate: [ 'Kaun hai?', 'Kuch awaaz aayi thi...', 'Beta? Tum ho?' ],
-    search:      [ 'Chhup kyun rahe ho, beta?', 'Main kuch nahi karunga.', 'Bas phone chahiye.' ],
-    chase:       [ 'Phone do, beta.', 'Ruko!', 'Beta, ruk jao.' ],
-    caught:      [ 'Bas ek phone hi toh hai.' ],
-    hunt:        [ 'Mujhe pata hai tumhare paas hai.', 'Tape bhi de do.',
-                   'Aaj raat bahut lambi hai, beta.', 'Locker khola na? Hmm?' ],
-    away:        [ 'Haan haan... mil jayega... abhi dhoondh raha hoon.',
-                   'Haan, so gaya hoga. Nahi, kuch nahi mila abhi tak.' ]
+    investigate: [ "Who's there?", 'I heard something...', 'Kiddo? Is that you?' ],
+    search:      [ 'Why are you hiding, kiddo?', "I won't do anything.", 'I just need the phone.' ],
+    chase:       [ 'Give me the phone, kiddo.', 'Stop!', 'Kiddo, stop right there.' ],
+    caught:      [ "It's only a phone." ],
+    hunt:        [ 'I know you have it.', 'The tape too. Give it here.',
+                   "It's going to be a long night, kiddo.", "You opened the locker, didn't you? Hmm?" ],
+    away:        [ "Yes, yes... I'll find it... I'm looking right now.",
+                   "Yes, they're probably asleep. No, nothing yet." ]
                    // 'away' is heard faintly through the front door when the
                    // player stands in the Hall near x = 880 while he is AWAY
   },
 
-  hollow: [   // ambient whispers at Presence >= 60. Note the overuse of 'beta'.
-    { id: 'H1', hi: 'Later, beta... later... later, beta.' },
-    { id: 'H2', hi: 'Play the last one first, beta. Why wait, beta?' }, // temptation
-    { id: 'H3', hi: 'Stay, beta. Stay with me, beta. It is warm here.' },
-    { id: 'H4', hi: 'You are so tired, beta. So tired, beta. Sit.' },
-    { id: 'H5', hi: 'He is coming, beta. Make some noise, beta. Make some.' },
-    { id: 'H6', hi: "Don't open it, beta. Don't open it, beta." },
-    { id: 'H7', hi: "Say it again, beta. Say 'later', beta." },
-    { id: 'H8', hi: 'Beta, beta, beta, beta.' }
+  hollow: [   // ambient whispers at Presence >= 60. Note the overuse of 'dear'.
+    { id: 'H1', text: 'Later, dear... later... later, dear.' },
+    { id: 'H2', text: 'Play the last one first, dear. Why wait, dear?' }, // temptation
+    { id: 'H3', text: 'Stay, dear. Stay with me, dear. It is warm here.' },
+    { id: 'H4', text: 'You are so tired, dear. So tired, dear. Sit.' },
+    { id: 'H5', text: 'He is coming, dear. Make some noise, dear. Make some.' },
+    { id: 'H6', text: "Don't open it, dear. Don't open it, dear." },
+    { id: 'H7', text: "Say it again, dear. Say 'later', dear." },
+    { id: 'H8', text: 'Dear, dear, dear, dear.' }
   ],
 
   nani: {
-    chai:  'Chai pee lo.',          // NG1
-    touch: 'Dheere. Dheere, beta.'  // NG4
+    chai:  'Drink your tea.',        // NG1
+    touch: 'Slowly. Slowly, dear.'   // NG4
   },
 
   // The VM5 note, shown in the note reader (docs/04 section 5).
   note: [
-    "Beta, if something happens to me, don't trust V.",
-    'The tape is in the almari. Code is where I keep my dal.',
+    "Dear, if something happens to me, don't trust V.",
+    'The tape is in the locker. The code is where I keep my dal.',
     '- Nani'
   ],
 
@@ -368,10 +367,10 @@ export const TEXTS = {
 
 ## 5. Narrative rules to protect
 
-  1. Nani says "beta" at most once per voicemail and per whisper. The Hollow
-     says it two or more times in a line, or in a pattern ("beta, beta").
-  2. Subtitles show the "hi" text. The "en" text is for recording and a
-     future translation toggle.
+  1. Nani says "dear" at most once per voicemail and per whisper. The Hollow
+     says it two or more times in a line, or in a pattern ("dear, dear").
+     Vikram calls the player "kiddo" and Nani "Auntie".
+  2. Subtitles show the "text" field. The script is English only.
   3. No line of Vikram's ever says outright that he killed her. Evidence does.
   4. The word "later" appears in: VM1 (Nani), VM1 memory (you), the card
      handwriting, VM7 memory, the Hollow's whispers, and the LATER ending.
@@ -393,7 +392,7 @@ dark silhouette fade, stingers capped at -12 dB.
   0:00  black. Headphone gate tap. Ambience fades in (flat hum, fan, far
         traffic).
   0:02  prologue lines appear one at a time (3 s each), white-cream text, centre.
-  0:14  fade into the Hall at x = 560. The chai cup is steaming (NG1).
+  0:14  fade into the Hall at x = 560. The tea cup is steaming (NG1).
   0:17  phone buzzes (sfx). Toast: new message. Mom text 1 arrives and is
         auto-opened for 6 seconds, then collapses to a notification.
   0:25  hint "start" appears for 4 s. Objective line (Act 1) appears at the

@@ -321,7 +321,7 @@ describe('ending data', () => {
   it('has the four endings with the right numbers and variants', () => {
     expect(Object.keys(ENDINGS)).toEqual(['EAT_PROPERLY', 'STATIC', 'CAUGHT', 'LATER']);
     expect(ENDINGS.LATER.number).toBe(4);
-    expect(endingBeats('CAUGHT', 'dead_air')[0].lines[1].hi).toBe('Beta? Andhera kyun hai yahan?');
+    expect(endingBeats('CAUGHT', 'dead_air')[0].lines[1].text).toBe('Kiddo? Why is it so dark in here?');
     const later = endingBeats('LATER', 'temptation').reduce((t, b) => t + b.hold, 0);
     expect(later).toBe(45);
   });

@@ -108,7 +108,7 @@ export class EndingScene extends Phaser.Scene {
     const lines = [...(beat.lines || [])];
     if (beat.ifTape && this.state.flags.tapeTaken) lines.push(...beat.ifTape);
     const step = (beat.hold * 1000) / Math.max(1, lines.length);
-    lines.forEach((l, i) => this.time.delayedCall(i * step, () => this.subtitles.show(l.who, l.hi, null)));
+    lines.forEach((l, i) => this.time.delayedCall(i * step, () => this.subtitles.show(l.who, l.text, null)));
     if (!lines.length) this.subtitles.hide();
 
     if (beat.texts) {
@@ -120,7 +120,7 @@ export class EndingScene extends Phaser.Scene {
       const vmLines = beat.vm8.lines || VOICEMAILS[8].lines;
       this.time.delayedCall(beat.vm8.startAt * 1000, () => this.play('vm8', 'voice'));
       vmLines.forEach((l) => this.time.delayedCall((beat.vm8.startAt + l.t) * 1000,
-        () => this.subtitles.show(l.who, l.hi, null)));
+        () => this.subtitles.show(l.who, l.text, null)));
       if (beat.vm8.blanks) {
         const end = (beat.vm8.startAt + VOICEMAILS[8].durationSec) * 1000;
         this.time.delayedCall(end, () => {

@@ -204,7 +204,7 @@ describe('temptation', () => {
     const ctx = setup();
     ctx.flow.debugComplete(ctx.state, 4);
     expect(ctx.state.flags.temptationShown).toBe(true);
-    expect(ctx.log).toContainEqual(['hollow:whisper', { id: 'H2', text: 'Play the last one first, beta. Why wait, beta?' }]);
+    expect(ctx.log).toContainEqual(['hollow:whisper', { id: 'H2', text: 'Play the last one first, dear. Why wait, dear?' }]);
   });
 
   it('pressing PLAY #8 NOW ends the run with LATER, cause temptation', () => {

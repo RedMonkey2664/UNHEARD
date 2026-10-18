@@ -31,7 +31,7 @@ positioned at the hotspot x values in docs/04.
   chain and deadbolt and a withered marigold garland; umbrella stand with a
   black umbrella; wall clock with hands stopped at 11:42; low table with a
   steel cup (with steam particles, NG1); coat hooks with a grey coat; shoe
-  rack with chappals.
+  rack with slippers.
 - LIVING: sofa with cushions; jute curtain (hide spot) that sways slightly;
   old radio on a shelf with an amber dial glow; grocer's calendar with a red
   circle; glass coffee table with an ashtray; TV on a doily with a red

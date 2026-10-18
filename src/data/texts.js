@@ -15,7 +15,7 @@ export const TEXTS = {
 
   prologue: [
     'The funeral ended at six.',
-    "Mummy left for Mausi's. You said you'd lock up.",
+    "Mom left for your aunt's. You said you'd lock up.",
     "Nani's flat smells of cardamom and old paper.",
     'You have her phone. Seven voicemails. You never played them.',
     'It is fully charged. Not for long.'
@@ -39,8 +39,8 @@ export const TEXTS = {
   },
 
   messages: {
-    mom1: { from: 'Mummy', text: "Reached Mausi's. Won't be back till tomorrow. Eat something." },
-    mom2: { from: 'Mummy', text: "Vikram bhaiya called. He'll look in on you tonight. He's been such a help. Be nice to him." }
+    mom1: { from: 'Mom', text: "Reached your aunt's. Won't be back till tomorrow. Eat something." },
+    mom2: { from: 'Mom', text: "Uncle Vikram called. He'll look in on you tonight. He's been such a help. Be nice to him." }
   },
 
   toasts: {
@@ -57,44 +57,44 @@ export const TEXTS = {
   },
 
   barks: {   // Vikram. Each has a cooldown of vikram.barkCooldown seconds.
-    entering:    [ 'Beta? Main hoon. Vikram.' ],
-    patrol:      [ 'Beta? Sab theek? Nani ka phone dekha kya?',
-                   'Yahin kahin rakha hoga...',
-                   'Mummy ne mangwaya hai. Bas ek baar de do.',
-                   'Itna andhera kyun hai yahan?',
+    entering:    [ "Hello? It's me. Vikram." ],
+    patrol:      [ "Everything okay, kiddo? Have you seen Nani's phone?",
+                   'It must be around here somewhere...',
+                   'Your mother asked me to bring it. Just hand it over.',
+                   'Why is it so dark in here?',
                    '(humming a song, slightly too cheerful)' ],
-    investigate: [ 'Kaun hai?', 'Kuch awaaz aayi thi...', 'Beta? Tum ho?' ],
-    search:      [ 'Chhup kyun rahe ho, beta?', 'Main kuch nahi karunga.', 'Bas phone chahiye.' ],
-    chase:       [ 'Phone do, beta.', 'Ruko!', 'Beta, ruk jao.' ],
-    caught:      [ 'Bas ek phone hi toh hai.' ],
-    hunt:        [ 'Mujhe pata hai tumhare paas hai.', 'Tape bhi de do.',
-                   'Aaj raat bahut lambi hai, beta.', 'Locker khola na? Hmm?' ],
-    away:        [ 'Haan haan... mil jayega... abhi dhoondh raha hoon.',
-                   'Haan, so gaya hoga. Nahi, kuch nahi mila abhi tak.' ]
+    investigate: [ "Who's there?", 'I heard something...', 'Kiddo? Is that you?' ],
+    search:      [ 'Why are you hiding, kiddo?', "I won't do anything.", 'I just need the phone.' ],
+    chase:       [ 'Give me the phone, kiddo.', 'Stop!', 'Kiddo, stop right there.' ],
+    caught:      [ "It's only a phone." ],
+    hunt:        [ 'I know you have it.', 'The tape too. Give it here.',
+                   "It's going to be a long night, kiddo.", "You opened the locker, didn't you? Hmm?" ],
+    away:        [ "Yes, yes... I'll find it... I'm looking right now.",
+                   "Yes, they're probably asleep. No, nothing yet." ]
                    // 'away' is heard faintly through the front door when the
                    // player stands in the Hall near x = 880 while he is AWAY
   },
 
-  hollow: [   // ambient whispers at Presence >= 60. Note the overuse of 'beta'.
-    { id: 'H1', hi: 'Later, beta... later... later, beta.' },
-    { id: 'H2', hi: 'Play the last one first, beta. Why wait, beta?' }, // temptation
-    { id: 'H3', hi: 'Stay, beta. Stay with me, beta. It is warm here.' },
-    { id: 'H4', hi: 'You are so tired, beta. So tired, beta. Sit.' },
-    { id: 'H5', hi: 'He is coming, beta. Make some noise, beta. Make some.' },
-    { id: 'H6', hi: "Don't open it, beta. Don't open it, beta." },
-    { id: 'H7', hi: "Say it again, beta. Say 'later', beta." },
-    { id: 'H8', hi: 'Beta, beta, beta, beta.' }
+  hollow: [   // ambient whispers at Presence >= 60. Note the overuse of 'dear'.
+    { id: 'H1', text: 'Later, dear... later... later, dear.' },
+    { id: 'H2', text: 'Play the last one first, dear. Why wait, dear?' }, // temptation
+    { id: 'H3', text: 'Stay, dear. Stay with me, dear. It is warm here.' },
+    { id: 'H4', text: 'You are so tired, dear. So tired, dear. Sit.' },
+    { id: 'H5', text: 'He is coming, dear. Make some noise, dear. Make some.' },
+    { id: 'H6', text: "Don't open it, dear. Don't open it, dear." },
+    { id: 'H7', text: "Say it again, dear. Say 'later', dear." },
+    { id: 'H8', text: 'Dear, dear, dear, dear.' }
   ],
 
   nani: {
-    chai:  'Chai pee lo.',          // NG1
-    touch: 'Dheere. Dheere, beta.'  // NG4
+    chai:  'Drink your tea.',        // NG1
+    touch: 'Slowly. Slowly, dear.'   // NG4
   },
 
   // The VM5 note, shown in the note reader (docs/04 section 5).
   note: [
-    "Beta, if something happens to me, don't trust V.",
-    'The tape is in the almari. Code is where I keep my dal.',
+    "Dear, if something happens to me, don't trust V.",
+    'The tape is in the locker. The code is where I keep my dal.',
     '- Nani'
   ],
 

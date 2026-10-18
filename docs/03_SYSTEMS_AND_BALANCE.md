@@ -532,7 +532,7 @@ the end, Presence +15 (instead of -5), and marks memorySkipped = true.
 
   RADIO     VM1. A dial from 88.0 to 108.0, step 0.1. Solution 94.3 (+-0.1).
   CARD      VM2. Three torn pieces in the Bedroom. Assemble in order
-            CARD_A, CARD_B, CARD_C ("Happy", "Birthday,", "beta.").
+            CARD_A, CARD_B, CARD_C ("Happy", "Birthday,", "dear.").
   WINDOWS   VM3. Close the three windows in the order KITCHEN, BEDROOM,
             LIVING (clue: umbrella tag in the Hall).
   COOKER    VM4. Set the whistle counter to 4 (clue: notebook page 1).
@@ -553,13 +553,13 @@ physical items are NOT granted yet (they are granted per docs/04).
 ## 11. Temptation
 
 When completed == 4 and memory ends:
-  - Hollow whisper H2: "Play the last one first, beta. Why wait, beta?"
+  - Hollow whisper H2: "Play the last one first, dear. Why wait, dear?"
   - the phone gets a permanent row at the bottom of VOICEMAIL: PLAY #8 NOW
     (pulsing teal), saves battery, "breaks the rules"
   - pressing it: temptation:pressed, endingResolver -> LATER, cause
     'temptation'. Run ends.
-Fair-play clue: Mom's first text said she is away. The "Beta, khana kha le"
-call in the LATER ending is therefore not Mom. The Hollow overuses "beta".
+Fair-play clue: Mom's first text said she is away. The "Dear, dear... come and eat"
+call in the LATER ending is therefore not Mom. The Hollow overuses "dear".
 
 ## 12. Phone rules
 

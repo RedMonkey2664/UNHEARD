@@ -14,13 +14,13 @@ export const ROOMS = {
     hideSpots: [],
     hotspots: [
       { id: 'H_UMBRELLA', x: 230, w: 70, label: 'Umbrella', variants: [
-        { examine: "Nani's black umbrella. A paper tag is tied to the handle: 'Rasoi - Kamra - Baithak'.",
+        { examine: "Nani's black umbrella. A paper tag is tied to the handle: 'Kitchen - Bedroom - Living room'.",
           action: { setFlag: 'readUmbrellaTag' } } ] },
       { id: 'H_CLOCK', x: 330, w: 50, label: 'Wall clock', variants: [
         { examine: 'The wall clock stopped at 11:42. Nobody changed the battery.' } ] },
-      { id: 'H_CHAI', x: 520, w: 60, label: 'Cup of chai', variants: [
+      { id: 'H_CHAI', x: 520, w: 60, label: 'Cup of tea', variants: [
         { when: { vmDone: 1 }, examine: 'The cup is empty now.' },
-        { examine: 'A steel cup of chai. Still warm. Nobody else is home.',
+        { examine: 'A steel cup of tea. Still warm. Nobody else is home.',
           action: { glimpse: 'NG1' } } ] },
       { id: 'H_COAT', x: 600, w: 70, label: 'Grey coat', variants: [
         { when: { vmDone: 6, notHasEvidence: 'E6' },
@@ -28,8 +28,8 @@ export const ROOMS = {
           action: { giveEvidence: 'E6' } },
         { when: { hasEvidence: 'E6' }, examine: 'Her coat. The pockets are empty now.' },
         { examine: "Nani's grey coat. Tissues and a peppermint." } ] },
-      { id: 'H_SHOES', x: 790, w: 70, label: 'Chappals', variants: [
-        { examine: "Her chappals, side by side. Neat, as if she had just stepped out." } ] }
+      { id: 'H_SHOES', x: 790, w: 70, label: 'Slippers', variants: [
+        { examine: "Her slippers, side by side. Neat, as if she had just stepped out." } ] }
     ]
   },
 
@@ -87,10 +87,10 @@ export const ROOMS = {
         { examine: 'Latched shut.' } ] },
       { id: 'H_NOTEBOOK', x: 300, w: 60, label: 'Recipe notebook', variants: [
         { when: { vmDone: 4, notHasEvidence: 'E4' },
-          examine: "Page 2 is different now. A column of numbers, one row circled in her pencil: 0 6 1 4. Beside it: 'almari'.",
+          examine: "Page 2 is different now. A column of numbers, one row circled in her pencil: 0 6 1 4. Beside it: 'locker'.",
           action: { giveEvidence: 'E4' } },
         { when: { hasEvidence: 'E4' }, examine: "Her notebook. The locker code is 0614." },
-        { examine: "Nani's recipe notebook. Page 1: 'Dal - namak andaaz se. 4 siti. Gas band.'",
+        { examine: "Nani's recipe notebook. Page 1: 'Dal - salt by feel. 4 whistles. Gas off.'",
           action: { setFlag: 'readNotebookPage1' } } ] },
       { id: 'H_COOKER', x: 420, w: 80, label: 'Pressure cooker', variants: [
         { when: { vmCurrent: 4 },
@@ -152,7 +152,7 @@ export const ROOMS = {
         { examine: 'Her bed. Made, with hospital-corner precision.' } ] },
       { id: 'H_DRESSER', x: 620, w: 70, label: 'Dresser', variants: [
         { when: { notHasCardPiece: 'CARD_C', notFlag: 'cardAssembled' },
-          examine: "Between her bangles: a last scrap of the card. 'beta.'",
+          examine: "Between her bangles: a last scrap of the card. 'dear.'",
           action: { giveCardPiece: 'CARD_C' } },
         { examine: 'Bangles, a comb, a bottle of coconut oil.' } ] }
     ]

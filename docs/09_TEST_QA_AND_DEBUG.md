@@ -117,7 +117,7 @@ Thriller
   [ ] AWAY windows allow a fix plus play in Act 2
 Horror
   [ ] Only 3 jump scares; each can be softened
-  [ ] The whispers overuse "beta" and feel wrong
+  [ ] The whispers overuse "dear" and feel wrong
   [ ] The temptation is visible, tempting and always optional
   [ ] Reduce flash removes bright frames and shakes
 Endings
@@ -207,4 +207,4 @@ iteration and record the change in docs/00_INDEX.md.
         filtering if fps drops below 45.
 
   Risk: players read the whispers as Nani and trust them.
-  Fix:  the "beta" overuse and the teal subtitle colour; keep the voice odd.
+  Fix:  the "dear" overuse and the teal subtitle colour; keep the voice odd.
