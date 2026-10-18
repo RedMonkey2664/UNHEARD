@@ -2,9 +2,12 @@
 // 960x540 canvas up on large screens.
 
 import { CSS, FONTS, UI } from '../config/constants.js';
+import { DEVICE } from '../utils/device.js';
+
+const SCALE = DEVICE.touch ? UI.touchTextScale : 1;
 
 export function textStyle(opts = {}) {
-  const size = Math.max(UI.minTextPx, opts.size || 18);
+  const size = Math.round(Math.max(UI.minTextPx, opts.size || 18) * SCALE);
   return {
     fontFamily: opts.font || FONTS.ui,
     fontSize: size + 'px',

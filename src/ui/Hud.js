@@ -6,6 +6,10 @@ import Phaser from 'phaser';
 import { BALANCE } from '../config/balance.js';
 import { COLORS, CSS, FONTS, UI } from '../config/constants.js';
 import { textStyle } from './text.js';
+import { DEVICE } from '../utils/device.js';
+
+// Round buttons are bigger on touch devices (the mobile layout).
+const ROUND = DEVICE.touch ? UI.roundButtonTouch : UI.roundButton;
 
 const LOW_BATTERY = 15;
 const MID_BATTERY = 30;
@@ -20,11 +24,11 @@ const hex = (c) => '#' + c.toString(16).padStart(6, '0');
 
 class RoundButton {
   constructor(scene, x, y, icon, onTap) {
-    const r = UI.roundButton / 2;
+    const r = ROUND / 2;
     this.scene = scene;
     this.r = r;
     this.active = null;
-    this.circle = scene.add.image(x, y, 'ui_btn_round').setDisplaySize(UI.roundButton, UI.roundButton);
+    this.circle = scene.add.image(x, y, 'ui_btn_round').setDisplaySize(ROUND, ROUND);
     this.ring = scene.add.graphics();
     this.icon = scene.add.image(x, y, icon).setTint(COLORS.text);
     this.circle.setInteractive({ hitArea: new Phaser.Geom.Circle(32, 32, 32),
@@ -51,7 +55,7 @@ class RoundButton {
   // hit circle is in the 64 px texture's local space.
   fit() {
     const minR = (UI.minTapPx * (this.scene.scale.displayScale.x || 1)) / 2;
-    const scale = 64 / UI.roundButton;
+    const scale = 64 / ROUND;
     if (this.circle.input) this.circle.input.hitArea.radius = Math.max(this.r, minR) * scale;
   }
 
@@ -95,14 +99,14 @@ export class Hud {
       .setOrigin(1, 0.5);
     this.noiseBar = scene.add.graphics();
 
-    const y = 540 - 16 - UI.roundButton / 2;
-    this.torch = new RoundButton(scene, 24 + UI.roundButton / 2, y, 'ic_torch', handlers.torch);
-    this.sneak = new RoundButton(scene, 24 + UI.roundButton * 1.5 + 14, y, 'ic_sneak', handlers.sneak);
-    this.phone = new RoundButton(scene, 960 - 24 - UI.roundButton / 2, y, 'ic_phone', handlers.phone);
+    const y = 540 - (DEVICE.touch ? 10 : 16) - ROUND / 2;
+    this.torch = new RoundButton(scene, 24 + ROUND / 2, y, 'ic_torch', handlers.torch);
+    this.sneak = new RoundButton(scene, 24 + ROUND * 1.5 + 14, y, 'ic_sneak', handlers.sneak);
+    this.phone = new RoundButton(scene, 960 - 24 - ROUND / 2, y, 'ic_phone', handlers.phone);
     // CALL appears after the tape is taken; POLICE m:ss beside it once connected.
-    this.call = new RoundButton(scene, 960 - 24 - UI.roundButton * 1.5 - 14, y, 'ic_call', handlers.call);
+    this.call = new RoundButton(scene, 960 - 24 - ROUND * 1.5 - 14, y, 'ic_call', handlers.call);
     this.callRing = scene.add.graphics();
-    this.eta = scene.add.text(this.call.x - 44, y, '', textStyle({ size: 18, color: CSS.cream, align: 'right' }))
+    this.eta = scene.add.text(this.call.x - ROUND * 0.8, y, '', textStyle({ size: 18, color: CSS.cream, align: 'right' }))
       .setOrigin(1, 0.5);
     this.setCallVisible(false);
 
@@ -110,7 +114,7 @@ export class Hud {
     this.banner = scene.add.image(480, 30, 'ui_banner').setAlpha(0);
     this.objective = scene.add.text(480, 30, '', textStyle({ font: FONTS.memory, style: 'italic', size: 19,
       color: CSS.cream })).setOrigin(0.5).setAlpha(0);
-    this.dot = scene.add.circle(this.phone.x + 20, this.phone.y - 20, 5, COLORS.lamp).setVisible(false);
+    this.dot = scene.add.circle(this.phone.x + ROUND * 0.36, this.phone.y - ROUND * 0.36, 5, COLORS.lamp).setVisible(false);
 
     // Faint red edge that pulses when noise >= 40 (docs/07 section 1).
     this.vignette = scene.add.rectangle(480, 270, 960 - 12, 540 - 12)
@@ -153,13 +157,13 @@ export class Hud {
     if (f.callConnecting) {
       const t = f.callConnectTimer / BALANCE.final.callConnectSec;
       g.lineStyle(4, COLORS.green, 1).beginPath();
-      g.arc(this.call.x, this.call.y, UI.roundButton / 2 + 4, -Math.PI / 2,
+      g.arc(this.call.x, this.call.y, ROUND / 2 + 4, -Math.PI / 2,
         -Math.PI / 2 + Math.PI * 2 * t, false).strokePath();
     }
     if (f.callConnected && f.policeEta !== null) {
       const sec = Math.ceil(f.policeEta);
       this.eta.setText(`POLICE ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`);
-      this.eta.setX(this.phone.x - 44);
+      this.eta.setX(this.phone.x - ROUND * 0.8);
     } else {
       this.eta.setText('');
     }

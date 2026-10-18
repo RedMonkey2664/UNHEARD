@@ -51,6 +51,11 @@ export function sanitizeSettings(raw) {
   return s;
 }
 
+// True once the player has saved settings (first run on a phone gets mobile defaults).
+export function hasSavedSettings(storage = defaultStorage()) {
+  return readJson(STORAGE_KEYS.settings, storage) !== null;
+}
+
 export function loadSettings(storage = defaultStorage()) {
   return sanitizeSettings(readJson(STORAGE_KEYS.settings, storage));
 }

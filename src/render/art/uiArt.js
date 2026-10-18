@@ -2,10 +2,12 @@
 // phone device and the objective banner. Icons are white so they can be
 // tinted with the palette.
 
-import { COLORS as C } from '../../config/constants.js';
+import { COLORS as C, PHONE_LAYOUT } from '../../config/constants.js';
+import { DEVICE } from '../../utils/device.js';
 import { circle, ellipse, fillRRect, glow, hGrad, line, makeTexture, poly, rgba, rrect, vGrad } from './canvasKit.js';
 
-export const PHONE_DEVICE = { w: 320, h: 404, bezel: 10, radius: 30, screenRadius: 22 };
+const PL = DEVICE.touch ? PHONE_LAYOUT.touch : PHONE_LAYOUT.desk;
+export const PHONE_DEVICE = { w: PL.w + 20, h: PL.h + 20, bezel: 10, radius: 30, screenRadius: 22 };
 
 function stroke(ctx, w = 2.2) {
   ctx.strokeStyle = rgba(C.glassHi, 1);

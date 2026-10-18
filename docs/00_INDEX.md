@@ -202,6 +202,11 @@ that gap. It is derived, so it costs almost no extra work.
   2026-10-18  Stage 1.5: the edge vignette is Phaser's WebGL vignette shader (a texture banded visibly); the dithered texture is the canvas-renderer fallback. No vignette on the title (it would dim the buttons).
   2026-10-18  Stage 1.5: keyboard phone toggles (P, Tab) are instant; taps slide (250 ms open, 180 ms close, strong ease-out). Title glitch and curtain sway are off under OS reduced-motion.
   2026-10-18  Stage 1.5: visual-only numbers live in constants.js ART; colours in COLORS (new tokens added). balance.js and data files unchanged.
+  2026-10-18  Mobile version: touch devices (coarse pointer) get a mobile layout: 72 px HUD buttons, a taller phone panel (PHONE_LAYOUT.touch, 30 px rows, 44 px buttons), text x1.12, and large subtitles on first run. Desktop unchanged.
+  2026-10-18  Mobile version: the headphone-gate tap also requests fullscreen and a landscape lock (best effort; iPhone Safari supports neither, the rotate overlay still covers portrait).
+  2026-10-18  Mobile version: the game frame keeps clear of notches (safe-area insets) and uses 100dvh.
+  2026-10-18  Installable web app: manifest (fullscreen, landscape), code-generated icons (scripts/make-icons.mjs), and a service worker (production only) so the game works offline after the first play.
+  2026-10-18  Deploy: vercel.json (Vite build, dist/ output, no-cache on sw.js); the branch is main, remote github.com/RedMonkey2664/UNHEARD.
 
 ## Changelog
 

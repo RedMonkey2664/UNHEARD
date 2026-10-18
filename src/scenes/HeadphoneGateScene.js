@@ -6,6 +6,7 @@ import { COLORS, CSS } from '../config/constants.js';
 import { TEXTS } from '../data/texts.js';
 import { createState } from '../systems/gameState.js';
 import { textStyle } from '../ui/text.js';
+import { enterMobileFullscreen } from '../utils/device.js';
 
 export class HeadphoneGateScene extends Phaser.Scene {
   constructor() {
@@ -29,6 +30,8 @@ export class HeadphoneGateScene extends Phaser.Scene {
   begin() {
     if (this.started) return;
     this.started = true;
+    // The same tap goes fullscreen and locks landscape on phones.
+    enterMobileFullscreen();
     this.unlockAudio();
     this.registry.set('state', createState(this.registry.get('settings')));
     this.scene.start('Room');

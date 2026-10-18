@@ -108,7 +108,16 @@ export const UI = {
   toastSec: 2.5,           // docs/07 section 1
   subtitlePx: { S: 18, M: 22, L: 26 },
   subtitleWrap: 560,
-  roundButton: 56          // torch, sneak, phone (docs/07 section 1)
+  roundButton: 56,         // torch, sneak, phone (docs/07 section 1)
+  roundButtonTouch: 72,    // mobile layout: bigger thumbs targets
+  touchTextScale: 1.12     // mobile layout: text a little larger
+};
+
+// The phone panel's screen rectangle. Touch devices get a taller panel with
+// bigger rows; both stay above the HUD buttons.
+export const PHONE_LAYOUT = {
+  desk:  { x0: 646, y0: 76, w: 300, h: 384, rowH: 24, btnH: 40 },
+  touch: { x0: 596, y0: 14, w: 348, h: 430, rowH: 30, btnH: 44 }
 };
 
 // Greybox geometry (render only; gameplay numbers are in balance.js).

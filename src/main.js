@@ -17,12 +17,15 @@ import { AudioDirector } from './audio/AudioDirector.js';
 import { bus } from './systems/eventBus.js';
 import { loadFonts } from './utils/fonts.js';
 import { watchOrientation } from './utils/orientation.js';
-import { loadSettings } from './utils/storage.js';
+import { DEVICE } from './utils/device.js';
+import { hasSavedSettings, loadSettings } from './utils/storage.js';
 
 async function start() {
   await loadFonts(FONT_FILES, assetFiles, BOOT.fontsTimeoutMs);
 
   const settings = loadSettings();
+  // Phones start with large subtitles until the player chooses otherwise.
+  if (DEVICE.touch && !hasSavedSettings()) settings.subtitleSize = 'L';
 
   const scenes = [BootScene, TitleScene, HeadphoneGateScene, RoomScene, UIScene,
     MemoryScene, PrologueScene, EndingScene];
@@ -57,6 +60,11 @@ async function start() {
 
   // Dev only: lets the debug tools and smoke tests reach the game.
   if (import.meta.env.DEV) window.__game = game;
+
+  // Offline cache for the deployed game (docs/09: works offline after load).
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 
   game.events.once('ready', () => {
     game.sound.volume = settings.volMaster;

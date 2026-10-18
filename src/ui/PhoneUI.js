@@ -5,7 +5,8 @@
 
 import Phaser from 'phaser';
 import { BALANCE } from '../config/balance.js';
-import { COLORS, CSS } from '../config/constants.js';
+import { COLORS, CSS, PHONE_LAYOUT } from '../config/constants.js';
+import { DEVICE } from '../utils/device.js';
 import { EVIDENCE } from '../data/items.js';
 import { TEXTS } from '../data/texts.js';
 import { VOICEMAILS } from '../data/voicemails.js';
@@ -16,13 +17,18 @@ import { clockLabel } from '../systems/messages.js';
 import { Button } from './Button.js';
 import { textStyle } from './text.js';
 
-const X0 = 646;
-const Y0 = 76;
-const W = 300;
-const H = 384;
+// Desktop or touch layout (docs/00 decisions: the mobile version).
+const PL = DEVICE.touch ? PHONE_LAYOUT.touch : PHONE_LAYOUT.desk;
+const X0 = PL.x0;
+const Y0 = PL.y0;
+const W = PL.w;
+const H = PL.h;
+const BTN_H = PL.btnH;
+const COL_W = (W - 24) / 3;          // three action buttons across a row
+const colX = (i) => X0 + 12 + COL_W * (i + 0.5);
 const CONTENT_Y = Y0 + 78;
 const CONTENT_H = H - 84;
-const ROW_H = 24;
+const ROW_H = PL.rowH;
 const OPEN_MS = 250;
 const CLOSE_MS = 180;
 const TABS = ['VOICEMAIL', 'MESSAGES', 'NOTES'];
@@ -60,8 +66,8 @@ export class PhoneUI {
 
     // Tabs: plain words with an underline under the open one.
     this.tabs = TABS.map((tab, i) => {
-      const cx = X0 + 52 + i * 98;
-      const hit = scene.add.rectangle(cx, Y0 + 46, 94, 44, COLORS.panel, 0.001).setInteractive({ useHandCursor: true });
+      const cx = X0 + W / 6 + (i * W) / 3;
+      const hit = scene.add.rectangle(cx, Y0 + 46, W / 3 - 4, 44, COLORS.panel, 0.001).setInteractive({ useHandCursor: true });
       hit.on('pointerdown', () => this.setTab(tab));
       const label = scene.add.text(cx, Y0 + 44, TAB_NAMES[tab], textStyle({ size: 16 })).setOrigin(0.5);
       this.root.add([hit, label]);
@@ -216,7 +222,7 @@ export class PhoneUI {
     return w;
   }
 
-  addButton(x, y, label, fn, w, h = 40) {
+  addButton(x, y, label, fn, w, h = BTN_H) {
     const b = new Button(this.scene, x, y, label, fn, { width: w, height: h, size: 16 });
     this.content.add(b.parts());
     return b;
@@ -252,15 +258,17 @@ export class PhoneUI {
 
       if (id === cur && !state.phone.playing) {
         const s = state.voicemails[id].status;
-        this.addButton(X0 + 54, y + 24, 'Preview 3s', () => this.actions.preview(id), 92);
-        this.addButton(X0 + 150, y + 24, 'Fix', () => this.actions.fix(id), 92).setEnabled(s === 'damaged');
-        this.addButton(X0 + 246, y + 24, 'Play', () => this.actions.play(id), 92).setEnabled(s === 'fixed');
-        y += 50;
+        const by = y + BTN_H / 2 + 4;
+        this.addButton(colX(0), by, 'Preview 3s', () => this.actions.preview(id), COL_W - 4);
+        this.addButton(colX(1), by, 'Fix', () => this.actions.fix(id), COL_W - 4).setEnabled(s === 'damaged');
+        this.addButton(colX(2), by, 'Play', () => this.actions.play(id), COL_W - 4).setEnabled(s === 'fixed');
+        y += BTN_H + 10;
       }
       if (state.phone.playing && state.phone.playingId === id) {
-        this.addButton(X0 + 58, y + 24, state.phone.paused ? 'Resume' : 'Pause', () => this.actions.pause(), 96);
-        this.progressY = y + 24;
-        y += 50;
+        const by = y + BTN_H / 2 + 4;
+        this.addButton(colX(0), by, state.phone.paused ? 'Resume' : 'Pause', () => this.actions.pause(), COL_W - 4);
+        this.progressY = by;
+        y += BTN_H + 10;
       }
     }
     if (state.flags.temptationShown) this.actions.temptationRow?.(this.content, X0, y, W);
@@ -318,8 +326,8 @@ export class PhoneUI {
     g.clear();
     if (!state.phone.playing || state.phone.tab !== 'VOICEMAIL' || this.progressY == null) return;
     const dur = VOICEMAILS[state.phone.playingId].durationSec;
-    const x = X0 + 118;
-    const w = W - 134;
+    const x = X0 + 12 + COL_W + 12;
+    const w = W - (COL_W + 40);
     const t = Math.min(1, state.phone.playPos / dur);
     g.fillStyle(COLORS.line, 1).fillRoundedRect(x, this.progressY - 3, w, 6, 3);
     g.fillStyle(COLORS.cream, 1).fillRoundedRect(x, this.progressY - 3, Math.max(6, w * t), 6, 3);
